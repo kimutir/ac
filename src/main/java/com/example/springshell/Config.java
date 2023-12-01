@@ -7,9 +7,16 @@ import org.springframework.shell.ExitRequest;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.context.InteractionMode;
 import org.springframework.shell.standard.ShellMethod;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class Config {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
 
 //    @Bean
 //    public CommandRegistration exit(CommandRegistration.BuilderSupplier builder) {

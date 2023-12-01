@@ -1,7 +1,12 @@
 package com.example.springshell;
 
-import org.jline.terminal.Terminal;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.shell.ShellApplicationRunner;
 import org.springframework.shell.ShellRunner;
 import org.springframework.shell.component.SingleItemSelector;
@@ -17,6 +22,9 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.shell.standard.AbstractShellComponent;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,16 +33,19 @@ import java.util.*;
 public class HelloCommand extends AbstractShellComponent {
 
     @Autowired
-    private Terminal terminal;
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     @Autowired
     private ComponentFlow.Builder componentFlowBuilder;
 
-    @ShellMethod(key = "login", interactionMode = InteractionMode.NONINTERACTIVE)
+    @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
     public void login(
             @ShellOption(defaultValue = "") String email,
             @ShellOption(defaultValue = "") String password
-    ) {
+    ) throws JsonProcessingException {
         ComponentFlow flow = componentFlowBuilder.clone().reset()
                 .withStringInput("user-email")
                 .name("Почта:")
@@ -47,8 +58,34 @@ public class HelloCommand extends AbstractShellComponent {
                 .build();
 
         ComponentContext<?> context = flow.run().getContext();
+        String userEmail = context.get("user-email", String.class);
+        String userPassword = context.get("user-password", String.class);
 
-        System.out.println(context.stream().toList());
+//        String userEmail = "kimutir@gmail.com";
+//        String userPassword = "Ch3sh1r3";
+
+        String url = "https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        LinkedMultiValueMap<String, String> properties = new LinkedMultiValueMap<>();
+
+        properties.add("client_id", "amvera-web");
+        properties.add("username", userEmail);
+        properties.add("password", userPassword);
+        properties.add("grant_type", "password");
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(properties, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+        String responseBody = response.getBody();
+
+        System.out.println(responseBody);
+
+//        TokenResponse tokenResponse = mapper.readValue(responseBody, TokenResponse.class);
+//
+//        System.out.println(tokenResponse.getAccess_token());
+//        System.out.println(tokenResponse.getNot_before_policy());
 
         System.exit(0);
     }
