@@ -30,17 +30,30 @@ public class HelloCommand extends AbstractShellComponent {
     @Autowired
     private ComponentFlow.Builder componentFlowBuilder;
 
-    @ShellMethod(key = "hello"
-            , interactionMode = InteractionMode.NONINTERACTIVE
-    )
-    public void greeting(@ShellOption(defaultValue = "stranger") String name) {
-//        System.out.println("This is noninteractive mode.");
-        System.out.println("Hello " + name);
+    @ShellMethod(key = "login", interactionMode = InteractionMode.NONINTERACTIVE)
+    public void login(
+            @ShellOption(defaultValue = "") String email,
+            @ShellOption(defaultValue = "") String password
+    ) {
+        ComponentFlow flow = componentFlowBuilder.clone().reset()
+                .withStringInput("user-email")
+                .name("Почта:")
+                .defaultValue("")
+                .and()
+                .withStringInput("user-password")
+                .name("Пароль:")
+                .defaultValue("")
+                .and()
+                .build();
+
+        ComponentContext<?> context = flow.run().getContext();
+
+        System.out.println(context.stream().toList());
+
         System.exit(0);
-//        return "Hello " + name;
     }
 
-    @ShellMethod(value = "Create new project", group = "Create", key = "create-project", interactionMode = InteractionMode.ALL)
+    @ShellMethod(value = "Create new project", group = "Create", key = "create-project", interactionMode = InteractionMode.NONINTERACTIVE)
     public void create() {
 
         Map<String, String> environmentComponent = new HashMap<>();
@@ -82,7 +95,7 @@ public class HelloCommand extends AbstractShellComponent {
         System.exit(0);
     }
 
-    @ShellMethod(key = "flow showcase2", value = "Showcase with options", group = "Flow")
+    @ShellMethod(key = "flow showcase2", value = "Showcase with options", group = "Flow", interactionMode = InteractionMode.NONINTERACTIVE)
     public String showcase2(
             @ShellOption(help = "Field1 value", defaultValue = ShellOption.NULL) String field1,
             @ShellOption(help = "Field2 value", defaultValue = ShellOption.NULL) String field2,
@@ -144,21 +157,7 @@ public class HelloCommand extends AbstractShellComponent {
     }
 
 
-    @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
-    public void login(
-            @ShellOption(defaultValue = "") String email,
-            @ShellOption(defaultValue = "") String password
-    ) {
-        while (email == null || email.isBlank()) {
-            email = System.console().readLine("Enter email: ").trim();
-        }
-        while (password == null || password.isBlank()) {
-            password = System.console().readLine("Введите почту: ").trim();
-        }
 
-        System.out.println("cred: " + email + " " + password);
-        System.exit(0);
-    }
 
     @ShellMethod(key = "component string", value = "String input", group = "Components")
     public String stringInput(boolean mask) {
