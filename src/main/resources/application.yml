@@ -4,17 +4,17 @@ spring:
 #      long-names: help
 #      short-names: h
 #      command: help
-#    command:
-#      version:
-#        enabled: false
-#      history:
-#        enabled: false
-#      stacktrace:
-#        enabled: false
-#      clear:
-#        enabled: false
-#      script:
-#        enabled: false
+    command:
+      version:
+        enabled: false
+      history:
+        enabled: false
+      stacktrace:
+        enabled: false
+      clear:
+        enabled: false
+      script:
+        enabled: false
   main:
     banner-mode: "off"
 shell:

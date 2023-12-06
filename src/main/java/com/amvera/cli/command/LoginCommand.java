@@ -115,7 +115,7 @@ public class LoginCommand extends AbstractShellComponent {
         ResponseEntity<String> projects = restTemplate.exchange(projectsUrl, HttpMethod.GET, projectsEntity, String.class);
         System.out.println("PROJECTS:" + projects.getBody());
 
-        System.exit(0);
+//        System.exit(0);
     }
 
 

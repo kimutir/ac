@@ -7,14 +7,14 @@ import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.shell.boot.StandardCommandsAutoConfiguration;
 import org.springframework.shell.command.annotation.CommandScan;
 import org.springframework.shell.jline.PromptProvider;
 
-@SpringBootApplication(
-//        exclude = {StandardCommandsAutoConfiguration.class}
-)
+@SpringBootApplication
 @CommandScan
+@EnableAspectJAutoProxy
 @RegisterReflectionForBinding({TokenResponse.class})
 public class AmveraCLIApplication {
 
