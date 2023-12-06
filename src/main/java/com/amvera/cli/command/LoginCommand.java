@@ -1,6 +1,7 @@
 package com.amvera.cli.command;
 
 import com.amvera.cli.dto.TokenResponse;
+import com.amvera.cli.utils.SaveResponseToken;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jline.reader.LineReader;
@@ -64,7 +65,7 @@ public class LoginCommand extends AbstractShellComponent {
                     help = "User password",
                     value = {"-p", "--password"}
             ) String password
-    ) throws JsonProcessingException {
+    ) throws IOException {
 
         if (email == null || email.isBlank()) {
             ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
@@ -114,6 +115,8 @@ public class LoginCommand extends AbstractShellComponent {
 
         ResponseEntity<String> projects = restTemplate.exchange(projectsUrl, HttpMethod.GET, projectsEntity, String.class);
         System.out.println("PROJECTS:" + projects.getBody());
+
+        SaveResponseToken.saveResponseToken(tokenResponse.getAccessToken());
 
 //        System.exit(0);
     }

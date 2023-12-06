@@ -9,15 +9,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExitAspect {
 
-    @Pointcut("@annotation(org.springframework.shell.standard.ShellMethod) && execution(* com.amvera.cli.command..* (..))")
+    @Pointcut("@annotation(org.springframework.shell.standard.ShellMethod)")
     public void shellRunExitPointCut() {
-//        System.out.println("POINTCUT");
-        // Pointcut
     }
 
     @After("shellRunExitPointCut()")
     public void shellRunMode() {
-        System.out.println("AFTER");
+        System.out.println("Command completed. This message is for test purpose only.");
         System.exit(0);
     }
 
