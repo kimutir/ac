@@ -1,22 +1,18 @@
-package com.example.springshell;
+package com.amvera.cli.command;
 
+import com.amvera.cli.dto.TokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.shell.ShellApplicationRunner;
-import org.springframework.shell.ShellRunner;
-import org.springframework.shell.component.SingleItemSelector;
-import org.springframework.shell.component.SingleItemSelector.*;
+import org.springframework.http.*;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.component.flow.ResultMode;
 import org.springframework.shell.component.flow.SelectItem;
-import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.context.InteractionMode;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -30,7 +26,8 @@ import java.io.IOException;
 import java.util.*;
 
 @ShellComponent
-public class HelloCommand extends AbstractShellComponent {
+//@RegisterReflectionForBinding
+public class LoginCommand extends AbstractShellComponent {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -41,28 +38,53 @@ public class HelloCommand extends AbstractShellComponent {
     @Autowired
     private ComponentFlow.Builder componentFlowBuilder;
 
+    @Autowired
+    private Terminal terminal;
+
+    @ShellMethod(key = "t")
+    public void t() throws IOException {
+//        String  read = String.valueOf(terminal.reader().read());
+        terminal.writer().println("asdasd");
+        LineReader build = LineReaderBuilder.builder()
+                .terminal(terminal)
+                .build();
+        String enterSmth = build.readLine("Enter smth: ");
+        System.out.println(enterSmth);
+    }
+
     @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
     public void login(
-            @ShellOption(defaultValue = "") String email,
-            @ShellOption(defaultValue = "") String password
+            @ShellOption(
+                    defaultValue = ShellOption.NULL,
+                    help = "User email",
+                    value = {"-e", "--email"}
+            ) String email,
+            @ShellOption(
+                    defaultValue = ShellOption.NULL,
+                    help = "User password",
+                    value = {"-p", "--password"}
+            ) String password
     ) throws JsonProcessingException {
-        ComponentFlow flow = componentFlowBuilder.clone().reset()
-                .withStringInput("user-email")
-                .name("Почта:")
-                .defaultValue("")
-                .and()
-                .withStringInput("user-password")
-                .name("Пароль:")
-                .defaultValue("")
-                .and()
-                .build();
 
-        ComponentContext<?> context = flow.run().getContext();
-        String userEmail = context.get("user-email", String.class);
-        String userPassword = context.get("user-password", String.class);
+        if (email == null || email.isBlank()) {
+            ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
+                    .withStringInput("user-email")
+                    .name("Почта:")
+                    .defaultValue("")
+                    .and().build();
 
-//        String userEmail = "kimutir@gmail.com";
-//        String userPassword = "Ch3sh1r3";
+            email = emailFlow.run().getContext().get("user-email");
+        }
+
+        if (password == null || password.isBlank()) {
+            ComponentFlow passwordFlow = componentFlowBuilder.clone().reset()
+                    .withStringInput("user-password")
+                    .name("Пароль:")
+                    .defaultValue("")
+                    .and().build();
+
+            password = passwordFlow.run().getContext().get("user-password");
+        }
 
         String url = "https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token";
         HttpHeaders headers = new HttpHeaders();
@@ -70,8 +92,8 @@ public class HelloCommand extends AbstractShellComponent {
         LinkedMultiValueMap<String, String> properties = new LinkedMultiValueMap<>();
 
         properties.add("client_id", "amvera-web");
-        properties.add("username", userEmail);
-        properties.add("password", userPassword);
+        properties.add("username", email);
+        properties.add("password", password);
         properties.add("grant_type", "password");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(properties, headers);
@@ -79,60 +101,25 @@ public class HelloCommand extends AbstractShellComponent {
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
         String responseBody = response.getBody();
+        TokenResponse tokenResponse = mapper.readValue(responseBody, TokenResponse.class);
+        System.out.println("TOKEN: " + tokenResponse.getAccessToken());
 
-        System.out.println(responseBody);
+        String projectsUrl = "https://api.amvera.ru/projects";
 
-//        TokenResponse tokenResponse = mapper.readValue(responseBody, TokenResponse.class);
-//
-//        System.out.println(tokenResponse.getAccess_token());
-//        System.out.println(tokenResponse.getNot_before_policy());
+        HttpHeaders projectsHeaders = new HttpHeaders();
+        projectsHeaders.setContentType(MediaType.APPLICATION_JSON);
+        projectsHeaders.setBearerAuth(tokenResponse.getAccessToken());
 
-        System.exit(0);
-    }
+        HttpEntity<Object> projectsEntity = new HttpEntity<>(projectsHeaders);
 
-    @ShellMethod(value = "Create new project", group = "Create", key = "create-project", interactionMode = InteractionMode.NONINTERACTIVE)
-    public void create() {
-
-        Map<String, String> environmentComponent = new HashMap<>();
-        environmentComponent.put("Python", "python");
-        environmentComponent.put("Java/Kotlin", "jvm");
-
-        Map<String, String> builderPythonComponent = new HashMap<>();
-        builderPythonComponent.put("PIP", "pip");
-
-        Map<String, String> builderJVMComponent = new HashMap<>();
-        builderJVMComponent.put("Maven", "maven");
-        builderJVMComponent.put("Gradle", "gradle");
-
-        ComponentFlow flow = componentFlowBuilder.clone().reset()
-                .withStringInput("project-name")
-                    .name("Название проекта:")
-                    .defaultValue("project-name")
-                    .and()
-                .withSingleItemSelector("environment")
-                    .name("Выберите окружение:")
-                    .selectItems(environmentComponent)
-                    .next(ctx -> ctx.getResultItem().get().getItem())
-                    .and()
-                .withSingleItemSelector("python")
-                    .name("Выберите инструмент:")
-                    .selectItems(builderPythonComponent)
-                    .next(ctx -> null)
-                    .and()
-                .withSingleItemSelector("jvm")
-                    .name("Выберите инструмент:")
-                    .selectItems(builderJVMComponent)
-                    .next(ctx -> null)
-                    .and()
-                .build();
-        ComponentContext<?> context = flow.run().getContext();
-
-        System.out.println(context.stream().toList());
+        ResponseEntity<String> projects = restTemplate.exchange(projectsUrl, HttpMethod.GET, projectsEntity, String.class);
+        System.out.println("PROJECTS:" + projects.getBody());
 
         System.exit(0);
     }
 
-    @ShellMethod(key = "flow showcase2", value = "Showcase with options", group = "Flow", interactionMode = InteractionMode.NONINTERACTIVE)
+
+    @ShellMethod(key = "flow showcase2", value = "Showcase with options", group = "Flow", interactionMode = InteractionMode.ALL)
     public String showcase2(
             @ShellOption(help = "Field1 value", defaultValue = ShellOption.NULL) String field1,
             @ShellOption(help = "Field2 value", defaultValue = ShellOption.NULL) String field2,
@@ -192,8 +179,6 @@ public class HelloCommand extends AbstractShellComponent {
         });
         return buf.toString();
     }
-
-
 
 
     @ShellMethod(key = "component string", value = "String input", group = "Components")
