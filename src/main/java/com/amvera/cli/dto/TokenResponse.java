@@ -17,7 +17,6 @@ public class TokenResponse {
     private String sessionState;
     @JsonProperty("scope")
     private String scope;
-
     @JsonProperty("not-before-policy")
     private String notBeforePolicy;
 

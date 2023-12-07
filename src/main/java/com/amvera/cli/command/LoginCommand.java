@@ -1,16 +1,15 @@
 package com.amvera.cli.command;
 
+import com.amvera.cli.dto.ProjectListResponse;
+import com.amvera.cli.dto.ProjectResponse;
 import com.amvera.cli.dto.TokenResponse;
-import com.amvera.cli.utils.SaveResponseToken;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.shell.component.StringInput;
-import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.component.flow.ResultMode;
 import org.springframework.shell.component.flow.SelectItem;
@@ -30,31 +29,31 @@ import java.util.*;
 //@RegisterReflectionForBinding
 public class LoginCommand extends AbstractShellComponent {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper mapper;
+    private final ComponentFlow.Builder componentFlowBuilder;
+    private final Terminal terminal;
 
-    @Autowired
-    private ObjectMapper mapper;
-
-    @Autowired
-    private ComponentFlow.Builder componentFlowBuilder;
-
-    @Autowired
-    private Terminal terminal;
+    public LoginCommand(RestTemplate restTemplate, ObjectMapper mapper, ComponentFlow.Builder componentFlowBuilder, Terminal terminal) {
+        this.restTemplate = restTemplate;
+        this.mapper = mapper;
+        this.componentFlowBuilder = componentFlowBuilder;
+        this.terminal = terminal;
+    }
 
     @ShellMethod(key = "t")
-    public void t() throws IOException {
-//        String  read = String.valueOf(terminal.reader().read());
+    public String t() throws IOException {
         terminal.writer().println("asdasd");
         LineReader build = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .build();
         String enterSmth = build.readLine("Enter smth: ");
-        System.out.println(enterSmth);
+
+        return "popo";
     }
 
     @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
-    public void login(
+    public String login(
             @ShellOption(
                     defaultValue = ShellOption.NULL,
                     help = "User email",
@@ -66,6 +65,9 @@ public class LoginCommand extends AbstractShellComponent {
                     value = {"-p", "--password"}
             ) String password
     ) throws IOException {
+
+        email = "kimutir@gmail.com";
+        password = "Ch3sh1r3";
 
         if (email == null || email.isBlank()) {
             ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
@@ -93,8 +95,8 @@ public class LoginCommand extends AbstractShellComponent {
         LinkedMultiValueMap<String, String> properties = new LinkedMultiValueMap<>();
 
         properties.add("client_id", "amvera-web");
-        properties.add("username", email);
-        properties.add("password", password);
+        properties.add("username", email.trim());
+        properties.add("password", password.trim());
         properties.add("grant_type", "password");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(properties, headers);
@@ -104,21 +106,29 @@ public class LoginCommand extends AbstractShellComponent {
         String responseBody = response.getBody();
         TokenResponse tokenResponse = mapper.readValue(responseBody, TokenResponse.class);
         System.out.println("TOKEN: " + tokenResponse.getAccessToken());
+        TokenUtils.saveResponseToken(tokenResponse.getAccessToken());
 
         String projectsUrl = "https://api.amvera.ru/projects";
 
+        String token = TokenUtils.readResponseToken();
+
         HttpHeaders projectsHeaders = new HttpHeaders();
         projectsHeaders.setContentType(MediaType.APPLICATION_JSON);
-        projectsHeaders.setBearerAuth(tokenResponse.getAccessToken());
+        projectsHeaders.setBearerAuth(token);
 
         HttpEntity<Object> projectsEntity = new HttpEntity<>(projectsHeaders);
 
+        System.out.println("token: " + token);
+
         ResponseEntity<String> projects = restTemplate.exchange(projectsUrl, HttpMethod.GET, projectsEntity, String.class);
-        System.out.println("PROJECTS:" + projects.getBody());
 
-        SaveResponseToken.saveResponseToken(tokenResponse.getAccessToken());
+        ProjectListResponse projectList = mapper.readValue(projects.getBody(), ProjectListResponse.class);
 
-//        System.exit(0);
+        String name = projectList.getServices().get(0).getName();
+
+        System.out.println(name);
+
+        return projects.getBody();
     }
 
 

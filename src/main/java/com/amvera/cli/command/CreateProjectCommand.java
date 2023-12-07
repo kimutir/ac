@@ -1,5 +1,6 @@
 package com.amvera.cli.command;
 
+import com.amvera.cli.utils.ShellHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
@@ -14,10 +15,12 @@ import java.util.Map;
 public class CreateProjectCommand {
 
     private final ComponentFlow.Builder componentFlowBuilder;
+    private final ShellHelper shellHelper;
 
     @Autowired
-    public CreateProjectCommand(ComponentFlow.Builder componentFlowBuilder) {
+    public CreateProjectCommand(ComponentFlow.Builder componentFlowBuilder, ShellHelper shellHelper) {
         this.componentFlowBuilder = componentFlowBuilder;
+        this.shellHelper = shellHelper;
     }
 
     @ShellMethod(value = "Create new project", group = "Create", key = "create-project", interactionMode = InteractionMode.ALL)
@@ -36,30 +39,29 @@ public class CreateProjectCommand {
 
         ComponentFlow flow = componentFlowBuilder.clone().reset()
                 .withStringInput("project-name")
-                    .name("Название проекта:")
-                    .defaultValue("project-name")
-                    .and()
+                .name("Название проекта:")
+                .defaultValue("project-name")
+                .and()
                 .withSingleItemSelector("environment")
-                    .name("Выберите окружение:")
-                    .selectItems(environmentComponent)
-                    .next(ctx -> ctx.getResultItem().get().getItem())
-                    .and()
+                .name("Выберите окружение:")
+                .selectItems(environmentComponent)
+                .next(ctx -> ctx.getResultItem().get().getItem())
+                .and()
                 .withSingleItemSelector("python")
-                    .name("Выберите инструмент:")
-                    .selectItems(builderPythonComponent)
-                    .next(ctx -> null)
-                    .and()
+                .name("Выберите инструмент:")
+                .selectItems(builderPythonComponent)
+                .next(ctx -> null)
+                .and()
                 .withSingleItemSelector("jvm")
-                    .name("Выберите инструмент:")
-                    .selectItems(builderJVMComponent)
-                    .next(ctx -> null)
-                    .and()
+                .name("Выберите инструмент:")
+                .selectItems(builderJVMComponent)
+                .next(ctx -> null)
+                .and()
                 .build();
 
         ComponentContext<?> context = flow.run().getContext();
 
-        System.out.println(context.stream().toList());
+        shellHelper.print(context.stream().toList().toString());
 
-        System.exit(0);
     }
 }
