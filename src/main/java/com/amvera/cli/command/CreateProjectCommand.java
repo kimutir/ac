@@ -23,8 +23,13 @@ public class CreateProjectCommand {
         this.shellHelper = shellHelper;
     }
 
-    @ShellMethod(value = "Create new project", group = "Create", key = "create-project", interactionMode = InteractionMode.ALL)
-    public void create() {
+    @ShellMethod(
+            value = "Create new project",
+            group = "Project",
+            key = "create-project",
+            interactionMode = InteractionMode.ALL
+    )
+    public String create() {
 
         Map<String, String> environmentComponent = new HashMap<>();
         environmentComponent.put("Python", "python");
@@ -61,7 +66,7 @@ public class CreateProjectCommand {
 
         ComponentContext<?> context = flow.run().getContext();
 
-        shellHelper.print(context.stream().toList().toString());
-
+//        shellHelper.print();
+        return context.stream().toList().toString();
     }
 }

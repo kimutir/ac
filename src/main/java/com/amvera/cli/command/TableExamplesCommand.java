@@ -43,9 +43,9 @@ public class TableExamplesCommand {
 
 //        loginCommand.t();
 //
-//        throw new CustomException();
-        int i = Runtime.getRuntime().exec("/opt/homebrew/bin/git add .").waitFor();
-        shellHelper.printSuccess(String.valueOf(i));
+        throw new CustomException();
+//        int i = Runtime.getRuntime().exec("/opt/homebrew/bin/git add .").waitFor();
+//        shellHelper.printSuccess(String.valueOf(i));
 
 //        shellHelper.printInfo("fancy_light border style");
 //        tableBuilder.addFullBorder(BorderStyle.fancy_light);

@@ -1,7 +1,9 @@
 package com.amvera.cli.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 
+@RegisterReflectionForBinding
 public class ProjectResponse {
 
     /**

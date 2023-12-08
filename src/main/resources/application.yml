@@ -1,10 +1,12 @@
 spring:
   shell:
-#    help:
-#      long-names: help
-#      short-names: h
-#      command: help
+#  .command.help.commands-template
+    theme:
+      name: "amvera-theme"
     command:
+      help:
+        commands-template: "classpath:template/help-commands-custom.stg"
+        command-template: "classpath:template/help-command-custom.stg"
       version:
         enabled: false
       history:

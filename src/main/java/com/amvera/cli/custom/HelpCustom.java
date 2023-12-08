@@ -2,8 +2,11 @@ package com.amvera.cli.custom;
 
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.terminal.Terminal;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.springframework.shell.Utils;
 import org.springframework.shell.command.CommandAlias;
+import org.springframework.shell.command.CommandCatalogCustomizer;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.context.InteractionMode;
 import org.springframework.shell.standard.*;
@@ -72,11 +75,12 @@ public class HelpCustom extends AbstractShellComponent
 
         StringBuilder result = new StringBuilder();
         toPrint
-                .forEach((key, value) -> {
-                    // group
-                    result.append(key).append("next line на русском\n");
+                .forEach((k, v) -> {
+                    String group = (new AttributedStringBuilder()).append(k, AttributedStyle.DEFAULT.bold().italic()).toAnsi();
+                    // group name
+                    result.append(group).append("\n");
                     // command + aliases: description
-                    value.forEach(i -> {
+                    v.forEach(i -> {
                         StringBuilder line = new StringBuilder();
                         line.append(SPACE).append(i.getCommand());
                         String alias = i.getAliases().isEmpty() ?
@@ -87,6 +91,7 @@ public class HelpCustom extends AbstractShellComponent
                     });
                     result.append("\n");
                 });
+
         return result.toString();
     }
 

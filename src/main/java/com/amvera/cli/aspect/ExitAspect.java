@@ -28,4 +28,11 @@ public class ExitAspect {
         System.exit(0);
     }
 
+
+    @AfterThrowing(pointcut = "ifShellMethod()")
+    public void ex() {
+        System.out.println("Command completed EX. This message is for test purpose only.");
+        System.exit(0);
+    }
+
 }

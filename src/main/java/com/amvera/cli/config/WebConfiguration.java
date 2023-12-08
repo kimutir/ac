@@ -1,6 +1,6 @@
 package com.amvera.cli.config;
 
-import com.amvera.cli.exception.CustomExceptionResolver;
+//import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.utils.ShellHelper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,13 +21,8 @@ public class WebConfiguration {
         return new ShellHelper(terminal);
     }
 
-    @Bean
-    CustomExceptionResolver customExceptionResolver() {
-        return new CustomExceptionResolver();
-    }
-
 //    @Bean
-//    ObjectMapper objectMapper() {
-//        return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//    CustomExceptionResolver customExceptionResolver() {
+//        return new CustomExceptionResolver();
 //    }
 }

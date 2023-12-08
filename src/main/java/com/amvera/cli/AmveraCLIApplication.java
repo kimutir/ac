@@ -18,7 +18,7 @@ import org.springframework.shell.jline.PromptProvider;
 @SpringBootApplication
 @CommandScan
 @EnableAspectJAutoProxy
-@RegisterReflectionForBinding({TokenResponse.class, ProjectResponse.class, ProjectListResponse.class})
+//@RegisterReflectionForBinding({TokenResponse.class, ProjectResponse.class, ProjectListResponse.class})
 public class AmveraCLIApplication {
 
     public static void main(String[] args) {

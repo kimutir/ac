@@ -41,15 +41,24 @@ public class LoginCommand extends AbstractShellComponent {
         this.terminal = terminal;
     }
 
-    @ShellMethod(key = "t")
+    @ShellMethod(key = "t", interactionMode = InteractionMode.ALL)
     public String t() throws IOException {
-        terminal.writer().println("asdasd");
-        LineReader build = LineReaderBuilder.builder()
-                .terminal(terminal)
-                .build();
-        String enterSmth = build.readLine("Enter smth: ");
 
-        return "popo";
+//        terminal.writer().println("asdasd");
+//        LineReader build = LineReaderBuilder.builder()
+//                .terminal(terminal)
+//                .build();
+//        String enterSmth = build.readLine("Enter smth: ");
+        StringInput component = new StringInput(getTerminal(), "Enter value", "myvalue");
+        component.setResourceLoader(getResourceLoader());
+        component.setTemplateExecutor(getTemplateExecutor());
+        component.setTemplateLocation("classpath:template/string-input-default-1.stg");
+//        if (mask) {
+//            component.setMaskCharacter('*');
+//        }
+        StringInput.StringInputContext context = component.run(StringInput.StringInputContext.empty());
+        return "Got value " + context.getResultValue();
+
     }
 
     @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
