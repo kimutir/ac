@@ -1,4 +1,4 @@
-package com.amvera.cli.command;
+package com.amvera.cli.command.project;
 
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ public class CreateProjectCommand {
 
     @ShellMethod(
             value = "Create new project",
-            group = "Project",
             key = "create-project",
             interactionMode = InteractionMode.ALL
     )
@@ -66,7 +65,6 @@ public class CreateProjectCommand {
 
         ComponentContext<?> context = flow.run().getContext();
 
-//        shellHelper.print();
         return context.stream().toList().toString();
     }
 }

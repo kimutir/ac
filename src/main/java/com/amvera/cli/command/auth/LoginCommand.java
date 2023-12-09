@@ -1,12 +1,9 @@
-package com.amvera.cli.command;
+package com.amvera.cli.command.auth;
 
 import com.amvera.cli.dto.ProjectListResponse;
-import com.amvera.cli.dto.ProjectResponse;
-import com.amvera.cli.dto.TokenResponse;
+import com.amvera.cli.dto.auth.AuthResponse;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.springframework.http.*;
 import org.springframework.shell.component.StringInput;
@@ -41,36 +38,20 @@ public class LoginCommand extends AbstractShellComponent {
         this.terminal = terminal;
     }
 
-    @ShellMethod(key = "t", interactionMode = InteractionMode.ALL)
-    public String t() throws IOException {
-
-//        terminal.writer().println("asdasd");
-//        LineReader build = LineReaderBuilder.builder()
-//                .terminal(terminal)
-//                .build();
-//        String enterSmth = build.readLine("Enter smth: ");
-        StringInput component = new StringInput(getTerminal(), "Enter value", "myvalue");
-        component.setResourceLoader(getResourceLoader());
-        component.setTemplateExecutor(getTemplateExecutor());
-        component.setTemplateLocation("classpath:template/string-input-default-1.stg");
-//        if (mask) {
-//            component.setMaskCharacter('*');
-//        }
-        StringInput.StringInputContext context = component.run(StringInput.StringInputContext.empty());
-        return "Got value " + context.getResultValue();
-
-    }
-
-    @ShellMethod(key = "login", interactionMode = InteractionMode.ALL)
+    @ShellMethod(
+            key = "login",
+            interactionMode = InteractionMode.ALL,
+            value = "Login amvera cloud"
+    )
     public String login(
             @ShellOption(
                     defaultValue = ShellOption.NULL,
-                    help = "User email",
-                    value = {"-e", "--email"}
+                    help = "Username/email for authorization",
+                    value = {"-u", "--user"}
             ) String email,
             @ShellOption(
                     defaultValue = ShellOption.NULL,
-                    help = "User password",
+                    help = "User password for authorization",
                     value = {"-p", "--password"}
             ) String password
     ) throws IOException {
@@ -81,7 +62,7 @@ public class LoginCommand extends AbstractShellComponent {
         if (email == null || email.isBlank()) {
             ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
                     .withStringInput("user-email")
-                    .name("Почта:")
+                    .name("Username/email:")
                     .defaultValue("")
                     .and().build();
 
@@ -91,7 +72,7 @@ public class LoginCommand extends AbstractShellComponent {
         if (password == null || password.isBlank()) {
             ComponentFlow passwordFlow = componentFlowBuilder.clone().reset()
                     .withStringInput("user-password")
-                    .name("Пароль:")
+                    .name("Password:")
                     .defaultValue("")
                     .and().build();
 
@@ -113,7 +94,7 @@ public class LoginCommand extends AbstractShellComponent {
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
         String responseBody = response.getBody();
-        TokenResponse tokenResponse = mapper.readValue(responseBody, TokenResponse.class);
+        AuthResponse tokenResponse = mapper.readValue(responseBody, AuthResponse.class);
         System.out.println("TOKEN: " + tokenResponse.getAccessToken());
         TokenUtils.saveResponseToken(tokenResponse.getAccessToken());
 
@@ -141,7 +122,7 @@ public class LoginCommand extends AbstractShellComponent {
     }
 
 
-    @ShellMethod(key = "flow showcase2", value = "Showcase with options", group = "Flow", interactionMode = InteractionMode.ALL)
+    @ShellMethod(key = "flow showcase2", value = "Showcase with options", interactionMode = InteractionMode.ALL)
     public String showcase2(
             @ShellOption(help = "Field1 value", defaultValue = ShellOption.NULL) String field1,
             @ShellOption(help = "Field2 value", defaultValue = ShellOption.NULL) String field2,
@@ -203,7 +184,7 @@ public class LoginCommand extends AbstractShellComponent {
     }
 
 
-    @ShellMethod(key = "component string", value = "String input", group = "Components")
+    @ShellMethod(key = "component string", value = "String input")
     public String stringInput(boolean mask) {
         StringInput component = new StringInput(getTerminal(), "Enter value", "myvalue");
         component.setResourceLoader(getResourceLoader());
@@ -215,7 +196,7 @@ public class LoginCommand extends AbstractShellComponent {
         return "Got value " + context.getResultValue();
     }
 
-    @ShellMethod(key = "flow conditional", value = "Second component based on first", group = "Flow", interactionMode = InteractionMode.ALL)
+    @ShellMethod(key = "flow conditional", value = "Second component based on first", interactionMode = InteractionMode.ALL)
     public void conditional() {
         Map<String, String> single1SelectItems = new HashMap<>();
         single1SelectItems.put("Field1", "field1");

@@ -1,6 +1,5 @@
 spring:
   shell:
-#  .command.help.commands-template
     theme:
       name: "amvera-theme"
     command:
@@ -16,6 +15,8 @@ spring:
       clear:
         enabled: false
       script:
+        enabled: false
+      quit:
         enabled: false
   main:
     banner-mode: "off"

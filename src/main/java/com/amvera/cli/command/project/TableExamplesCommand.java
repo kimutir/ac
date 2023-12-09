@@ -1,10 +1,10 @@
-package com.amvera.cli.command;
+package com.amvera.cli.command.project;
 
+import com.amvera.cli.command.auth.LoginCommand;
 import com.amvera.cli.exception.CustomException;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
 import org.springframework.shell.table.ArrayTableModel;
 import org.springframework.shell.table.BorderStyle;
 import org.springframework.shell.table.TableBuilder;
@@ -34,28 +34,8 @@ public class TableExamplesCommand {
         };
         TableModel model = new ArrayTableModel(sampleData);
         TableBuilder tableBuilder = new TableBuilder(model);
-//        shellHelper.printInfo("air border style");
-//        tableBuilder.addFullBorder(BorderStyle.air);
-//        shellHelper.print(tableBuilder.build().render(80));
         shellHelper.printInfo("oldschool border style");
         tableBuilder.addFullBorder(BorderStyle.oldschool);
         shellHelper.print(tableBuilder.build().render(180));
-
-//        loginCommand.t();
-//
-        throw new CustomException();
-//        int i = Runtime.getRuntime().exec("/opt/homebrew/bin/git add .").waitFor();
-//        shellHelper.printSuccess(String.valueOf(i));
-
-//        shellHelper.printInfo("fancy_light border style");
-//        tableBuilder.addFullBorder(BorderStyle.fancy_light);
-//        shellHelper.print(tableBuilder.build().render(80));
-//        shellHelper.printInfo("fancy_double border style");
-//        tableBuilder.addFullBorder(BorderStyle.fancy_double);
-//        shellHelper.print(tableBuilder.build().render(80));
-//        shellHelper.printInfo("mixed border style");
-//        tableBuilder.addInnerBorder(BorderStyle.fancy_light);
-//        tableBuilder.addHeaderBorder(BorderStyle.fancy_double);
-//        shellHelper.print(tableBuilder.build().render(80));
     }
 }

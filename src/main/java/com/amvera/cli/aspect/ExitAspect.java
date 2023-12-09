@@ -16,22 +16,11 @@ public class ExitAspect {
     public void ifShellMethod() {
     }
 
-    @Pointcut("execution(* com.amvera.cli.custom.*.*(..))")
-    public void ifHelpCommand() {
-    }
-
     @AfterReturning(pointcut = "ifShellMethod()", returning = "output")
     public void shellRunMode(String output) {
         terminal.writer().println(output);
+        terminal.writer().println("Command completed. This message is for test purpose only.");
         terminal.writer().flush();
-        System.out.println("Command completed. This message is for test purpose only.");
-        System.exit(0);
-    }
-
-
-    @AfterThrowing(pointcut = "ifShellMethod()")
-    public void ex() {
-        System.out.println("Command completed EX. This message is for test purpose only.");
         System.exit(0);
     }
 

@@ -1,4 +1,4 @@
-package com.amvera.cli.custom;
+package com.amvera.cli.command.info;
 
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.terminal.Terminal;
@@ -6,7 +6,6 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.Utils;
 import org.springframework.shell.command.CommandAlias;
-import org.springframework.shell.command.CommandCatalogCustomizer;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.context.InteractionMode;
 import org.springframework.shell.standard.*;
@@ -32,7 +31,7 @@ public class HelpCustom extends AbstractShellComponent
     }
 
     @ShellMethod(
-            value = "Custom Display help about available commands",
+            value = "Display help about available commands",
             interactionMode = InteractionMode.ALL,
             key = "help")
     public String help(
@@ -42,13 +41,11 @@ public class HelpCustom extends AbstractShellComponent
                     help = "The command на русском to obtain help for.") String command
     ) {
         if (command == null) {
-//            System.out.println(renderCommands());
             return renderCommands();
         } else {
             String commandStr = Stream.of(command)
                     .map(String::trim)
                     .collect(Collectors.joining(" "));
-//            System.out.println(renderCommand(commandStr));
             return renderCommand(commandStr);
         }
 

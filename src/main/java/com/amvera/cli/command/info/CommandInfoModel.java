@@ -1,4 +1,4 @@
-package com.amvera.cli.custom;
+package com.amvera.cli.command.info;
 
 import org.springframework.shell.Availability;
 import org.springframework.shell.command.CommandOption;
