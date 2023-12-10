@@ -16,8 +16,13 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             return CommandHandlingResult.of("Hi, handled exception\n", 42);
         }
         if (e instanceof IOException) {
+            System.exit(0);
             return CommandHandlingResult.of(" io exception", 0);
         }
-        return CommandHandlingResult.of("end exception", 0);
+        if (e instanceof IllegalStateException) {
+            System.exit(0);
+            return CommandHandlingResult.of(" state exception", 0);
+        }
+        return null;
     }
 }

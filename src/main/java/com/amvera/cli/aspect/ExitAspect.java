@@ -16,12 +16,15 @@ public class ExitAspect {
     public void ifShellMethod() {
     }
 
-    @AfterReturning(pointcut = "ifShellMethod()", returning = "output")
-    public void shellRunMode(String output) {
-        terminal.writer().println(output);
-        terminal.writer().println("Command completed. This message is for test purpose only.");
-        terminal.writer().flush();
-        System.exit(0);
-    }
+//    @AfterReturning(pointcut = "ifShellMethod()", returning = "output")
+//    @After("ifShellMethod()")
+//    public void shellRunMode() {
+//        terminal.writer().println("A    " );
+//        terminal.writer().println("Command completed. This message is for test purpose only.");
+//        terminal.writer().flush();
+//        System.exit(0);
+//    }
+
+
 
 }

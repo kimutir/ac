@@ -17,7 +17,7 @@ spring:
       script:
         enabled: false
       quit:
-        enabled: false
+        enabled: true
   main:
     banner-mode: "off"
 shell:
@@ -29,3 +29,5 @@ shell:
 logging:
   level:
     root: off
+amvera:
+  keycloak-client: "amvera-web"

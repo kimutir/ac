@@ -19,11 +19,11 @@ public class ExceptionsAspect {
     }
 
     // todo: add exception handler
-    @AfterThrowing(pointcut = "ifShellMethod()")
-    public void ex() {
-        terminal.writer().println("Some error. This message is for test purpose only.");
-        terminal.writer().flush();
-        System.exit(0);
-    }
+//    @AfterThrowing(pointcut = "ifShellMethod()")
+//    public void ex() {
+//        terminal.writer().println("Some error. This message is for test purpose only.");
+//        terminal.writer().flush();
+//        System.exit(0);
+//    }
 
 }

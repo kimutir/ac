@@ -1,7 +1,9 @@
 package com.amvera.cli.command.auth;
 
-import com.amvera.cli.dto.ProjectListResponse;
+import com.amvera.cli.dto.project.ProjectListResponse;
 import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.exception.CustomException;
+import com.amvera.cli.service.AuthService;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jline.terminal.Terminal;
@@ -20,6 +22,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.*;
 
 @ShellComponent
@@ -29,12 +32,14 @@ public class LoginCommand extends AbstractShellComponent {
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
     private final ComponentFlow.Builder componentFlowBuilder;
+    private final AuthService authService;
     private final Terminal terminal;
 
-    public LoginCommand(RestTemplate restTemplate, ObjectMapper mapper, ComponentFlow.Builder componentFlowBuilder, Terminal terminal) {
+    public LoginCommand(RestTemplate restTemplate, ObjectMapper mapper, ComponentFlow.Builder componentFlowBuilder, AuthService authService, Terminal terminal) {
         this.restTemplate = restTemplate;
         this.mapper = mapper;
         this.componentFlowBuilder = componentFlowBuilder;
+        this.authService = authService;
         this.terminal = terminal;
     }
 
@@ -48,7 +53,7 @@ public class LoginCommand extends AbstractShellComponent {
                     defaultValue = ShellOption.NULL,
                     help = "Username/email for authorization",
                     value = {"-u", "--user"}
-            ) String email,
+            ) String user,
             @ShellOption(
                     defaultValue = ShellOption.NULL,
                     help = "User password for authorization",
@@ -56,69 +61,41 @@ public class LoginCommand extends AbstractShellComponent {
             ) String password
     ) throws IOException {
 
-        email = "kimutir@gmail.com";
-        password = "Ch3sh1r3";
+//        user = "kimutir@gmail.com";
+//        password = "Ch3sh1r3";
 
-        if (email == null || email.isBlank()) {
-            ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
-                    .withStringInput("user-email")
-                    .name("Username/email:")
-                    .defaultValue("")
-                    .and().build();
+        try {
+            if (user == null || user.isBlank()) {
+                ComponentFlow emailFlow = componentFlowBuilder.clone().reset()
+                        .withStringInput("user")
+                        .name("Username/email:")
+                        .defaultValue("")
+                        .and().build();
 
-            email = emailFlow.run().getContext().get("user-email");
+                user = emailFlow.run().getContext().get("user");
+            }
+
+            if (password == null || password.isBlank()) {
+                ComponentFlow passwordFlow = componentFlowBuilder.clone().reset()
+                        .withStringInput("password")
+                        .name("Password:")
+                        .defaultValue("")
+                        .and().build();
+
+                password = passwordFlow.run().getContext().get("password");
+            }
+        } catch (Error e) {
+            System.exit(0);
+            throw new InterruptedIOException();
         }
 
-        if (password == null || password.isBlank()) {
-            ComponentFlow passwordFlow = componentFlowBuilder.clone().reset()
-                    .withStringInput("user-password")
-                    .name("Password:")
-                    .defaultValue("")
-                    .and().build();
-
-            password = passwordFlow.run().getContext().get("user-password");
+        AuthResponse response = authService.login(user, password).block();
+        if (response != null) {
+            return response.getAccessToken();
         }
 
-        String url = "https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        LinkedMultiValueMap<String, String> properties = new LinkedMultiValueMap<>();
+        return null;
 
-        properties.add("client_id", "amvera-web");
-        properties.add("username", email.trim());
-        properties.add("password", password.trim());
-        properties.add("grant_type", "password");
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(properties, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-
-        String responseBody = response.getBody();
-        AuthResponse tokenResponse = mapper.readValue(responseBody, AuthResponse.class);
-        System.out.println("TOKEN: " + tokenResponse.getAccessToken());
-        TokenUtils.saveResponseToken(tokenResponse.getAccessToken());
-
-        String projectsUrl = "https://api.amvera.ru/projects";
-
-        String token = TokenUtils.readResponseToken();
-
-        HttpHeaders projectsHeaders = new HttpHeaders();
-        projectsHeaders.setContentType(MediaType.APPLICATION_JSON);
-        projectsHeaders.setBearerAuth(token);
-
-        HttpEntity<Object> projectsEntity = new HttpEntity<>(projectsHeaders);
-
-        System.out.println("token: " + token);
-
-        ResponseEntity<String> projects = restTemplate.exchange(projectsUrl, HttpMethod.GET, projectsEntity, String.class);
-
-        ProjectListResponse projectList = mapper.readValue(projects.getBody(), ProjectListResponse.class);
-
-        String name = projectList.getServices().get(0).getName();
-
-        System.out.println(name);
-
-        return projects.getBody();
     }
 
 
