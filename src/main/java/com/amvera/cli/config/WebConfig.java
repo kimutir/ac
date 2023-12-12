@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @Configuration
-public class WebConfiguration {
+public class WebConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

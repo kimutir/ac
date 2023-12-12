@@ -5,7 +5,7 @@ info(model) ::= <%
     <model.maskedInput>
   <else>
     <if(model.defaultValue)>
-      <("[Default CUSTOM Mask "); format="style-value"><model.defaultValue; format="style-value"><("]"); format="style-value">
+      <(""); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <endif>
   <endif>
 <else>
@@ -13,7 +13,7 @@ info(model) ::= <%
     <model.input>
   <else>
     <if(model.defaultValue)>
-      <("[Default CUSTOM "); format="style-value"><model.defaultValue; format="style-value"><("]"); format="style-value">
+      <(""); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <endif>
   <endif>
 <endif>
@@ -21,7 +21,7 @@ info(model) ::= <%
 
 // start '? xxx' shows both running and result
 question_name(model) ::= <<
-<({xxxx}); format="style-list-value"> <model.name; format="style-title">
+<({<figures.questionMark>}); format="style-list-value"> <model.name; format="style-title">
 >>
 
 // component result

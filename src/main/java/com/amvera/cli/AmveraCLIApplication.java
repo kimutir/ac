@@ -1,9 +1,18 @@
 package com.amvera.cli;
 
+import com.amvera.cli.command.project.ProjectFlows;
 import com.amvera.cli.config.AppProperties;
+import com.amvera.cli.dto.auth.AuthRequest;
+import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.dto.project.ATest;
+import com.amvera.cli.dto.project.ProjectListResponse;
+import com.amvera.cli.dto.project.ProjectRequest;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.config.Meta;
+import com.amvera.cli.dto.project.config.Toolchain;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
-import org.springframework.boot.SpringApplication;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,15 +26,27 @@ import org.springframework.shell.jline.PromptProvider;
 @CommandScan
 @EnableAspectJAutoProxy
 @EnableConfigurationProperties(AppProperties.class)
-//@RegisterReflectionForBinding({TokenResponse.class, ProjectResponse.class, ProjectListResponse.class})
+@RegisterReflectionForBinding(
+        {
+                AuthResponse.class,
+                AuthRequest.class,
+                ProjectResponse.class,
+                ProjectListResponse.class,
+                ProjectRequest.class,
+                ATest.class,
+                AmveraCLIApplication.class,
+                Meta.class,
+                Toolchain.class,
+                ProjectFlows.class,
+        }
+)
 public class AmveraCLIApplication {
 
     public static void main(String[] args) {
         new SpringApplicationBuilder()
                 .web(WebApplicationType.NONE)
                 .sources(AmveraCLIApplication.class)
-                        .run(args);
-//        SpringApplication.run(AmveraCLIApplication.class, args);
+                .run(args);
     }
 
     @Bean

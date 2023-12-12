@@ -1,0 +1,42 @@
+package com.amvera.cli.utils;
+
+public enum ProjectTariff {
+    TRY("Пробный"),
+    BEGINNER("Начальный"),
+    BEGINNER_PLUS("Начальный Плюс"),
+    STANDARD("Стандартный"),
+    ULTRA("Ультра");
+
+    private final String title;
+
+    ProjectTariff(String title) {
+        this.title = title;
+    }
+
+    public String title() {
+        return this.title;
+    }
+
+    public static int value(String title) {
+        switch (title) {
+            case "Пробный" -> {
+                return  4;
+            }
+            case "Начальный" -> {
+                return  1;
+            }
+            case "Начальный Плюс" -> {
+                return  5;
+            }
+            case "Стандартный" -> {
+                return  2;
+            }
+            case "Ультра" -> {
+                return  3;
+            }
+            default -> {
+                return 0;
+            }
+        }
+    }
+}

@@ -1,6 +1,5 @@
 package com.amvera.cli.config;
 
-//import com.amvera.cli.custom.HelpTest;
 import com.amvera.cli.style.CustomThemeSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

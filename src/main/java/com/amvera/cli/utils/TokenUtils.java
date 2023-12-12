@@ -10,10 +10,12 @@ public class TokenUtils {
 
     private static final String FILE_NAME = "./token.txt";
 
-    public static void saveResponseToken(String token) throws IOException {
+    public static void saveResponseToken(String token) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(FILE_NAME)) {
             fileOutputStream.write(token.getBytes());
             System.out.println("FILE CREATED");
+        } catch (IOException e) {
+            System.out.println("Ошибка записи токена");
         }
     }
 

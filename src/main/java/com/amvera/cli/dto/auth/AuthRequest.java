@@ -1,9 +1,11 @@
 package com.amvera.cli.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+@RegisterReflectionForBinding
 public class AuthRequest {
 
     @JsonProperty("client_id")
@@ -17,8 +19,8 @@ public class AuthRequest {
 
     public AuthRequest(String clientId, String username, String password) {
         this.clientId = clientId;
-        this.username = username;
-        this.password = password;
+        this.username = username.trim();
+        this.password = password.trim();
         this.grantType = "password";
     }
 

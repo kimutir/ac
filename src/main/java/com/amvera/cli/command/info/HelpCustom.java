@@ -70,7 +70,7 @@ public class HelpCustom extends AbstractShellComponent
                     }
                 });
 
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder().append("\n");
         toPrint
                 .forEach((k, v) -> {
                     String group = (new AttributedStringBuilder()).append(k, AttributedStyle.DEFAULT.bold().italic()).toAnsi();
