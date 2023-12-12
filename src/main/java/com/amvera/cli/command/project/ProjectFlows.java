@@ -1,7 +1,9 @@
 package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import com.amvera.cli.utils.Environment;
+import com.amvera.cli.utils.StringToConfigParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
@@ -17,21 +19,42 @@ public class ProjectFlows {
         this.componentFlowBuilder = componentFlowBuilder;
     }
 
-    public void pythonFlow(AmveraConfiguration configuration) {
-        ComponentFlow.ComponentFlowResult meta = componentFlowBuilder.clone().reset()
-                .withSingleItemSelector("instrument")
+    public AmveraConfiguration createConfig(Environment env) throws JsonProcessingException {
+
+        switch (env) {
+            case JVM -> {
+                return jvmFlow();
+            }
+            case PYTHON -> {
+                return pythonFlow();
+            }
+            case NODE -> {
+                return nodeFlow();
+            }
+            case DOCKER -> {
+//                return dockerFlow();
+                return null;
+            }
+            case DB -> {
+//                return dbFlow();
+                return null;
+            }
+        }
+
+        // todo: throw unknown env exception
+        return null;
+    }
+
+    private AmveraConfiguration pythonFlow() {
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withSingleItemSelector("name")
                 .name("Выберите инструмент:")
                 .selectItems(ProjectComponents.instrumentPython)
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setName(ctx.get("instrument")))
                 .and()
                 .withStringInput("version")
                 .name("Версия:")
                 .defaultValue("3.8")
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setVersion(ctx.get("version")))
                 .and()
-                .build().run();
-
-        ComponentFlow.ComponentFlowResult run = componentFlowBuilder.clone().reset()
                 .withStringInput("scriptName")
                 .name("Скрипт:")
                 .defaultValue("app.py")
@@ -44,41 +67,40 @@ public class ProjectFlows {
                 .name("Порт:")
                 .defaultValue("80")
                 .and()
-                .build().run();
-
-        ComponentFlow.ComponentFlowResult build = componentFlowBuilder.clone().reset()
                 .withStringInput("requirementsPath")
                 .name("Путь до requirements.txt:")
                 .defaultValue("requirements.txt")
                 .and()
-                .build().run();
+                .build()
+                .run().getContext();
 
-        run.getContext().stream().forEach((i) -> configuration.getRun().put((String) i.getKey(), i.getValue()));
-        build.getContext().stream().forEach((i) -> configuration.getBuild().put((String) i.getKey(), i.getValue()));
+        AmveraConfiguration config = new StringToConfigParser().parse(context);
+        config.getMeta().setEnvironment("python");
+
+        return config;
     }
 
-    /*
-
-     */
-
-    public void jvmFlow(AmveraConfiguration configuration) {
-        ComponentFlow.ComponentFlowResult meta = componentFlowBuilder.clone().reset()
-                .withSingleItemSelector("instrument")
+    private AmveraConfiguration jvmFlow() {
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withSingleItemSelector("name")
                 .name("Выберите инструмент:")
                 .selectItems(ProjectComponents.instrumentJVM)
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setName(ctx.get("instrument")))
                 .and()
                 .withStringInput("version")
                 .name("Версия:")
                 .defaultValue("11")
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setVersion(ctx.get("version")))
                 .and()
-                .build().run();
-
-        ComponentFlow.ComponentFlowResult run = componentFlowBuilder.clone().reset()
                 .withStringInput("jarName")
                 .name("jarName:")
                 .defaultValue("main.jar")
+                .and()
+                .withStringInput("artifacts-key")
+                .name("Artifacts key:")
+                .defaultValue("build/libs/*.jar")
+                .and()
+                .withStringInput("artifacts-value")
+                .name("Artifacts value:")
+                .defaultValue("/")
                 .and()
                 .withStringInput("persistenceMount")
                 .name("Дата:")
@@ -88,42 +110,35 @@ public class ProjectFlows {
                 .name("Порт:")
                 .defaultValue("80")
                 .and()
-                .build().run();
+                .build()
+                .run()
+                .getContext();
 
-        ComponentFlow.ComponentFlowResult build = componentFlowBuilder.clone().reset()
-                .withStringInput("artifacts-key")
-                .name("Artifacts key:")
-                .defaultValue("build/libs/*.jar")
-                .and()
-                .withStringInput("artifacts-value")
-                .name("Artifacts value:")
-                .defaultValue("/")
-                .and()
-                .build().run();
+        AmveraConfiguration config = new StringToConfigParser().parse(context);
+        config.getMeta().setEnvironment(Environment.JVM.name().toLowerCase());
 
-        run.getContext().stream().forEach((i) -> configuration.getRun().put((String) i.getKey(), i.getValue()));
-        String key = build.getContext().get("artifacts-key");
-        String value = build.getContext().get("artifacts-value");
-
-        configuration.getBuild().put(key, value);
+        return config;
     }
 
-    public void nodeFlow(AmveraConfiguration configuration) {
-        ComponentFlow.ComponentFlowResult meta = componentFlowBuilder.clone().reset()
-                .withSingleItemSelector("instrument")
+    private AmveraConfiguration nodeFlow() {
+        ComponentContext<?> context;
+
+        ComponentContext<?> meta = componentFlowBuilder.clone().reset()
+                .withSingleItemSelector("name")
                 .name("Выберите инструмент:")
                 .selectItems(ProjectComponents.instrumentNode)
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setName(ctx.get("instrument")))
                 .and()
                 .withStringInput("version")
                 .name("Версия:")
                 .defaultValue("18")
-                .postHandler(ctx -> configuration.getMeta().getToolchain().setVersion(ctx.get("version")))
                 .and()
-                .build().run();
+                .build().run().getContext();
 
-        if (meta.getContext().get("instrument").equals("browser")) {
-            ComponentFlow.ComponentFlowResult buildBrowser = componentFlowBuilder.clone().reset()
+        String name = meta.get("name");
+        String version = meta.get("version");
+
+        if (name.equals("browser")) {
+            context = componentFlowBuilder.clone().reset()
                     .withStringInput("artifacts-key")
                     .name("Artifacts key:")
                     .defaultValue("build/libs/*.jar")
@@ -134,43 +149,59 @@ public class ProjectFlows {
                     .withStringInput("additionalCommands")
                     .name("additionalCommands:")
                     .and()
-                    .build().run();
-
-            ComponentContext<?> context = buildBrowser.getContext();
-
-            String key = context.get("artifacts-key");
-            String value = context.get("artifacts-value");
-
-//            if (context.containsKey("additionalCommands")) {
-//                System.out.println("contains");
-////                configuration.getBuild().put("additionalCommands", ((String) context.get("additionalCommands")).trim());
-//            } else {
-//                System.out.println("doesnt");
-//            }
-            System.out.println(context.stream().toList());
-            Object o = context.get("additionalCommands");
-            configuration.getBuild().put(key.trim(), value.trim());
+                    .build().run().getContext();
+        } else {
+            context = componentFlowBuilder.clone().reset()
+                    .withConfirmationInput("skip")
+                    .name("Skip Build:")
+                    .defaultValue(false)
+                    .and()
+                    .withStringInput("artifacts-key")
+                    .name("Artifacts key:")
+                    .defaultValue("*")
+                    .and()
+                    .withStringInput("artifacts-value")
+                    .name("Artifacts value:")
+                    .defaultValue("/")
+                    .and()
+                    .withStringInput("additionalCommands")
+                    .name("additionalCommands:")
+                    .and()
+                    .withStringInput("scriptName")
+                    .name("Script name:")
+                    .defaultValue("index.js")
+                    .and()
+                    .withStringInput("scriptArgument")
+                    .name("Script arguments:")
+                    .and()
+                    .withStringInput("nodeArguments")
+                    .name("Node arguments:")
+                    .and()
+                    .withStringInput("command")
+                    .name("Command:")
+                    .defaultValue("npm run start")
+                    .and()
+                    .withStringInput("persistenceMount")
+                    .name("Дата:")
+                    .defaultValue("/data")
+                    .and()
+                    .withStringInput("containerPort")
+                    .name("Порт:")
+                    .defaultValue("80")
+                    .and()
+                    .build().run().getContext();
         }
 
-//        ComponentFlow.ComponentFlowResult runNPM = componentFlowBuilder.clone().reset()
-//                .withStringInput("jarName")
-//                .name("jarName:")
-//                .defaultValue("main.jar")
-//                .and()
-//                .withStringInput("persistenceMount")
-//                .name("Дата:")
-//                .defaultValue("/data")
-//                .and()
-//                .withStringInput("containerPort")
-//                .name("Порт:")
-//                .defaultValue("80")
-//                .and()
-//                .build().run();
-//
-//
-//
-//        run.getContext().stream().forEach((i) -> configuration.getRun().put((String) i.getKey(), i.getValue()));
+        context.put("version", version);
+        context.put("name", name);
 
+        Boolean skip = context.get("skip");
+        System.out.println("skip " + skip);
+
+        AmveraConfiguration config = new StringToConfigParser().parse(context);
+        config.getMeta().setEnvironment(Environment.NODE.name().toLowerCase());
+
+        return config;
     }
 
 

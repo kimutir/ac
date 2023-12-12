@@ -13,12 +13,13 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AmveraConfiguration {
     private Meta meta = new Meta();
-    private Map<String, Object> build = new HashMap<>();
+    private Map<String, Object> build = new HashMap<>(Map.of("artifacts", new HashMap<String, String>()));
     private Map<String, Object> run = new HashMap<>();
 
     public Meta getMeta() {
         return meta;
     }
+
     @JsonSetter(nulls = Nulls.SKIP)
     public void setMeta(Meta meta) {
         this.meta = meta;
@@ -27,6 +28,7 @@ public class AmveraConfiguration {
     public Map<String, Object> getBuild() {
         return build;
     }
+
     @JsonSetter(nulls = Nulls.SKIP)
     public void setBuild(Map<String, Object> build) {
         this.build = build;
@@ -35,6 +37,7 @@ public class AmveraConfiguration {
     public Map<String, Object> getRun() {
         return run;
     }
+
     @JsonSetter(nulls = Nulls.SKIP)
     public void setRun(Map<String, Object> run) {
         this.run = run;

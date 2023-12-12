@@ -60,7 +60,7 @@ public class ProjectService {
         return test;
     }
 
-    public String createProject(AmveraConfiguration body, String slug) {
+    public void createProject(AmveraConfiguration body, String slug) {
         String url = String.format("https://api.staging.amvera.ru/projects/%s/config?slug=%s", slug, slug);
 
         String token = TokenUtils.readResponseToken();
@@ -69,13 +69,11 @@ public class ProjectService {
         headers.setBearerAuth(token);
         HttpEntity<AmveraConfiguration> entity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-        System.out.println(body.getMeta());
-        System.out.println(response.getBody());
+
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            return "Something went wrong. Try again later.";
+            // todo: throw exception
         }
 
-        return "Project was created successfully.";
     }
 
 }

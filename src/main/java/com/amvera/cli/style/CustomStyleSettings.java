@@ -6,6 +6,7 @@ import org.springframework.shell.style.StyleSettings;
  * Class for customization default styles.
  */
 public class CustomStyleSettings extends StyleSettings {
+    public  String def() {return "fg-rgb:#FFA500";}
     @Override
     public String value() {
         return "default";

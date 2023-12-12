@@ -7,25 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class ProjectComponents {
-    public static final Map<String, String> tariff = new LinkedHashMap<>();
-
-    static {
-        tariff.put("1.Пробный", ProjectTariff.TRY.title());
-        tariff.put("2.Начальный", ProjectTariff.BEGINNER.title());
-        tariff.put("3.Начальный Плюс", ProjectTariff.BEGINNER_PLUS.title());
-        tariff.put("4.Стандартный", ProjectTariff.STANDARD.title());
-        tariff.put("5.Ультра", ProjectTariff.ULTRA.title());
-    }
-
-    public static final Map<String, String> environment = new HashMap<>(
-            Map.of(
-                    "Python", "python",
-                    "Java/Kotlin", "jvm",
-                    "Node", "node",
-                    "Docker", "docker",
-                    "DB", "db"
-            )
-    );
 
     public static final Map<String, String> instrumentJVM = new HashMap<>(
             Map.of(

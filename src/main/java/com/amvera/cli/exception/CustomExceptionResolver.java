@@ -40,15 +40,15 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             return CommandHandlingResult.of("Format exception", 1);
         }
         //todo: add descriptions
-        if (e instanceof HttpClientErrorException) {
-            if (((HttpClientErrorException) e).getStatusCode().value() == 401) {
-                String message = new AttributedString(
-                        "Unauthorized",
-                        AttributedStyle.DEFAULT.foreground(PromptColor.RED.toJlineAttributedStyle())).toAnsi();
-                return CommandHandlingResult.of(message, 1);
-            }
-            return CommandHandlingResult.of("", 1);
-        }
+//        if (e instanceof HttpClientErrorException) {
+//            if (((HttpClientErrorException) e).getStatusCode().value() == 401) {
+//                String message = new AttributedString(
+//                        "Unauthorized",
+//                        AttributedStyle.DEFAULT.foreground(PromptColor.RED.toJlineAttributedStyle())).toAnsi();
+//                return CommandHandlingResult.of(message, 1);
+//            }
+//            return CommandHandlingResult.of("", 1);
+//        }
         return null;
     }
 }

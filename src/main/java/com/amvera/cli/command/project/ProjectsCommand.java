@@ -2,6 +2,7 @@ package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.ProjectService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.context.InteractionMode;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -15,9 +16,9 @@ import static org.springframework.shell.table.CellMatchers.at;
 
 @ShellComponent
 public class ProjectsCommand {
-
     private final ProjectService projectService;
 
+    @Autowired
     public ProjectsCommand(ProjectService projectService) {
         this.projectService = projectService;
     }
