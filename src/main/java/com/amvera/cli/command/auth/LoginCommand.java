@@ -2,10 +2,9 @@ package com.amvera.cli.command.auth;
 
 import com.amvera.cli.service.AuthService;
 import com.amvera.cli.utils.ShellHelper;
-import org.jline.terminal.Attributes;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
-import org.jline.utils.NonBlockingReader;
-import org.springframework.cglib.core.Local;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.context.InteractionMode;
@@ -16,7 +15,6 @@ import org.springframework.shell.standard.AbstractShellComponent;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Locale;
 
 @ShellComponent
 public class LoginCommand extends AbstractShellComponent {
@@ -25,6 +23,7 @@ public class LoginCommand extends AbstractShellComponent {
     private final AuthService authService;
     private final ShellHelper helper;
     private final Terminal terminal;
+
 
     public LoginCommand(ComponentFlow.Builder componentFlowBuilder, AuthService authService, ShellHelper helper, Terminal terminal) {
         this.componentFlowBuilder = componentFlowBuilder;
@@ -51,20 +50,31 @@ public class LoginCommand extends AbstractShellComponent {
             ) String password
     ) throws IOException {
 
-        String value = System.console().readLine("Enter value for --интер: " );
-        System.out.println(value);
-        String ru = System.console().readLine("Enter value for --интер: ");
-        System.out.println("sout" + ru);
-        helper.print("terminal" + ru);
+//        BufferedReader br = new BufferedReader( new InputStreamReader(System.in, "UTF-8") );
+//        String nextInputLine = br.readLine();
+//        System.out.println("buffer: " + nextInputLine);
+//
+//        System.out.println("encoding: " + terminal.encoding().name());
+//
+//        String value = System.console().readLine("Enter value for --интер: ");
+//        System.out.println(value);
+//        String ru = System.console().readLine("Enter value for --интер: ");
+//        System.out.println("sout" + ru);
+//        helper.print("terminal" + ru);
 
-        StringInput stringInput = new StringInput(terminal, "input", "дефолт");
+        System.out.println("print");
+        String s = new LineReaderImpl(terminal).readLine();
+        System.out.println("s: " + s);
+
+        StringInput stringInput = new StringInput(terminal, "input", "default");
         stringInput.setResourceLoader(getResourceLoader());
-        stringInput.addPreRunHandler(ctx -> {
-            String result = ctx.getResultValue();
-            System.out.println(result);
-        });
         stringInput.setTemplateExecutor(getTemplateExecutor());
-        stringInput.run(StringInput.StringInputContext.empty());
+        StringInput.StringInputContext input = stringInput.run(StringInput.StringInputContext.empty());
+
+        String string = input.getResultValue();
+
+        System.out.println(string);
+
 //        user = "kimutir@gmail.com";
 //        password = "Ch3sh1r3";
         try {

@@ -26,9 +26,9 @@ shell:
     success: "GREEN"
     warning: "YELLOW"
     error: "RED"
-logging:
-  level:
-    root: off
+#logging:
+#  level:
+#    root: off
 
 amvera:
   keycloak-client: "amvera-cli"
