@@ -2,6 +2,7 @@ package com.amvera.cli;
 
 import com.amvera.cli.command.project.ProjectFlows;
 import com.amvera.cli.config.AppProperties;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
 import com.amvera.cli.dto.project.ATest;
@@ -25,7 +26,7 @@ import org.springframework.shell.jline.PromptProvider;
 @SpringBootApplication
 @CommandScan
 @EnableAspectJAutoProxy
-@EnableConfigurationProperties(AppProperties.class)
+@EnableConfigurationProperties({AppProperties.class, Endpoints.class})
 @RegisterReflectionForBinding(
         {
                 AuthResponse.class,

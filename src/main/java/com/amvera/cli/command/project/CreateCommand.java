@@ -15,10 +15,9 @@ import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.shell.table.*;
 
 @ShellComponent
-public class CreateProjectCommand extends AbstractShellComponent {
+public class CreateCommand extends AbstractShellComponent {
     private final ComponentFlow.Builder componentFlowBuilder;
     private final ProjectService projectService;
     private final ObjectMapper mapper;
@@ -28,7 +27,7 @@ public class CreateProjectCommand extends AbstractShellComponent {
     private final SelectorCreator selectorCreator;
 
     @Autowired
-    public CreateProjectCommand(
+    public CreateCommand(
             ComponentFlow.Builder componentFlowBuilder,
             ProjectService projectService,
             ObjectMapper mapper,

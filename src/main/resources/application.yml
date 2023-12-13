@@ -32,3 +32,6 @@ logging:
 
 amvera:
   keycloak-client: "amvera-cli"
+endpoints:
+  projects: https://api.staging.amvera.ru/projects
+  auth: https://id.staging.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/token

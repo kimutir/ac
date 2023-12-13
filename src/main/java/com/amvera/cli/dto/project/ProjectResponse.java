@@ -23,20 +23,20 @@ public class ProjectResponse {
      * "deactivated":null
      */
     private Integer id;
+    private String ownerName;
     private String name;
     private String status;
+    private String slug;
+    private String statusMessage;
     private Integer requiredInstances;
     private Integer instances;
 
-    public String[] toArray() {
-        String[] arr = new String[5];
-        arr[0] = id.toString();
-        arr[1] = name;
-        arr[2] = status;
-        arr[3] = requiredInstances.toString();
-        arr[4] = instances.toString();
+    public String getStatusMessage() {
+        return statusMessage;
+    }
 
-        return arr;
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
     }
 
     public int getId() {
@@ -77,5 +77,21 @@ public class ProjectResponse {
 
     public void setInstances(Integer instances) {
         this.instances = instances;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 }

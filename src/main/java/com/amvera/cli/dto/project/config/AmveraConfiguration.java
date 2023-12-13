@@ -1,19 +1,18 @@
 package com.amvera.cli.dto.project.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.annotation.*;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RegisterReflectionForBinding
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AmveraConfiguration {
     private Meta meta = new Meta();
-    private Map<String, Object> build = new HashMap<>(Map.of("artifacts", new HashMap<String, String>()));
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private Map<String, Object> build = new HashMap<>();
     private Map<String, Object> run = new HashMap<>();
 
     public Meta getMeta() {

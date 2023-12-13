@@ -1,5 +1,7 @@
 package com.amvera.cli.service;
 
+import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.ATest;
 import com.amvera.cli.dto.project.ProjectListResponse;
 import com.amvera.cli.dto.project.ProjectRequest;
@@ -18,16 +20,18 @@ import java.util.List;
 @Service
 public class ProjectService {
 
+    private final Endpoints endpoints;
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
 
     @Autowired
-    public ProjectService(RestTemplate restTemplate, ObjectMapper mapper) {
+    public ProjectService(Endpoints endpoints, RestTemplate restTemplate, ObjectMapper mapper) {
+        this.endpoints = endpoints;
         this.restTemplate = restTemplate;
         this.mapper = mapper;
     }
 
-    public List<ProjectResponse> getProjects()  {
+    public List<ProjectResponse> getProjects() {
         String projectsUrl = "https://api.staging.amvera.ru/projects";
         String token = TokenUtils.readResponseToken();
         HttpHeaders projectsHeaders = new HttpHeaders();
@@ -48,20 +52,19 @@ public class ProjectService {
 
     public ATest createProject(String name, Integer tariff) throws JsonProcessingException {
         ProjectRequest body = new ProjectRequest(name, tariff);
-        String url = "https://api.staging.amvera.ru/projects";
         String token = TokenUtils.readResponseToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
 
         HttpEntity<ProjectRequest> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity(endpoints.projects(), entity, String.class);
         ATest test = mapper.readValue(response.getBody(), ATest.class);
         return test;
     }
 
-    public void createProject(AmveraConfiguration body, String slug) {
-        String url = String.format("https://api.staging.amvera.ru/projects/%s/config?slug=%s", slug, slug);
+    public String createProject(AmveraConfiguration body, String slug) {
+        String url = String.format(endpoints.projects() + "/%s/config?slug=%s", slug, slug);
 
         String token = TokenUtils.readResponseToken();
         HttpHeaders headers = new HttpHeaders();
@@ -74,6 +77,26 @@ public class ProjectService {
             // todo: throw exception
         }
 
+        return "Project created";
+    }
+
+    public TariffGetResponse getTariff(String slug) {
+        String url = String.format(endpoints.projects() + "/%s/tariff", slug);
+        String token = TokenUtils.readResponseToken();
+        HttpHeaders projectsHeaders = new HttpHeaders();
+        projectsHeaders.setContentType(MediaType.APPLICATION_JSON);
+        projectsHeaders.setBearerAuth(token);
+        HttpEntity<Object> projectsEntity = new HttpEntity<>(projectsHeaders);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, projectsEntity, String.class);
+        TariffGetResponse tariff;
+
+        try {
+            tariff = mapper.readValue(response.getBody(), TariffGetResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return tariff;
     }
 
 }

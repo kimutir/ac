@@ -32,12 +32,10 @@ public class ProjectFlows {
                 return nodeFlow();
             }
             case DOCKER -> {
-//                return dockerFlow();
-                return null;
+                return dockerFlow();
             }
             case DB -> {
-//                return dbFlow();
-                return null;
+                return dbFlow();
             }
         }
 
@@ -74,10 +72,9 @@ public class ProjectFlows {
                 .build()
                 .run().getContext();
 
-        AmveraConfiguration config = new StringToConfigParser().parse(context);
-        config.getMeta().setEnvironment("python");
+        context.put("environment", Environment.PYTHON.name().toLowerCase());
 
-        return config;
+        return new StringToConfigParser().parse(context);
     }
 
     private AmveraConfiguration jvmFlow() {
@@ -114,10 +111,9 @@ public class ProjectFlows {
                 .run()
                 .getContext();
 
-        AmveraConfiguration config = new StringToConfigParser().parse(context);
-        config.getMeta().setEnvironment(Environment.JVM.name().toLowerCase());
+        context.put("environment", Environment.JVM.name().toLowerCase());
 
-        return config;
+        return new StringToConfigParser().parse(context);
     }
 
     private AmveraConfiguration nodeFlow() {
@@ -194,15 +190,66 @@ public class ProjectFlows {
 
         context.put("version", version);
         context.put("name", name);
+        context.put("environment", Environment.NODE.name().toLowerCase());
 
-        Boolean skip = context.get("skip");
-        System.out.println("skip " + skip);
-
-        AmveraConfiguration config = new StringToConfigParser().parse(context);
-        config.getMeta().setEnvironment(Environment.NODE.name().toLowerCase());
-
-        return config;
+        return new StringToConfigParser().parse(context);
     }
 
+    private AmveraConfiguration dockerFlow() {
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withSingleItemSelector("name")
+                .name("Выберите инструмент:")
+                .selectItems(ProjectComponents.instrumentDocker)
+                .and()
+                .withStringInput("dockerfile")
+                .name("Dockerfile path:")
+                .defaultValue("Dockerfile")
+                .and()
+                .withConfirmationInput("skip")
+                .name("Skip Build:")
+                .defaultValue(false)
+                .and()
+                .withStringInput("image")
+                .name("Image:")
+                .and()
+                .withStringInput("command")
+                .name("Command:")
+                .and()
+                .withStringInput("args")
+                .name("Arguments:")
+                .and()
+                .withStringInput("persistenceMount")
+                .name("Дата:")
+                .defaultValue("/data")
+                .and()
+                .withStringInput("containerPort")
+                .name("Порт:")
+                .defaultValue("80")
+                .and()
+                .build()
+                .run().getContext();
+
+        context.put("environment", Environment.DOCKER.name().toLowerCase());
+
+        return new StringToConfigParser().parse(context);
+    }
+
+    private AmveraConfiguration dbFlow() {
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withSingleItemSelector("name")
+                .name("Выберите инструмент:")
+                .selectItems(ProjectComponents.instrumentDB)
+                .and()
+                .withStringInput("version")
+                .name("Версия:")
+                .defaultValue("18")
+                .and()
+                .build()
+                .run().getContext();
+
+        context.put("environment", Environment.DOCKER.name().toLowerCase());
+
+        return new StringToConfigParser().parse(context);
+    }
 
 }

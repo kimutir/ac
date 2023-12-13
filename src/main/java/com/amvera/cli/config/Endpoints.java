@@ -1,2 +1,10 @@
-package com.amvera.cli.config;public class Endpoints {
+package com.amvera.cli.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "endpoints")
+public record Endpoints(
+        String projects,
+        String auth
+) {
 }

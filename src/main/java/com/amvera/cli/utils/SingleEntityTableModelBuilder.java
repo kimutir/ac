@@ -9,8 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SingleEntityTableModelBuilder {
-    private ObjectMapper objectMapper;
-    private Object bean;
+    private final ObjectMapper objectMapper;
+    private final Object bean;
     private LinkedHashMap<String, Object> labels;
     private String[] header;
 
