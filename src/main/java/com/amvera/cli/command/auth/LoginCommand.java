@@ -3,8 +3,12 @@ package com.amvera.cli.command.auth;
 import com.amvera.cli.service.AuthService;
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.MaskingCallback;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.springframework.shell.component.StringInput;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.context.InteractionMode;
@@ -63,7 +67,7 @@ public class LoginCommand extends AbstractShellComponent {
 //        helper.print("terminal" + ru);
 
         System.out.println("print");
-        String s = new LineReaderImpl(terminal).readLine();
+        String s = new LineReaderImpl(terminal).readLine("Название проекта: ", null, new TestMask(), null);
         System.out.println("s: " + s);
 
         StringInput stringInput = new StringInput(terminal, "input", "default");
@@ -113,6 +117,24 @@ public class LoginCommand extends AbstractShellComponent {
         authService.login(user, password);
 
         return "Authorized successfully!";
+    }
+
+    static class TestMask implements MaskingCallback {
+
+        @Override
+        public String display(String line) {
+
+            if (line == null || line.isBlank()) {
+                return "<enter value>";
+            }
+
+            return line;
+        }
+
+        @Override
+        public String history(String line) {
+            return null;
+        }
     }
 
 }
