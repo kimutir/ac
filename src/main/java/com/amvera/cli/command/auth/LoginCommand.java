@@ -68,7 +68,8 @@ public class LoginCommand extends AbstractShellComponent {
 
         System.out.println("print");
         String s = new LineReaderImpl(terminal).readLine("Название проекта: ", null, new TestMask(), null);
-        System.out.println("s: " + s);
+        System.out.println("sout: " + s);
+        helper.print(s);
 
         StringInput stringInput = new StringInput(terminal, "input", "default");
         stringInput.setResourceLoader(getResourceLoader());
