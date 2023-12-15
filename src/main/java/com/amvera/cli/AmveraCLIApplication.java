@@ -5,10 +5,9 @@ import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
-import com.amvera.cli.dto.project.ATest;
-import com.amvera.cli.dto.project.ProjectListResponse;
-import com.amvera.cli.dto.project.ProjectRequest;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.billing.BalanceGetResponse;
+import com.amvera.cli.dto.billing.TariffGetResponse;
+import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.Meta;
 import com.amvera.cli.dto.project.config.Toolchain;
 import org.jline.utils.AttributedString;
@@ -39,6 +38,14 @@ import org.springframework.shell.jline.PromptProvider;
                 Meta.class,
                 Toolchain.class,
                 ProjectFlows.class,
+                LogGetResponse.class,
+                BalanceGetResponse.class,
+                TariffGetResponse.class,
+                EnvDTO.class,
+                EnvListGetResponse.class,
+                EnvPostRequest.class,
+                EnvPutRequest.class,
+                ScalePostRequest.class
         }
 )
 public class AmveraCLIApplication {

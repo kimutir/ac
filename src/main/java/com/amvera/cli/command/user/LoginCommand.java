@@ -61,6 +61,9 @@ public class LoginCommand extends AbstractShellComponent {
         String u = input.defaultInput("Username: ");
         String p = input.secretInput("Password: ");
 
+        helper.println("введено: " + u);
+        helper.println("введено: " + p);
+
         System.out.println(u + " " + p);
 
         user = "kimutir@gmail.com";

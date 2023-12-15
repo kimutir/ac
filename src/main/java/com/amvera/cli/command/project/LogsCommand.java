@@ -14,6 +14,9 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -41,7 +44,9 @@ public class LogsCommand {
         if (limit > 1000) limit = 1000;
         if (limit < 1) limit = 50;
 
-        if (type == null || type.equalsIgnoreCase("build") || type.equalsIgnoreCase("run")) {
+        List<String> availableTypes = new ArrayList<>(List.of("run", "build"));
+
+        if (type == null || !availableTypes.contains(type.trim().toLowerCase())) {
             return;
         }
 
@@ -53,7 +58,10 @@ public class LogsCommand {
         ExitThread exitThread = new ExitThread();
         exitThread.start();
 
-        String logs = projectService.logs(project, type, limit).stream().map(LogGetResponse::content).collect(Collectors.joining("\n"));
+        List<String> logsList = new ArrayList<>(projectService.logs(project, type, limit).stream().map(LogGetResponse::content).toList());
+        Collections.reverse(logsList);
+        String logs = String.join("\n", logsList);
+
 
         //todo: kill process when exception from request!!
         helper.println(logs);
