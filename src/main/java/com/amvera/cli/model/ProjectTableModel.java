@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({"id", "name", "slug", "status", "status message", "requires instances", "instances", "git clone", "git remote", "domain", "url"})
-public class ProjectFullInfo {
+public class ProjectTableModel {
     private String git = "https://git.amvera.ru/";
     private String ownerName;
     private Integer id;
@@ -25,7 +25,7 @@ public class ProjectFullInfo {
     private String domain;
     private String url;
 
-    public ProjectFullInfo(ProjectResponse p, String tariff) {
+    public ProjectTableModel(ProjectResponse p, String tariff) {
         this.ownerName = p.getOwnerName();
         this.id = p.getId();
         this.name = p.getName();

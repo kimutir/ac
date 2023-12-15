@@ -1,7 +1,5 @@
 package com.amvera.cli.command.project;
 
-import com.amvera.cli.utils.ProjectTariff;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;

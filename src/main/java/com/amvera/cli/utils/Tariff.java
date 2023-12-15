@@ -1,6 +1,6 @@
 package com.amvera.cli.utils;
 
-public enum ProjectTariff {
+public enum Tariff {
     TRY("Пробный"),
     BEGINNER("Начальный"),
     BEGINNER_PLUS("Начальный Плюс"),
@@ -9,7 +9,7 @@ public enum ProjectTariff {
 
     private final String title;
 
-    ProjectTariff(String title) {
+    Tariff(String title) {
         this.title = title;
     }
 

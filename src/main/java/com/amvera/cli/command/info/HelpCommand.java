@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ShellComponent
-public class HelpCustom extends AbstractShellComponent
+public class HelpCommand extends AbstractShellComponent
         implements Help.Command {
     private static final String SPACE = "    ";
     private final Terminal terminal;
     private final ShellHelper shellHelper;
 
-    public HelpCustom(Terminal terminal, ShellHelper shellHelper) {
+    public HelpCommand(Terminal terminal, ShellHelper shellHelper) {
         this.terminal = terminal;
         this.shellHelper = shellHelper;
     }

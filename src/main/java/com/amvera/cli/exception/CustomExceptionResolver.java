@@ -1,6 +1,7 @@
 package com.amvera.cli.exception;
 
 import com.amvera.cli.utils.PromptColor;
+import org.jline.reader.UserInterruptException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -11,6 +12,7 @@ import org.springframework.shell.command.CommandHandlingResult;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 
 /**
  * todo: how to turn off logs for native-image? *doesn't catch some exceptions
@@ -18,17 +20,13 @@ import java.io.IOException;
  */
 public class CustomExceptionResolver implements CommandExceptionResolver {
 
-//    private final ConfigurableApplicationContext application;
-//
-//    public CustomExceptionResolver(ConfigurableApplicationContext application) {
-//        super();
-//        this.application = application;
-//    }
-
     @Override
     public CommandHandlingResult resolve(Exception e) {
         if (e instanceof CustomException) {
             return CommandHandlingResult.of("Hi, handled exception\n", 42);
+        }
+        if (e instanceof InterruptedIOException) {
+            return CommandHandlingResult.of("iter exception", 0);
         }
         if (e instanceof IOException) {
             return CommandHandlingResult.of(" io exception", 0);
@@ -39,6 +37,12 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
         if (e instanceof NumberFormatException) {
             return CommandHandlingResult.of("Format exception", 1);
         }
+        if (e instanceof UserInterruptException) {
+            return CommandHandlingResult.of("user inter exception", 1);
+        }
+
+        System.out.println("SOMETHING HAPPENED");
+
         //todo: add descriptions
 //        if (e instanceof HttpClientErrorException) {
 //            if (((HttpClientErrorException) e).getStatusCode().value() == 401) {

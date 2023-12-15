@@ -10,17 +10,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class SelectorCreator extends AbstractShellComponent {
+public class AmveraSelector extends AbstractShellComponent {
 
-    private List<SelectorItem<String>> tariffs = Arrays.asList(
-            SelectorItem.of("Пробный", ProjectTariff.TRY.title()),
-            SelectorItem.of("Начальный", ProjectTariff.BEGINNER.title()),
-            SelectorItem.of("Начальный Плюс", ProjectTariff.BEGINNER_PLUS.title()),
-            SelectorItem.of("Стандартный", ProjectTariff.STANDARD.title()),
-            SelectorItem.of("Ультра", ProjectTariff.ULTRA.title())
+    private final List<SelectorItem<String>> tariffs = Arrays.asList(
+            SelectorItem.of("Пробный", Tariff.TRY.title()),
+            SelectorItem.of("Начальный", Tariff.BEGINNER.title()),
+            SelectorItem.of("Начальный Плюс", Tariff.BEGINNER_PLUS.title()),
+            SelectorItem.of("Стандартный", Tariff.STANDARD.title()),
+            SelectorItem.of("Ультра", Tariff.ULTRA.title())
     );
 
-    private List<SelectorItem<String>> envs = Arrays.asList(
+    private final List<SelectorItem<String>> envs = Arrays.asList(
             SelectorItem.of("Python", Environment.PYTHON.name()),
             SelectorItem.of("Java/Kotlin", Environment.JVM.name()),
             SelectorItem.of("Node", Environment.NODE.name()),
@@ -33,7 +33,7 @@ public class SelectorCreator extends AbstractShellComponent {
     }
 
     public int selectTariff() {
-        return ProjectTariff.value(single(tariffs, "Select tariff"));
+        return Tariff.value(single(tariffs, "Select tariff"));
     }
 
     public String single(List<SelectorItem<String>> items, String name) {

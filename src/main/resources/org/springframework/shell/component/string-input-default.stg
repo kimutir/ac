@@ -5,9 +5,9 @@ info(model) ::= <%
     <model.maskedInput>
   <else>
     <if(model.defaultValue)>
-      <("default: "); format="style-list-value"><model.defaultValue; format="style-list-value"><(""); format="style-value">
+      <("default: "); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <else>
-      <("<enter value>"); format="style-list-value"><model.defaultValue; format="style-list-value"><(""); format="style-value">
+      <("<enter value>"); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <endif>
   <endif>
 <else>
@@ -15,9 +15,9 @@ info(model) ::= <%
     <model.input>
   <else>
     <if(model.defaultValue)>
-      <("default: "); format="style-list-value"><model.defaultValue; format="style-list-value"><(""); format="style-value">
+      <("default: "); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <else>
-      <("<enter value>"); format="style-list-value"><model.defaultValue; format="style-list-value"><(""); format="style-value">
+      <("<enter value>"); format="style-value"><model.defaultValue; format="style-value"><(""); format="style-value">
     <endif>
   <endif>
 <endif>

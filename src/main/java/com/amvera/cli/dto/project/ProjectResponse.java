@@ -7,21 +7,6 @@ import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 @RegisterReflectionForBinding
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProjectResponse {
-    /**
-     * "id":10585,
-     * "ownerId":"6df2158f-c101-42a5-9793-b0d9829b7564",
-     * "ownerName":"kimutir",
-     * "name":"ds",
-     * "slug":"ds",
-     * "serviceType":"compute",
-     * "status":"EMPTY",
-     * "statusMessage":"",
-     * "requiredInstances":1,
-     * "instances":0,
-     * "active":true,
-     * "created":1701401943.912208000,
-     * "deactivated":null
-     */
     private Integer id;
     private String ownerName;
     private String name;

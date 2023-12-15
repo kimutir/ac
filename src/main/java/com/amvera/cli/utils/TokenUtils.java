@@ -13,7 +13,7 @@ public class TokenUtils {
     public static void saveResponseToken(String token) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(FILE_NAME)) {
             fileOutputStream.write(token.getBytes());
-            System.out.println("FILE CREATED");
+//            System.out.println("FILE CREATED");
         } catch (IOException e) {
             System.out.println("Ошибка записи токена");
         }
@@ -23,7 +23,7 @@ public class TokenUtils {
 
         try (FileInputStream fileInputStream = new FileInputStream(FILE_NAME)) {
             String token = new String(fileInputStream.readAllBytes(), StandardCharsets.UTF_8);
-            System.out.println("FILE READ");
+//            System.out.println("FILE READ");
             return token;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);

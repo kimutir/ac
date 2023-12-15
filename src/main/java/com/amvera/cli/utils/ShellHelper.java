@@ -59,6 +59,10 @@ public class ShellHelper {
      *
      * @param message message to print
      */
+    public void println(String message) {
+        println(message, null);
+    }
+
     public void print(String message) {
         print(message, null);
     }
@@ -69,7 +73,7 @@ public class ShellHelper {
      * @param message message to print
      */
     public void printSuccess(String message) {
-        print(message, PromptColor.valueOf(successColor));
+        println(message, PromptColor.valueOf(successColor));
     }
 
     /**
@@ -78,7 +82,7 @@ public class ShellHelper {
      * @param message message to print
      */
     public void printInfo(String message) {
-        print(message, PromptColor.valueOf(infoColor));
+        println(message, PromptColor.valueOf(infoColor));
     }
 
     /**
@@ -87,7 +91,7 @@ public class ShellHelper {
      * @param message message to print
      */
     public void printWarning(String message) {
-        print(message, PromptColor.valueOf(warningColor));
+        println(message, PromptColor.valueOf(warningColor));
     }
 
     /**
@@ -96,7 +100,7 @@ public class ShellHelper {
      * @param message message to print
      */
     public void printError(String message) {
-        print(message, PromptColor.valueOf(errorColor));
+        println(message, PromptColor.valueOf(errorColor));
     }
 
     /**
@@ -105,12 +109,21 @@ public class ShellHelper {
      * @param message message to print
      * @param color   (optional) prompt color
      */
-    public void print(String message, PromptColor color) {
+    public void println(String message, PromptColor color) {
         String toPrint = message;
         if (color != null) {
             toPrint = getColored(message, color);
         }
         terminal.writer().println(toPrint);
+        terminal.flush();
+    }
+
+    public void print(String message, PromptColor color) {
+        String toPrint = message;
+        if (color != null) {
+            toPrint = getColored(message, color);
+        }
+        terminal.writer().print(toPrint);
         terminal.flush();
     }
 

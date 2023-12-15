@@ -5,6 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "endpoints")
 public record Endpoints(
         String projects,
-        String auth
-) {
+        String auth,
+        String env,
+        String tariff,
+        String logs,
+        String balance,
+        String user) {
 }

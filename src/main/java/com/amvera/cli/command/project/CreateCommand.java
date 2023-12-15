@@ -23,8 +23,9 @@ public class CreateCommand extends AbstractShellComponent {
     private final ObjectMapper mapper;
     private final ProjectFlows projectFlows;
     private final ShellHelper helper;
-    private final TableCreator tableProducer;
-    private final SelectorCreator selectorCreator;
+    private final AmveraTable amveraTable;
+    private final AmveraSelector selector;
+    private final AmveraInput input;
 
     @Autowired
     public CreateCommand(
@@ -32,14 +33,17 @@ public class CreateCommand extends AbstractShellComponent {
             ProjectService projectService,
             ObjectMapper mapper,
             ProjectFlows projectFlows,
-            ShellHelper helper, TableCreator tableProducer, SelectorCreator selectorCreator) {
+            ShellHelper helper,
+            AmveraTable amveraTable,
+            AmveraSelector selector, AmveraInput input) {
         this.componentFlowBuilder = componentFlowBuilder;
         this.projectService = projectService;
         this.mapper = mapper;
         this.projectFlows = projectFlows;
         this.helper = helper;
-        this.tableProducer = tableProducer;
-        this.selectorCreator = selectorCreator;
+        this.amveraTable = amveraTable;
+        this.selector = selector;
+        this.input = input;
     }
 
     @RegisterReflectionForBinding(AmveraConfiguration.class)
@@ -49,36 +53,41 @@ public class CreateCommand extends AbstractShellComponent {
             interactionMode = InteractionMode.ALL
     )
     public String create(
-            @ShellOption(help = "To skip configuration amvera.yml", value = {"--empty", "-e"}) Boolean empty
+            @ShellOption(help = "Add configuration amvera.yml", value = {"--config", "-c"}) Boolean config
     ) throws JsonProcessingException {
 
-        ComponentFlow withoutConfiguration = componentFlowBuilder.clone().reset()
-                .withStringInput("name")
-                .name("Название проекта:")
-                .defaultValue("New project")
-                .and()
-                .build();
+//        ComponentFlow withoutConfiguration = componentFlowBuilder.clone().reset()
+//                .withStringInput("name")
+//                .name("Название проекта:")
+//                .defaultValue("New project")
+//                .and()
+//                .build();
+//
+//        ComponentContext<?> context = withoutConfiguration.run().getContext();
+//        int tariff = selector.selectTariff();
 
-        ComponentContext<?> context = withoutConfiguration.run().getContext();
-        int tariff = selectorCreator.selectTariff();
+//        String name = context.get("name");
+        String name = input.defaultInput("Название проекта: ");
 
-        String name = context.get("name");
-        ATest project = projectService.createProject(name, tariff);
-        String slug = project.slug();
-
-        // todo: add git links
-        // return table with project
-        if (empty) {
-            helper.print("Project created:");
-            return tableProducer.singleEntytiTable(project, mapper);
+        if (name == null || name.isBlank()) {
+            //todo: throw exception
         }
 
-        // Select environment for amvera.yml
-        Environment environment = selectorCreator.selectEnvironment();
-        // Create amvera.yml depending on selected environment
-        AmveraConfiguration configuration = projectFlows.createConfig(environment);
+        int tariff = selector.selectTariff();
+        ATest project = projectService.addConfig(name, tariff);
+        String slug = project.slug();
 
-        return projectService.createProject(configuration, slug);
+        // add amvera.yml
+        if (config) {
+            // Select environment for amvera.yml
+            Environment environment = selector.selectEnvironment();
+            // Create amvera.yml depending on selected environment
+            AmveraConfiguration configuration = projectFlows.createConfig(environment);
+            projectService.addConfig(configuration, slug);
+        }
+
+        helper.println("Project created:");
+        return amveraTable.singleEntityTable(project);
     }
 
 }
