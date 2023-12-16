@@ -3,11 +3,16 @@ package com.amvera.cli.command.project;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraInput;
+import org.springframework.shell.command.CommandRegistration;
+import org.springframework.shell.command.CommandRegistration.OptionArity;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
+import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-@ShellComponent
+@Command(group = "Project commands")
 public class DeleteCommand {
 
     private final ProjectService projectService;
@@ -18,14 +23,11 @@ public class DeleteCommand {
         this.input = input;
     }
 
-    @ShellMethod(
-            key = "delete",
-            value = "Delete project"
-    )
+    @Command(command = "delete", description = "Delete project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public String delete(
-            @ShellOption(value = {"-p", "--project"}, arity = 1, help = "Project id, name or slug") String project
+            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-
         ProjectResponse projectResponse = projectService.findBy(project);
         String name = projectResponse.getName();
 
@@ -34,7 +36,7 @@ public class DeleteCommand {
         String phrase = input.confirmInput("Enter to delete: ", confirmPhrase);
 
         if (phrase == null || phrase.isBlank()) {
-            // todo: throw exception
+            // todo: throw exception and exit
         }
 
         assert phrase != null;

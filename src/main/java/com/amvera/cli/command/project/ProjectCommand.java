@@ -6,53 +6,44 @@ import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
+import com.amvera.cli.service.TariffService;
 import com.amvera.cli.utils.AmveraTable;
 import com.amvera.cli.utils.Tariff;
 import com.amvera.cli.utils.ShellHelper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.context.InteractionMode;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
+import org.springframework.shell.command.CommandRegistration.OptionArity;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
+import org.springframework.shell.command.annotation.Option;
 
 import java.util.List;
 
-@ShellComponent
+@Command(group = "Project commands")
 public class ProjectCommand {
     private final ProjectService projectService;
+    private final TariffService tariffService;
     private final EnvironmentService envService;
     private final AmveraTable amveraTable;
-    private final ObjectMapper mapper;
     private final ShellHelper helper;
 
-    @Autowired
     public ProjectCommand(
             ProjectService projectService,
-            EnvironmentService envService,
+            TariffService tariffService, EnvironmentService envService,
             AmveraTable amveraTable,
-            ObjectMapper mapper,
-            ShellHelper helper) {
+            ShellHelper helper
+    ) {
         this.projectService = projectService;
+        this.tariffService = tariffService;
         this.envService = envService;
         this.amveraTable = amveraTable;
-        this.mapper = mapper;
         this.helper = helper;
     }
 
-    @ShellMethod(
-            value = "Get list of projects or single project",
-            key = "project",
-            interactionMode = InteractionMode.ALL
-    )
+    @Command(command = "project", description = "Get list of projects or single project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     // todo: org.springframework.core.convert.ConversionFailedException
     public String project(
-            @ShellOption(
-                    defaultValue = ShellOption.NULL,
-                    arity = 1,
-                    help = "Project id, name or slug",
-                    value = {"-p", "--project"}) String project,
-            @ShellOption(value = {"-e", "--env"}, help = "Returns project environments") Boolean env
+            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String project,
+            @Option(longNames = "env", shortNames = 'e', description = "Returns project environments") Boolean env
     ) {
         List<ProjectResponse> projects = projectService.getProjects();
 
@@ -64,7 +55,7 @@ public class ProjectCommand {
             if (projects.isEmpty()) return "Project was not found.";
 
             ProjectResponse singleProject = projects.getFirst();
-            TariffGetResponse tariff = projectService.getTariff(singleProject.getSlug());
+            TariffGetResponse tariff = tariffService.getTariff(singleProject.getSlug());
 
             String projectTable = amveraTable.singleEntityTable(new ProjectTableModel(singleProject, Tariff.value(tariff.id())));
 
@@ -83,9 +74,5 @@ public class ProjectCommand {
         // return all found projects
         return amveraTable.projects(projects);
     }
-
-
-
-
 
 }

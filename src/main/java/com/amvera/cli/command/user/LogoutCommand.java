@@ -1,15 +1,10 @@
 package com.amvera.cli.command.user;
 
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.command.annotation.Command;
 
-@ShellComponent
+@Command
 public class LogoutCommand {
-
-    @ShellMethod(
-            key = "logout",
-            value = "Logout amvera cloud"
-    )
+    @Command(command = "logout", description = "Logout amvera cloud")
     public String logout() {
 
         //todo: delete token and find the way to logout in keycloak

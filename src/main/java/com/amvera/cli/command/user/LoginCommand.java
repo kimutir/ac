@@ -2,69 +2,32 @@ package com.amvera.cli.command.user;
 
 import com.amvera.cli.service.AuthService;
 import com.amvera.cli.utils.AmveraInput;
-import com.amvera.cli.utils.ShellHelper;
-import org.jline.reader.MaskingCallback;
-import org.jline.terminal.Terminal;
-import org.springframework.shell.component.flow.ComponentFlow;
-import org.springframework.shell.context.InteractionMode;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.command.CommandRegistration.*;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
+import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.shell.standard.AbstractShellComponent;
 
-import java.io.IOException;
-
-@ShellComponent
+@Command
 public class LoginCommand extends AbstractShellComponent {
-
-    private final ComponentFlow.Builder componentFlowBuilder;
     private final AuthService authService;
-    private final ShellHelper helper;
     private final AmveraInput input;
 
 
     public LoginCommand(
-            ComponentFlow.Builder componentFlowBuilder,
             AuthService authService,
-            ShellHelper helper,
             AmveraInput input) {
-        this.componentFlowBuilder = componentFlowBuilder;
         this.authService = authService;
-        this.helper = helper;
         this.input = input;
     }
 
-    @ShellMethod(
-            key = "login",
-            interactionMode = InteractionMode.ALL,
-            value = "Login amvera cloud"
-    )
+    @Command(command = "login", description = "Login amvera cloud")
+    @CommandAvailability(provider = "userLoggedProvider")
     public String login(
-            @ShellOption(
-                    defaultValue = ShellOption.NULL,
-                    help = "Username/email for authorization",
-                    value = {"-u", "--user"}
-            ) String user,
-            @ShellOption(
-                    defaultValue = ShellOption.NULL,
-                    help = "User password for authorization",
-                    value = {"-p", "--password"}
-            ) String password
-    ) throws IOException {
-
-//        helper.print("Название проекта: ");
-//        String p = new AttributedString("Название проекта: ", AttributedStyle.DEFAULT.bold()).toAnsi();
-//
-//        String s = new LineReaderImpl(terminal).readLine(p, null, new TestMask(), null);
-//        System.out.println("sout: " + s);
-
-        String u = input.defaultInput("Username: ");
-        String p = input.secretInput("Password: ");
-
-        helper.println("введено: " + u);
-        helper.println("введено: " + p);
-
-        System.out.println(u + " " + p);
+            @Option(longNames = "user", shortNames = 'u', defaultValue = ShellOption.NULL, arity = OptionArity.EXACTLY_ONE, description = "Username/email for authorization") String user,
+            @Option(longNames = "password", shortNames = 'p', defaultValue = ShellOption.NULL, arity = OptionArity.EXACTLY_ONE, description = "User password for authorization") String password
+    ) {
 
         user = "kimutir@gmail.com";
         password = "Ch3sh1r3";
@@ -88,24 +51,6 @@ public class LoginCommand extends AbstractShellComponent {
         authService.login(user, password);
 
         return "Authorized successfully!";
-    }
-
-    class TestMask implements MaskingCallback {
-
-        @Override
-        public String display(String line) {
-
-            if (line == null || line.isBlank()) {
-                return "<enter value>";
-            }
-
-            return line;
-        }
-
-        @Override
-        public String history(String line) {
-            return null;
-        }
     }
 
 }

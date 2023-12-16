@@ -1,11 +1,11 @@
 package com.amvera.cli.command.project;
 
 import com.amvera.cli.service.ProjectService;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
+import org.springframework.shell.command.CommandRegistration.*;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.Option;
 
-@ShellComponent
+@Command(group = "Project commands")
 public class StartCommand {
     private final ProjectService projectService;
 
@@ -13,12 +13,9 @@ public class StartCommand {
         this.projectService = projectService;
     }
 
-    @ShellMethod(
-            key = "start",
-            value = "Start project"
-    )
+    @Command(command = "start", description = "Start project")
     public String start(
-            @ShellOption(value = {"-p", "--project"}, arity = 1, help = "Project id, name or slug") String project
+            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
         return projectService.start(project);
     }

@@ -5,18 +5,17 @@ import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraTable;
 import com.amvera.cli.utils.ShellHelper;
+import org.springframework.shell.command.CommandRegistration.*;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ShellComponent
+@Command(group = "Environment variables commands")
 public class EnvAddCommand {
-
     private final ProjectService projectService;
     private final EnvironmentService envService;
     private final ShellHelper helper;
@@ -36,11 +35,10 @@ public class EnvAddCommand {
         this.componentFlowBuilder = componentFlowBuilder;
     }
 
-    @ShellMethod(
-            key = "env add",
-            value = "Add or update environment variables"
-    )
-    public void change(@ShellOption(value = {"-p", "--project"}, arity = 1, help = "Project id, name or slug") String project) {
+    @Command(command = "env add", description = "Add or update environment variables")
+    public void change(
+            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
+    ) {
         ProjectResponse p = projectService.findBy(project);
         String slug = p.getSlug();
         helper.println("ENVIRONMENTS");

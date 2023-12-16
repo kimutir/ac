@@ -1,25 +1,21 @@
 package com.amvera.cli.command.project;
 
 import com.amvera.cli.service.ProjectService;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
+import org.springframework.shell.command.CommandRegistration.*;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.Option;
 
-@ShellComponent
+@Command(group = "Project commands")
 public class RestartCommand {
-
     private final ProjectService projectService;
 
     public RestartCommand(ProjectService projectService) {
         this.projectService = projectService;
     }
 
-    @ShellMethod(
-            key = "restart",
-            value = "Restart project"
-    )
+    @Command(command = "restart", description = "Restart project")
     public String restart(
-            @ShellOption(value = {"-p", "--project"}, arity = 1, help = "Project id, name or slug") String project
+            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
         return projectService.restart(project);
     }

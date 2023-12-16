@@ -1,15 +1,9 @@
 package com.amvera.cli.exception;
 
-import com.amvera.cli.utils.PromptColor;
 import org.jline.reader.UserInterruptException;
-import org.jline.utils.AttributedString;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.shell.CommandNotCurrentlyAvailable;
 import org.springframework.shell.command.CommandExceptionResolver;
 import org.springframework.shell.command.CommandHandlingResult;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -39,6 +33,9 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
         }
         if (e instanceof UserInterruptException) {
             return CommandHandlingResult.of("user inter exception", 1);
+        }
+        if (e instanceof CommandNotCurrentlyAvailable) {
+            return CommandHandlingResult.of("unavai", 1);
         }
 
         System.out.println("SOMETHING HAPPENED");

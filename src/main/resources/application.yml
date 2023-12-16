@@ -3,9 +3,6 @@ spring:
     theme:
       name: "amvera-theme"
     command:
-      help:
-        commands-template: "classpath:template/help-commands-custom.stg"
-        command-template: "classpath:template/help-command-custom.stg"
       version:
         enabled: false
       history:
@@ -17,9 +14,10 @@ spring:
       script:
         enabled: false
       quit:
-        enabled: true
+        enabled: false
   main:
     banner-mode: "off"
+    allow-bean-definition-overriding: false
 shell:
   out:
     info: "CYAN"
@@ -33,6 +31,7 @@ logging:
 amvera:
 #  keycloak-client: "amvera-cli"
   keycloak-client: "amvera-web"
+  version: ^project.version^
 endpoints:
   logs: https://notifications.amvera.ru/logs
   projects: https://api.amvera.ru/projects
