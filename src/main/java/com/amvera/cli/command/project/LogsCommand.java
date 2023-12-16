@@ -13,6 +13,7 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class LogsCommand {
     }
 
     @Command(command = "logs", description = "Buildings or running logs of project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public void logs(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project,
             @Option(longNames = "limit", shortNames = 'l', arity = OptionArity.EXACTLY_ONE, defaultValue = "50", description = "Log lines limit (max 1000)") Integer limit,

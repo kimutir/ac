@@ -18,6 +18,8 @@ import org.jline.terminal.Terminal;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.shell.Availability;
 import org.springframework.shell.AvailabilityProvider;
 
@@ -53,20 +55,27 @@ public class AppConfig {
     }
 
     @Bean
-    public AvailabilityProvider userLoggedProvider(AuthService authService) {
-        return () -> authService.health() != 200
+    public AvailabilityProvider userLoggedProvider(Boolean isValid) {
+        return () -> !isValid
                 ? Availability.available()
                 : Availability.unavailable("You are already logged in.");
     }
 
     @Bean
-    public AvailabilityProvider userLoggedOutProvider(AuthService authService) {
-        return  () -> authService.health() == 200
+    public Boolean isValid(AuthService authService) {
+       return authService.health() == 200;
+    }
+
+    @Bean
+    public AvailabilityProvider userLoggedOutProvider(Boolean isValid) {
+        return  () -> isValid
                 ? Availability.available()
                 : Availability.unavailable("You are not logged in.");
     }
 
     @Bean
+//    @Primary
+//    @Order(1)
     public CustomExceptionResolver resolver() {
         return new CustomExceptionResolver();
     }

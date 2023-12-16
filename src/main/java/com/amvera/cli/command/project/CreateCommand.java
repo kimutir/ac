@@ -6,6 +6,7 @@ import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.AbstractShellComponent;
 
@@ -33,6 +34,7 @@ public class CreateCommand extends AbstractShellComponent {
     }
 
     @Command(command = "create", description = "Create new project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public String create(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
     ) throws JsonProcessingException {

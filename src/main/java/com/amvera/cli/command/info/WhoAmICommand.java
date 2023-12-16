@@ -3,6 +3,7 @@ package com.amvera.cli.command.info;
 import com.amvera.cli.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,7 @@ public class WhoAmICommand {
     }
 
     @Command(command = "whoami", description = "Show current user information")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public void who() {
         authService.info();
     }
