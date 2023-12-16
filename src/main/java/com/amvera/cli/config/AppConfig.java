@@ -55,15 +55,15 @@ public class AppConfig {
     }
 
     @Bean
+    public Boolean isValid(AuthService authService) {
+        return authService.health() == 200;
+    }
+
+    @Bean
     public AvailabilityProvider userLoggedProvider(Boolean isValid) {
         return () -> !isValid
                 ? Availability.available()
                 : Availability.unavailable("You are already logged in.");
-    }
-
-    @Bean
-    public Boolean isValid(AuthService authService) {
-       return authService.health() == 200;
     }
 
     @Bean

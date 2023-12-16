@@ -20,18 +20,20 @@ public class TokenUtils {
     }
 
     public static String readResponseToken() {
-
+        String token;
         try (FileInputStream fileInputStream = new FileInputStream(FILE_NAME)) {
-            String token = new String(fileInputStream.readAllBytes(), StandardCharsets.UTF_8);
+            token = new String(fileInputStream.readAllBytes(), StandardCharsets.UTF_8);
 //            System.out.println("FILE READ");
             return token;
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            token = "";
+//            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            token = "";
+//            throw new RuntimeException(e);
         }
 
-
+        return token;
     }
 
 }
