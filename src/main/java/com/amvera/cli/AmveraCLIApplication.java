@@ -10,6 +10,8 @@ import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.Meta;
 import com.amvera.cli.dto.project.config.Toolchain;
+import com.amvera.cli.model.ProjectTableModel;
+import com.amvera.cli.model.TariffTableModel;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -45,7 +47,9 @@ import org.springframework.shell.jline.PromptProvider;
                 EnvListGetResponse.class,
                 EnvPostRequest.class,
                 EnvPutRequest.class,
-                ScalePostRequest.class
+                ScalePostRequest.class,
+                ProjectTableModel.class,
+                TariffTableModel.class
         }
 )
 public class AmveraCLIApplication {
