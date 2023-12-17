@@ -1,6 +1,9 @@
 package com.amvera.cli.aspect;
 
+import com.amvera.cli.exception.CustomException;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.jline.terminal.Terminal;
@@ -14,16 +17,16 @@ public class ExceptionsAspect {
     @Autowired
     private Terminal terminal;
 
-    @Pointcut("@annotation(org.springframework.shell.standard.ShellMethod) ")
+    @Pointcut("@annotation(org.springframework.shell.command.annotation.Command) ")
     public void ifShellMethod() {
     }
 
     // todo: add exception handler
 //    @AfterThrowing(pointcut = "ifShellMethod()")
-//    public void ex() {
-//        terminal.writer().println("Some error. This message is for test purpose only.");
-//        terminal.writer().flush();
-//        System.exit(0);
-//    }
+    public void ex() {
+        terminal.writer().println("Some error. This message is for test purpose only.");
+        terminal.writer().flush();
+        System.exit(0);
+    }
 
 }

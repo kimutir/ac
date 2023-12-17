@@ -17,7 +17,7 @@ public class TariffService {
     }
 
     public void changeTariff(String slug, int tariffId) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         ResponseEntity<String> response = client.tariff(token).build()
                 .post().uri("/{slug}/tariff", slug)
                 .body(tariffId)
@@ -31,7 +31,7 @@ public class TariffService {
     }
 
     public TariffGetResponse getTariff(String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         RestClient.Builder builder = client.tariff(token);
 
         return builder.build().get()

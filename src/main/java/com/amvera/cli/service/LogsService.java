@@ -27,7 +27,7 @@ public class LogsService {
     }
 
     public List<LogGetResponse> logs(ProjectResponse project, String type, int limit) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         ResponseEntity<String> response = client.logs(token).build().get()
                 .uri("/{type}/history?username={user}&serviceName={name}&limit={limit}", type, project.getOwnerName(), project.getSlug(), limit)
                 .retrieve()

@@ -1,5 +1,7 @@
 spring:
   shell:
+    interactive:
+      enabled: false
     theme:
       name: "amvera-theme"
     command:

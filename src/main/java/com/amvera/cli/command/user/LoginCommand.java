@@ -30,7 +30,7 @@ public class LoginCommand extends AbstractShellComponent {
     ) {
 
         user = "kimutir@gmail.com";
-        password = "Ch3sh1r3";
+        password = "Ch3sh1r33";
         try {
             if (user == null || user.isBlank()) {
                 user = input.defaultInput("Username/email: ");

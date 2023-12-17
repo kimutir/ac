@@ -20,7 +20,7 @@ public class EnvironmentService {
 
     public List<EnvDTO> getEnvironment(ProjectResponse project) {
 //        ProjectResponse projectResponse = projectService.findBy(project);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", project.getSlug())
                 .retrieve()
@@ -30,7 +30,7 @@ public class EnvironmentService {
     }
 
     public void addEnvironment(EnvPostRequest env, String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.environment(token).build()
                 .post().uri("/{slug}", slug)
@@ -43,7 +43,7 @@ public class EnvironmentService {
     }
 
     public void updateEnvironment(EnvPutRequest env, String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         ResponseEntity<String> response = client.environment(token).build()
                 .put().uri("/{slug}/{id}", slug, env.id())
                 .retrieve()
@@ -54,7 +54,7 @@ public class EnvironmentService {
     }
 
     public void deleteEnvironment(Integer id, String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         ResponseEntity<String> response = client.environment(token).build()
                 .delete().uri("/{slug}/{id}", slug, id)
                 .retrieve()
@@ -65,7 +65,7 @@ public class EnvironmentService {
     }
 
     public List<EnvDTO> getEnvironmentBySlug(String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", slug)
                 .retrieve()

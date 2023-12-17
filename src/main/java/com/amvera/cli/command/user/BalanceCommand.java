@@ -19,11 +19,10 @@ public class BalanceCommand {
 
     @Command(command = "balance", description = "Current balance")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String balance() {
+    public Object balance() {
         BalanceGetResponse balance = balanceService.getBalance();
         helper.println("Your current balance:");
-        throw new CustomException();
-//        return balance.balance().toString() + " " + balance.currency();
+        return balance.balance().toString() + " " + balance.currency();
     }
 
 }

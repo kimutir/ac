@@ -23,7 +23,7 @@ public class ProjectService {
     }
 
     public List<ProjectResponse> getProjects() {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ProjectListResponse projectList = client.project(token).build().get()
                 .retrieve()
@@ -33,7 +33,7 @@ public class ProjectService {
     }
 
     public ATest createProject(String name, Integer tariff) throws JsonProcessingException {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ATest project = client.project(token).build().post()
                 .body(new ProjectRequest(name, tariff))
@@ -44,7 +44,7 @@ public class ProjectService {
     }
 
     public void addConfig(AmveraConfiguration body, String slug) {
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/config?slug={slug}", slug, slug)
@@ -59,7 +59,7 @@ public class ProjectService {
 
     public String rebuild(String p) {
         ProjectResponse project = findBy(p);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/rebuild", project.getSlug())
@@ -74,7 +74,7 @@ public class ProjectService {
 
     public String restart(String p) {
         ProjectResponse project = findBy(p);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/restart", project.getSlug())
@@ -89,7 +89,7 @@ public class ProjectService {
 
     public String delete(String p) {
         ProjectResponse project = findBy(p);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().delete()
                 .uri("/{slug}", project.getSlug())
@@ -104,7 +104,7 @@ public class ProjectService {
 
     public String start(String p) {
         ProjectResponse project = findBy(p);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())
@@ -120,7 +120,7 @@ public class ProjectService {
 
     public String stop(String p) {
         ProjectResponse project = findBy(p);
-        String token = TokenUtils.readResponseToken();
+        String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())

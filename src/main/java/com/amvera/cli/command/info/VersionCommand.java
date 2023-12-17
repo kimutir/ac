@@ -17,7 +17,6 @@ public class VersionCommand {
 
     @Command(command = "version", alias = {"--version", "-v"}, description = "Cli application version")
     public String version() {
-        throw new CustomException();
-//        return "amvera version " + properties.version();
+        return "amvera version " + properties.version();
     }
 }
