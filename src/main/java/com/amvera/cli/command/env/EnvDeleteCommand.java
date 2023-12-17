@@ -1,7 +1,7 @@
 package com.amvera.cli.command.env;
 
 import com.amvera.cli.dto.project.EnvDTO;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraTable;
@@ -37,7 +37,7 @@ public class EnvDeleteCommand extends AbstractShellComponent {
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project,
             @Option(longNames = "id", shortNames = 'i', arityMin = 1, arityMax = 10, description = "Environments ids to delete (max 10 per command)") Integer[] ids
     ) {
-        ProjectResponse p = projectService.findBy(project);
+        ProjectGetResponse p = projectService.findBy(project);
         List<Integer> idsList = ids != null ? List.of(ids) : new ArrayList<>();
         String slug = p.getSlug();
         List<EnvDTO> currentEnvs = envService.getEnvironmentBySlug(slug);

@@ -1,7 +1,7 @@
 package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.project.LogGetResponse;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.service.LogsService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.ShellHelper;
@@ -50,7 +50,7 @@ public class LogsCommand {
         if (limit > 1000) limit = 1000;
         if (limit < 1) limit = 50;
 
-        ProjectResponse projectResponse = projectService.findBy(project);
+        ProjectGetResponse projectResponse = projectService.findBy(project);
 
         List<String> availableTypes = new ArrayList<>(List.of("run", "build"));
 

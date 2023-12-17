@@ -1,9 +1,10 @@
 package com.amvera.cli.model;
 
-import com.amvera.cli.dto.project.ProjectResponse;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectPostResponse;
+import com.fasterxml.jackson.annotation.*;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"id", "name", "slug", "status", "status message", "requires instances", "instances", "git clone", "git remote", "domain", "url"})
 public class ProjectTableModel {
     private String git = "https://git.amvera.ru/";
@@ -25,7 +26,7 @@ public class ProjectTableModel {
     private String domain;
     private String url;
 
-    public ProjectTableModel(ProjectResponse p, String tariff) {
+    public ProjectTableModel(ProjectGetResponse p, String tariff) {
         this.ownerName = p.getOwnerName();
         this.id = p.getId();
         this.name = p.getName();
@@ -35,6 +36,23 @@ public class ProjectTableModel {
         this.requiredInstances = p.getRequiredInstances();
         this.status = p.getStatus();
         this.statusMessage = p.getStatusMessage();
+        this.git = this.git + ownerName + "/" + slug;
+        this.clone = "git clone " + git;
+        this.remote = "git remote add amvera " + git;
+        this.domain = "amvera-" + ownerName + "-run-" + slug;
+        this.url = String.format("https://%s-%s.amvera.io", slug, ownerName);
+    }
+
+
+    public ProjectTableModel(ProjectPostResponse p, String tariff) {
+        this.ownerName = p.username();
+        this.name = p.name();
+        this.slug = p.slug();
+        this.tariff = tariff;
+        this.instances = p.instances();
+        this.requiredInstances = p.requiredInstances();
+        this.status = p.buildStatus();
+        this.statusMessage = p.buildStatusMessage();
         this.git = this.git + ownerName + "/" + slug;
         this.clone = "git clone " + git;
         this.remote = "git remote add amvera " + git;

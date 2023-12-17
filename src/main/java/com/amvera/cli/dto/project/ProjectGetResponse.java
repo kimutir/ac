@@ -1,12 +1,11 @@
 package com.amvera.cli.dto.project;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 
 @RegisterReflectionForBinding
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProjectResponse {
+public class ProjectGetResponse {
     private Integer id;
     private String ownerName;
     private String name;

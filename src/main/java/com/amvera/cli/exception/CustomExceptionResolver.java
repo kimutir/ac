@@ -28,6 +28,10 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             helper.printError(e.getMessage());
             System.exit(2);
         }
+        if (e instanceof ConfirmationException) {
+            helper.printError(e.getMessage());
+            System.exit(2);
+        }
         if (e instanceof HttpClientErrorException) {
             int code = ((HttpClientErrorException) e).getStatusCode().value();
             if (code == 204) {
@@ -41,6 +45,9 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             }
             if (code == 404) {
                 helper.println(e.getMessage());
+            }
+            if (code == 409) {
+                helper.println("Project with such is already exist.");
             }
             System.exit(2);
         }

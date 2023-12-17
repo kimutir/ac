@@ -6,13 +6,13 @@ import java.util.List;
 
 @RegisterReflectionForBinding
 public class ProjectListResponse {
-    private List<ProjectResponse> services;
+    private List<ProjectGetResponse> services;
 
-    public List<ProjectResponse> getServices() {
+    public List<ProjectGetResponse> getServices() {
         return services;
     }
 
-    public void setServices(List<ProjectResponse> services) {
+    public void setServices(List<ProjectGetResponse> services) {
         this.services = services;
     }
 }

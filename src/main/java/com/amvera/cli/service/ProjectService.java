@@ -23,7 +23,7 @@ public class ProjectService {
         this.client = client;
     }
 
-    public List<ProjectResponse> getProjects() {
+    public List<ProjectGetResponse> getProjects() {
         String token = TokenUtils.readToken();
 
         ProjectListResponse projectList = client.project(token).build().get()
@@ -67,7 +67,7 @@ public class ProjectService {
     }
 
     public String rebuild(String p) {
-        ProjectResponse project = findBy(p);
+        ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
@@ -82,7 +82,7 @@ public class ProjectService {
     }
 
     public String restart(String p) {
-        ProjectResponse project = findBy(p);
+        ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
@@ -97,7 +97,7 @@ public class ProjectService {
     }
 
     public String delete(String p) {
-        ProjectResponse project = findBy(p);
+        ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().delete()
@@ -112,7 +112,7 @@ public class ProjectService {
     }
 
     public String start(String p) {
-        ProjectResponse project = findBy(p);
+        ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
@@ -128,7 +128,7 @@ public class ProjectService {
     }
 
     public String stop(String p) {
-        ProjectResponse project = findBy(p);
+        ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
@@ -143,8 +143,8 @@ public class ProjectService {
         return "Project stopped!";
     }
 
-    public ProjectResponse findBy(String name) {
-        List<ProjectResponse> projects = this.getProjects();
+    public ProjectGetResponse findBy(String name) {
+        List<ProjectGetResponse> projects = this.getProjects();
         projects = projects.stream()
                 .filter(p -> String.valueOf(p.getId()).equals(name) || p.getName().equals(name) || p.getSlug().equals(name))
                 .toList();

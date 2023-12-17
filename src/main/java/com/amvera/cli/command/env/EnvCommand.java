@@ -1,7 +1,7 @@
 package com.amvera.cli.command.env;
 
 import com.amvera.cli.dto.project.EnvDTO;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraTable;
@@ -32,7 +32,7 @@ public class EnvCommand {
     public String environment(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        ProjectResponse projectResponse = projectService.findBy(project);
+        ProjectGetResponse projectResponse = projectService.findBy(project);
         List<EnvDTO> envs = envService.getEnvironment(projectResponse);
         helper.println("ENVIRONMENTS");
         return envs.isEmpty() ? "< empty >" : amveraTable.environments(envs);

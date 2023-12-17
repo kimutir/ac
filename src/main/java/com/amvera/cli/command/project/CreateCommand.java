@@ -3,6 +3,7 @@ package com.amvera.cli.command.project;
 import com.amvera.cli.dto.project.ProjectPostResponse;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
 import com.amvera.cli.exception.EmptyValueException;
+import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,9 +61,39 @@ public class CreateCommand extends AbstractShellComponent {
         }
 
         helper.println("Project created:");
-        return amveraTable.singleEntityTable(project);
+//        return amveraTable.singleEntityTable(project);
 
-
+        return amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff)));
     }
 
 }
+
+/*
+{
+    "id": 11462,
+    "ownerId": "6df2158f-c101-42a5-9793-b0d9829b7564",
+    "ownerName": "kimutir",
+    "name": "test",
+    "slug": "test",
+    "serviceType": "compute",
+    "status": "EMPTY",
+    "statusMessage": "",
+    "requiredInstances": 1,
+    "instances": 0,
+    "active": true,
+    "created": 1702802626.867364000,
+    "deactivated": null
+}
+
+//создание
+{
+    "username": "kimutir",
+    "name": "test2",
+    "slug": "test2",
+    "ready": false,
+    "instances": 0,
+    "requiredInstances": 1,
+    "buildStatus": "CREATING",
+    "buildStatusMessage": ""
+}
+ */

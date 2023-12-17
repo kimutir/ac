@@ -2,7 +2,7 @@ package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.EnvDTO;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
@@ -45,7 +45,7 @@ public class ProjectCommand {
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String project,
             @Option(longNames = "env", shortNames = 'e', description = "Returns project environments") Boolean env
     ) {
-        List<ProjectResponse> projects = projectService.getProjects();
+        List<ProjectGetResponse> projects = projectService.getProjects();
 
         if (project != null) {
             projects = projects.stream()
@@ -54,7 +54,7 @@ public class ProjectCommand {
 
             if (projects.isEmpty()) return "Project was not found.";
 
-            ProjectResponse singleProject = projects.getFirst();
+            ProjectGetResponse singleProject = projects.getFirst();
             TariffGetResponse tariff = tariffService.getTariff(singleProject.getSlug());
 
             String projectTable = amveraTable.singleEntityTable(new ProjectTableModel(singleProject, Tariff.value(tariff.id())));

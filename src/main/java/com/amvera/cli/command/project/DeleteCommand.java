@@ -1,6 +1,7 @@
 package com.amvera.cli.command.project;
 
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.exception.ConfirmationException;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraInput;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
@@ -10,7 +11,6 @@ import org.springframework.shell.command.annotation.Option;
 
 @Command(group = "Project commands")
 public class DeleteCommand {
-
     private final ProjectService projectService;
     private final AmveraInput input;
 
@@ -24,7 +24,7 @@ public class DeleteCommand {
     public String delete(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        ProjectResponse projectResponse = projectService.findBy(project);
+        ProjectGetResponse projectResponse = projectService.findBy(project);
         String name = projectResponse.getName();
 
         String confirmPhrase = "удалить навсегда " + name;
@@ -32,15 +32,14 @@ public class DeleteCommand {
         String phrase = input.confirmInput("Enter to delete: ", confirmPhrase);
 
         if (phrase == null || phrase.isBlank()) {
-            // todo: throw exception and exit
+            throw new ConfirmationException("Phrase can not be empty.");
         }
 
-        assert phrase != null;
         if (phrase.trim().equals(confirmPhrase)) {
             return projectService.delete(project);
+        } else {
+            throw new ConfirmationException("Incorrect phrase.");
         }
-
-        return null;
     }
 
 }

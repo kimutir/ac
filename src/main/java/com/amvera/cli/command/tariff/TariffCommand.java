@@ -1,7 +1,7 @@
 package com.amvera.cli.command.tariff;
 
 import com.amvera.cli.dto.billing.TariffGetResponse;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.model.TariffTableModel;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.service.TariffService;
@@ -41,7 +41,7 @@ public class TariffCommand {
     public String tariff(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        ProjectResponse projectResponse = projectService.findBy(project);
+        ProjectGetResponse projectResponse = projectService.findBy(project);
         String slug = projectResponse.getSlug();
         TariffGetResponse tariff = tariffService.getTariff(slug);
         helper.println("TARIFF");
@@ -53,7 +53,7 @@ public class TariffCommand {
     public String changeTariff(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        ProjectResponse projectResponse = projectService.findBy(project);
+        ProjectGetResponse projectResponse = projectService.findBy(project);
         String slug = projectResponse.getSlug();
 
         TariffGetResponse tariffResponse = tariffService.getTariff(slug);

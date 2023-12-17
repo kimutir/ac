@@ -19,7 +19,7 @@ public class EnvironmentService {
         this.client = client;
     }
 
-    public List<EnvDTO> getEnvironment(ProjectResponse project) {
+    public List<EnvDTO> getEnvironment(ProjectGetResponse project) {
         String token = TokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", project.getSlug())

@@ -41,7 +41,7 @@ public class EnvAddCommand {
     public void change(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        ProjectResponse p = projectService.findBy(project);
+        ProjectGetResponse p = projectService.findBy(project);
         String slug = p.getSlug();
         helper.println("ENVIRONMENTS");
         List<EnvDTO> envs = envService.getEnvironmentBySlug(slug);

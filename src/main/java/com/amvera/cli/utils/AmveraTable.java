@@ -1,7 +1,7 @@
 package com.amvera.cli.utils;
 
 import com.amvera.cli.dto.project.EnvDTO;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.table.*;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class AmveraTable {
      * @param projects list of projects
      * @return table as String
      */
-    public String projects(List<ProjectResponse> projects) {
+    public String projects(List<ProjectGetResponse> projects) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("id", "ID");
         headers.put("name", "TITLE");

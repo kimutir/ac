@@ -2,7 +2,7 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.LogGetResponse;
-import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,7 +26,7 @@ public class LogsService {
         this.mapper = mapper;
     }
 
-    public List<LogGetResponse> logs(ProjectResponse project, String type, int limit) {
+    public List<LogGetResponse> logs(ProjectGetResponse project, String type, int limit) {
         String token = TokenUtils.readToken();
         ResponseEntity<String> response = client.logs(token).build().get()
                 .uri("/{type}/history?username={user}&serviceName={name}&limit={limit}", type, project.getOwnerName(), project.getSlug(), limit)
