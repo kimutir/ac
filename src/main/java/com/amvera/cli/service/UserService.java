@@ -4,45 +4,49 @@ import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 @Service
-public class AuthService {
+public class UserService {
     private final AppProperties properties;
     private final HttpCustomClient client;
 
-    public AuthService(
+    public UserService(
             AppProperties properties,
             HttpCustomClient client) {
         this.properties = properties;
         this.client = client;
     }
 
-
-
     public String login(String user, String password) {
         AuthRequest body = new AuthRequest(properties.keycloakClient(), user, password);
-
         AuthResponse authResponse = client.auth().build()
                 .post()
                 .body(body.toMultiValueMap())
                 .retrieve().body(AuthResponse.class);
 
-        TokenUtils.saveToke(authResponse.getAccessToken());
+        if (authResponse != null) {
+            TokenUtils.saveToke(authResponse.getAccessToken());
+        }
 
-        return authResponse.getAccessToken();
+        return "Authorized successfully!";
     }
 
-    public void info() {
+    public InfoResponse info() {
         String token = TokenUtils.readToken();
-        ResponseEntity<String> response = client.info(token).build()
+        InfoResponse info = client.info(token).build()
                 .get().retrieve()
-                .toEntity(String.class);
+                .body(InfoResponse.class);
 
-        System.out.println(response.getBody());
+        if (info == null) {
+            throw new RuntimeException("Unable to get user information.");
+        }
+
+        return info;
     }
 
     public int health() {

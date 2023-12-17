@@ -23,6 +23,10 @@ public class BalanceService {
                 .retrieve()
                 .body(BalanceGetResponse.class);
 
+        if (balance == null) {
+            throw new RuntimeException("Unable to get balance information.");
+        }
+
         return balance;
 
     }

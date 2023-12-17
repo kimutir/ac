@@ -1,7 +1,6 @@
 package com.amvera.cli.command.info;
 
 import com.amvera.cli.config.AppProperties;
-import com.amvera.cli.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.stereotype.Component;

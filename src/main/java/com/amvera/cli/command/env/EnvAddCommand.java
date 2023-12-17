@@ -7,6 +7,7 @@ import com.amvera.cli.utils.AmveraTable;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
@@ -36,6 +37,7 @@ public class EnvAddCommand {
     }
 
     @Command(command = "env add", description = "Add or update environment variables")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public void change(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {

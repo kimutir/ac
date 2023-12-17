@@ -36,14 +36,14 @@ public class LogsService {
         List<LogGetResponse> logs;
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Logs loading failed.");
         }
 
         try {
             logs = mapper.readValue(response.getBody(), new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Logs loading failed.");
         }
 
         return logs;

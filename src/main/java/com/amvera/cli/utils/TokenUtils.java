@@ -1,44 +1,43 @@
 package com.amvera.cli.utils;
 
-import com.amvera.cli.exception.TokenException;
-import com.amvera.cli.exception.UnauthorizedException;
+import com.amvera.cli.exception.TokenNotFoundException;
 
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class TokenUtils {
-
-    private static final String FILE_NAME = "./token.txt";
+    private static final String PATH = "./token.txt";
 
     public static void saveToke(String token) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(FILE_NAME)) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(PATH)) {
             fileOutputStream.write(token.getBytes());
-//            System.out.println("FILE CREATED");
         } catch (IOException e) {
-            System.out.println("Ошибка записи токена");
+            throw new RuntimeException("Unable to save token. Contact us to solve problem.");
         }
     }
 
     public static String readToken() {
         String token;
-        try (FileInputStream fileInputStream = new FileInputStream(FILE_NAME)) {
+        try (FileInputStream fileInputStream = new FileInputStream(PATH)) {
             token = new String(fileInputStream.readAllBytes(), StandardCharsets.UTF_8);
             return token;
-        } catch (IOException e) {
-            System.out.println("token.txt not found");
-            throw new UnauthorizedException("You need to login first.");
-//            token = "";
-        } catch (Exception e) {
-            System.out.println("something bad: " + e.getMessage());
-            throw new TokenException(e.getMessage());
         }
-
-//        return token;
+        catch (IOException e) {
+            throw new TokenNotFoundException("Token was not found.");
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Unable to read token. Contact us to solve problem.");
+        }
     }
 
-    public static void deleteToken() {}
+    public static String deleteToken() {
+        File fileToDelete = new File(PATH);
+        fileToDelete.delete();
+
+        return "Logged out successfully!";
+    }
 
 }

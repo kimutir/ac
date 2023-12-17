@@ -8,6 +8,7 @@ import com.amvera.cli.utils.AmveraTable;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class EnvCommand {
     }
 
     @Command(command = "env", description ="Environment variables for specified project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public String environment(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {

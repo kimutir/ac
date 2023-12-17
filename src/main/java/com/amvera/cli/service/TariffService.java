@@ -2,6 +2,7 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.billing.TariffGetResponse;
+import com.amvera.cli.utils.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class TariffService {
                 .toEntity(String.class);
 
         if (response.getStatusCode().value() != 200) {
-            // todo: throw exception
+            throw new RuntimeException("Changing tariff failed.");
         }
 
     }
@@ -34,10 +35,16 @@ public class TariffService {
         String token = TokenUtils.readToken();
         RestClient.Builder builder = client.tariff(token);
 
-        return builder.build().get()
+        TariffGetResponse tariff = builder.build().get()
                 .uri("/{slug}/tariff", slug)
                 .retrieve()
                 .body(TariffGetResponse.class);
+
+        if (tariff == null) {
+            throw ClientExceptions.noContent("Tariff loading failed.");
+        }
+
+        return tariff;
     }
 
 }

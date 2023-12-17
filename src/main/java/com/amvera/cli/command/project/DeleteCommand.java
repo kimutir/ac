@@ -3,14 +3,10 @@ package com.amvera.cli.command.project;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraInput;
-import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
 
 @Command(group = "Project commands")
 public class DeleteCommand {

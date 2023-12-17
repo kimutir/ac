@@ -3,6 +3,7 @@ package com.amvera.cli.service;
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
+import com.amvera.cli.utils.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,24 @@ public class ProjectService {
                 .retrieve()
                 .body(ProjectListResponse.class);
 
+        if (projectList == null || projectList.getServices().isEmpty()) {
+            throw ClientExceptions.noContent("Projects were not found.");
+        }
+
         return projectList.getServices();
     }
 
-    public ATest createProject(String name, Integer tariff) throws JsonProcessingException {
+    public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
         String token = TokenUtils.readToken();
 
-        ATest project = client.project(token).build().post()
+        ProjectPostResponse project = client.project(token).build().post()
                 .body(new ProjectRequest(name, tariff))
                 .retrieve()
-                .body(ATest.class);
+                .body(ProjectPostResponse.class);
+
+        if (project == null) {
+            throw new RuntimeException("Project creation failed.");
+        }
 
         return project;
     }
@@ -53,7 +62,7 @@ public class ProjectService {
                 .toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Creating configuration failed.");
         }
     }
 
@@ -66,7 +75,7 @@ public class ProjectService {
                 .retrieve().toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Rebuilding failed.");
         }
 
         return "Project rebuilding started...";
@@ -81,7 +90,7 @@ public class ProjectService {
                 .retrieve().toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Restarting failed.");
         }
 
         return "Project restarting started...";
@@ -96,10 +105,10 @@ public class ProjectService {
                 .retrieve().toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Deletion failed.");
         }
 
-        return "Project deleted successfully!";
+        return "Project has been deleted successfully!";
     }
 
     public String start(String p) {
@@ -112,7 +121,7 @@ public class ProjectService {
                 .retrieve().toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Unable to start project.");
         }
 
         return "Project started!";
@@ -128,7 +137,7 @@ public class ProjectService {
                 .retrieve().toEntity(String.class);
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            // todo: throw exception
+            throw new RuntimeException("Unable to stop project.");
         }
 
         return "Project stopped!";
@@ -140,8 +149,9 @@ public class ProjectService {
                 .filter(p -> String.valueOf(p.getId()).equals(name) || p.getName().equals(name) || p.getSlug().equals(name))
                 .toList();
 
-        //todo: throw exception
-        if (projects.isEmpty()) return null;
+        if (projects.isEmpty()) {
+            throw ClientExceptions.noContent("Project was not found.");
+        };
 
         return projects.getFirst();
     }

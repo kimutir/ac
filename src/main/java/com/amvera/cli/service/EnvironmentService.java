@@ -2,6 +2,7 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.*;
+import com.amvera.cli.utils.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,15 @@ public class EnvironmentService {
     }
 
     public List<EnvDTO> getEnvironment(ProjectResponse project) {
-//        ProjectResponse projectResponse = projectService.findBy(project);
         String token = TokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", project.getSlug())
                 .retrieve()
                 .body(EnvListGetResponse.class);
+
+        if (envs == null) {
+            throw ClientExceptions.noContent("Environments variables were not found.");
+        }
 
         return envs.environmentVariables();
     }
@@ -38,8 +42,9 @@ public class EnvironmentService {
                 .retrieve()
                 .toEntity(String.class);
 
-        //todo: throw exception
-        if (response.getStatusCode().value() != 200) return;
+        if (response.getStatusCode().value() != 200) {
+            throw new  RuntimeException("Unable to add environment variables.");
+        }
     }
 
     public void updateEnvironment(EnvPutRequest env, String slug) {
@@ -49,8 +54,9 @@ public class EnvironmentService {
                 .retrieve()
                 .toEntity(String.class);
 
-        //todo: throw exception
-        if (response.getStatusCode().value() != 200) return;
+        if (response.getStatusCode().value() != 200) {
+            throw new  RuntimeException("Unable to update environment variables.");
+        }
     }
 
     public void deleteEnvironment(Integer id, String slug) {
@@ -60,8 +66,9 @@ public class EnvironmentService {
                 .retrieve()
                 .toEntity(String.class);
 
-        //todo: throw exception
-        if (response.getStatusCode().value() != 200) return;
+        if (response.getStatusCode().value() != 200) {
+            throw new  RuntimeException("Unable to delete environment variables.");
+        }
     }
 
     public List<EnvDTO> getEnvironmentBySlug(String slug) {
@@ -70,6 +77,10 @@ public class EnvironmentService {
                 .get().uri("/{slug}", slug)
                 .retrieve()
                 .body(EnvListGetResponse.class);
+
+        if (envs == null) {
+            throw ClientExceptions.noContent("Environments variables were not found.");
+        }
 
         return envs.environmentVariables();
     }

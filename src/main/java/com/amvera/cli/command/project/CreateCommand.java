@@ -1,8 +1,8 @@
 package com.amvera.cli.command.project;
 
-import com.amvera.cli.dto.project.ATest;
+import com.amvera.cli.dto.project.ProjectPostResponse;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.exception.CustomException;
+import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,31 +39,29 @@ public class CreateCommand extends AbstractShellComponent {
     public String create(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
     ) throws JsonProcessingException {
-        try {
-            String name = input.defaultInput("Название проекта: ");
 
-            if (name == null || name.isBlank()) {
-                //todo: throw exception
-            }
+        String name = input.defaultInput("Название проекта: ");
 
-            int tariff = selector.selectTariff();
-            ATest project = projectService.createProject(name, tariff);
-            String slug = project.slug();
-
-            // add amvera.yml
-            if (config) {
-                // Select environment for amvera.yml
-                Environment environment = selector.selectEnvironment();
-                // Create amvera.yml depending on selected environment
-                AmveraConfiguration configuration = projectFlows.createConfig(environment);
-                projectService.addConfig(configuration, slug);
-            }
-
-            helper.println("Project created:");
-            return amveraTable.singleEntityTable(project);
-        } catch (Exception e) {
-            throw new CustomException("asd");
+        if (name == null || name.isBlank()) {
+            throw new EmptyValueException("Project name can not be empty.");
         }
+
+        int tariff = selector.selectTariff();
+        ProjectPostResponse project = projectService.createProject(name, tariff);
+        String slug = project.slug();
+
+        // add amvera.yml
+        if (config) {
+            // Select environment for amvera.yml
+            Environment environment = selector.selectEnvironment();
+            // Create amvera.yml depending on selected environment
+            AmveraConfiguration configuration = projectFlows.createConfig(environment);
+            projectService.addConfig(configuration, slug);
+        }
+
+        helper.println("Project created:");
+        return amveraTable.singleEntityTable(project);
+
 
     }
 

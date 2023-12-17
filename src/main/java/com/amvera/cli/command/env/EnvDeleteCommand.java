@@ -8,6 +8,7 @@ import com.amvera.cli.utils.AmveraTable;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.ConfirmationInput;
 import org.springframework.shell.component.ConfirmationInput.*;
@@ -31,6 +32,7 @@ public class EnvDeleteCommand extends AbstractShellComponent {
     }
 
     @Command(command = "env delete", description = "Delete single or multiple environment variables")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public String delete(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project,
             @Option(longNames = "id", shortNames = 'i', arityMin = 1, arityMax = 10, description = "Environments ids to delete (max 10 per command)") Integer[] ids

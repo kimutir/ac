@@ -12,7 +12,7 @@ import com.amvera.cli.dto.project.config.Toolchain;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.model.TariffTableModel;
-import com.amvera.cli.service.AuthService;
+import com.amvera.cli.service.UserService;
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.terminal.Terminal;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -29,7 +29,7 @@ import org.springframework.shell.AvailabilityProvider;
                 ProjectResponse.class,
                 ProjectListResponse.class,
                 ProjectRequest.class,
-                ATest.class,
+                ProjectPostResponse.class,
                 AmveraCLIApplication.class,
                 Meta.class,
                 Toolchain.class,
@@ -53,7 +53,7 @@ public class AppConfig {
     }
 
     @Bean
-    public Boolean isValid(AuthService authService) {
+    public Boolean isValid(UserService authService) {
         return authService.health() == 200;
     }
 

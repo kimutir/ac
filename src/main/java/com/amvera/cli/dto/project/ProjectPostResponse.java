@@ -2,7 +2,7 @@ package com.amvera.cli.dto.project;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ATest(
+public record ProjectPostResponse(
         String username,
         String name,
         String slug,
