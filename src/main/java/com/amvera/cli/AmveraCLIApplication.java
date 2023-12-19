@@ -11,7 +11,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.shell.CommandNotCurrentlyAvailable;
-import org.springframework.shell.command.CommandExecution;
 import org.springframework.shell.command.annotation.CommandScan;
 import org.springframework.shell.jline.PromptProvider;
 
