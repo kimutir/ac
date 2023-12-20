@@ -31,7 +31,7 @@ public class EnvDeleteCommand extends AbstractShellComponent {
         this.helper = helper;
     }
 
-    @Command(command = "env delete", description = "Delete single or multiple environment variables")
+    @Command(command = "env-delete", description = "Delete single or multiple environment variables")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String delete(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project,

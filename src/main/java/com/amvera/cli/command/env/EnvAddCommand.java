@@ -36,7 +36,7 @@ public class EnvAddCommand {
         this.componentFlowBuilder = componentFlowBuilder;
     }
 
-    @Command(command = "env add", description = "Add or update environment variables")
+    @Command(command = "env-add", description = "Add or update environment variables")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void change(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
