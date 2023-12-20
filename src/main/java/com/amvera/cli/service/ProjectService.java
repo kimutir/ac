@@ -15,7 +15,6 @@ import java.util.List;
 @Service
 public class ProjectService {
     private final HttpCustomClient client;
-
     @Autowired
     public ProjectService(
             HttpCustomClient client
@@ -156,8 +155,20 @@ public class ProjectService {
         return projects.getFirst();
     }
 
-    public void changeScale(Integer num) {
+    public String  scale(String p, Integer num) {
+        ProjectGetResponse project = findBy(p);
+        String token = TokenUtils.readToken();
 
+        ResponseEntity<String> response = client.project(token).build().post()
+                .uri("/{slug}/scale", project.getSlug())
+                .body(new ScalePostRequest(num))
+                .retrieve().toEntity(String.class);
+
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            throw new RuntimeException("Unable to change scale project.");
+        }
+
+        return "Required instances changed to " + num;
     }
 
 
