@@ -5,6 +5,7 @@ import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.service.LogsService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.ShellHelper;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.MaskingCallback;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.LineReaderImpl;
@@ -63,13 +64,8 @@ public class LogsCommand {
         helper.println("To interrupt process: input \"q\" and press \"Enter\"");
         helper.println("Also you can open new terminal window.");
 
-        try {
-            ExitThread exitThread = new ExitThread();
-            exitThread.start();
-        } catch (Exception e) {
-            // throws EndOfFileException
-            System.exit(0);
-        }
+        ExitThread exitThread = new ExitThread();
+        exitThread.start();
 
         List<String> logsList = new ArrayList<>(logsService.logs(projectResponse, type, limit).stream().map(LogGetResponse::content).toList());
         Collections.reverse(logsList);
@@ -102,19 +98,24 @@ public class LogsCommand {
 
     class ExitThread extends Thread {
         public void run() {
-            String p = new AttributedString("Exit: ", AttributedStyle.DEFAULT.bold()).toAnsi();
-            String s = null;
-            while (true) {
-                try {
-                    s = new LineReaderImpl(terminal).readLine(p, null, new KillProcessMask(), null);
-                } catch (UserInterruptException | IOException e) {
-                    System.exit(0);
+            try {
+                String p = new AttributedString("Exit: ", AttributedStyle.DEFAULT.bold()).toAnsi();
+                String s = null;
+                while (true) {
+                    try {
+                        s = new LineReaderImpl(terminal).readLine(p, null, new KillProcessMask(), null);
+                    } catch (UserInterruptException | IOException e) {
+                        System.exit(0);
+                    }
+                    if (s.trim().equalsIgnoreCase("q")) {
+                        this.interrupt();
+                        System.exit(0);
+                    }
                 }
-                if (s.trim().equalsIgnoreCase("q")) {
-                    this.interrupt();
-                    System.exit(0);
-                }
+            } catch (Exception e) {
+                System.exit(0);
             }
+
 
         }
 
