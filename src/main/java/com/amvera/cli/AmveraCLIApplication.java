@@ -2,6 +2,8 @@ package com.amvera.cli;
 
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.config.Endpoints;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.impl.DumbTerminal;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.boot.WebApplicationType;
@@ -27,7 +29,8 @@ public class AmveraCLIApplication {
                     .run(args);
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CommandNotCurrentlyAvailable) {
-                String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
+//                String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
+                String message = e.getCause().getMessage();
                 System.console().writer().write(message);
                 System.console().writer().flush();
             }
