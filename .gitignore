@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 
 token.txt
+.DS_Store
 
 ### STS ###
 .apt_generated
