@@ -53,6 +53,7 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
         }
         if (e instanceof HttpServerErrorException) {
             helper.printError("Internal server error. Please contact us.");
+            System.exit(2);
         }
         // Exception when Ctr + C
         if (e instanceof UserInterruptException) {
