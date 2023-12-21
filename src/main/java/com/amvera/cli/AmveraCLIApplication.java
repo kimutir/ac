@@ -28,7 +28,8 @@ public class AmveraCLIApplication {
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CommandNotCurrentlyAvailable) {
                 String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
-                System.out.println(message);
+                System.console().writer().write(message);
+                System.console().writer().flush();
             }
         }
     }

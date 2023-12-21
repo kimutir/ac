@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class TokenUtils {
-    private static final String PATH = System.getenv("HOME") + File.separator + ".amvera";
+    private static final String HOME = System.getenv("HOME") != null ? System.getenv("HOME") : System.getenv("USERPROFILE");
+    private static final String PATH = HOME + File.separator + ".amvera";
 
     public static void saveToke(String token) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(PATH)) {
