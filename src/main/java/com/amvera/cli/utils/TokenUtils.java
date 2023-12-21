@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class TokenUtils {
+    // HOME - Mac OS
+    // USERPROFILE - Windows
     private static final String HOME = System.getenv("HOME") != null ? System.getenv("HOME") : System.getenv("USERPROFILE");
     private static final String PATH = HOME + File.separator + ".amvera";
 

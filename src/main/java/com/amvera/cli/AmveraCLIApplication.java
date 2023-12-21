@@ -29,10 +29,10 @@ public class AmveraCLIApplication {
                     .run(args);
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CommandNotCurrentlyAvailable) {
+                // color removed because of incorrect output in PowerShell (windows)
 //                String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
                 String message = e.getCause().getMessage();
-                System.console().writer().write(message);
-                System.console().writer().flush();
+                System.out.println(message);
             }
         }
     }
