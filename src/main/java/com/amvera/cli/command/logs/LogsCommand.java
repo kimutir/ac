@@ -63,8 +63,13 @@ public class LogsCommand {
         helper.println("To interrupt process: input \"q\" and press \"Enter\"");
         helper.println("Also you can open new terminal window.");
 
-        ExitThread exitThread = new ExitThread();
-        exitThread.start();
+        try {
+            ExitThread exitThread = new ExitThread();
+            exitThread.start();
+        } catch (Exception e) {
+            // throws EndOfFileException
+            System.exit(0);
+        }
 
         List<String> logsList = new ArrayList<>(logsService.logs(projectResponse, type, limit).stream().map(LogGetResponse::content).toList());
         Collections.reverse(logsList);
