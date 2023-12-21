@@ -71,8 +71,7 @@ public class LogsCommand {
         Collections.reverse(logsList);
         String logs = String.join("\n", logsList);
 
-
-        //todo: kill process when exception from request!!
+        //todo: kill process when exception from request
         helper.println("\n" + logs);
 
         System.exit(0);
@@ -113,6 +112,7 @@ public class LogsCommand {
                     }
                 }
             } catch (Exception e) {
+                // throws EndOfFileException
                 System.exit(0);
             }
 
