@@ -35,21 +35,22 @@ amvera:
 #  keycloak-client: "amvera-web"
   version: ^project.version^
 endpoints:
-#  logs: https://notifications.amvera.ru/logs
-#  projects: https://api.amvera.ru/projects
-#  configurations: https://api.amvera.ru/configurations
-#  balance: https://api.amvera.ru/balance
-#  env: https://api.amvera.ru/env
-#  tariff: https://api.amvera.ru/tariff
-#  auth: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token
-#  user: https://id.amvera.ru/auth/realms/amvera/account/
-#  logout: https://keycloak.example/auth/realms/amvera/protocol/openid-connect/logout
-  configurations: https://api.staging.amvera.ru/configurations
   logs: https://notifications.amvera.ru/logs
-  projects: https://api.staging.amvera.ru/projects
-  balance: https://api.staging.amvera.ru/balance
-  env: https://api.staging.amvera.ru/env
-  tariff: https://api.staging.amvera.ru/tariff
-  auth: https://id.staging.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/token
-  logout: https://keycloak.example/auth/realms/amvera-staging/protocol/openid-connect/logout
-  user: https://id.staging.amvera.ru/auth/realms/amvera-staging/account/
+  projects: https://api.amvera.ru/projects
+  configurations: https://api.amvera.ru/configurations
+  balance: https://api.amvera.ru/balance
+  env: https://api.amvera.ru/env
+  tariff: https://api.amvera.ru/tariff
+  auth: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token
+  user: https://id.amvera.ru/auth/realms/amvera/account/
+  logout: https://keycloak.example/auth/realms/amvera/protocol/openid-connect/logout
+
+#  configurations: https://api.staging.amvera.ru/configurations
+#  logs: https://notifications.amvera.ru/logs
+#  projects: https://api.staging.amvera.ru/projects
+#  balance: https://api.staging.amvera.ru/balance
+#  env: https://api.staging.amvera.ru/env
+#  tariff: https://api.staging.amvera.ru/tariff
+#  auth: https://id.staging.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/token
+#  logout: https://keycloak.example/auth/realms/amvera-staging/protocol/openid-connect/logout
+#  user: https://id.staging.amvera.ru/auth/realms/amvera-staging/account/
