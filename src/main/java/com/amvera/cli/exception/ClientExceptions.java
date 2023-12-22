@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;

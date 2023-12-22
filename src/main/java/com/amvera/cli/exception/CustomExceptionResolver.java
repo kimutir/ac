@@ -47,7 +47,7 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
                 helper.println(e.getMessage());
             }
             if (code == 409) {
-                helper.println("Project with such is already exist.");
+                helper.println("Project with such name is already exist.");
             }
             System.exit(2);
         }

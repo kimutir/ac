@@ -10,5 +10,8 @@ public record Endpoints(
         String tariff,
         String logs,
         String balance,
-        String user) {
+        String user,
+        String configurations,
+        String logout
+) {
 }

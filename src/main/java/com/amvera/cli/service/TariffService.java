@@ -2,7 +2,7 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.billing.TariffGetResponse;
-import com.amvera.cli.utils.ClientExceptions;
+import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

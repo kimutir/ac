@@ -20,6 +20,12 @@ public class HttpCustomClient {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
+    public RestClient.Builder configurations(String token) {
+        return RestClient.builder()
+                .baseUrl(endpoints.configurations())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    }
     public RestClient.Builder logs(String token) {
         return RestClient.builder()
                 .baseUrl(endpoints.logs())
@@ -51,10 +57,18 @@ public class HttpCustomClient {
         return RestClient.builder()
                 .baseUrl(endpoints.auth())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_FORM_URLENCODED));
-    }    public RestClient.Builder info(String token) {
+    }
+
+    public RestClient.Builder info(String token) {
         return RestClient.builder()
                 .baseUrl(endpoints.user())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    }
+
+    public RestClient.Builder logout() {
+        return RestClient.builder()
+                .baseUrl(endpoints.logout())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_FORM_URLENCODED));
     }
 }

@@ -7,13 +7,13 @@ select_item(item,model) ::= <%
 <if(item.selected)>
 <({<figures.rightPointingQuotation> }); format="style-item-selector"><({<truncate(item.name,model)>}); format="style-item-selector">
 <else>
-<("  ")><truncate(item.name,model)>
+<item.name>
 <endif>
 %>
 
 // start '? xxx' shows both running and result
 question_name(model) ::= <<
-<({}); format="style-list-value"> <model.name; format="style-title">
+<model.name; format="style-title">
 >>
 
 // within info section, dedicated instructions for user

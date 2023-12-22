@@ -2,20 +2,30 @@ package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.project.ProjectPostResponse;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
+import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
+import com.amvera.cli.dto.project.config.Meta;
 import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStyle;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
+import org.springframework.util.StringUtils;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Command(group = "Project commands")
 public class CreateCommand extends AbstractShellComponent {
     private final ProjectService projectService;
-    private final ProjectFlows projectFlows;
     private final ShellHelper helper;
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
@@ -23,12 +33,10 @@ public class CreateCommand extends AbstractShellComponent {
 
     public CreateCommand(
             ProjectService projectService,
-            ProjectFlows projectFlows,
             ShellHelper helper,
             AmveraTable amveraTable,
             AmveraSelector selector, AmveraInput input) {
         this.projectService = projectService;
-        this.projectFlows = projectFlows;
         this.helper = helper;
         this.amveraTable = amveraTable;
         this.selector = selector;
@@ -40,8 +48,7 @@ public class CreateCommand extends AbstractShellComponent {
     public String create(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
     ) throws JsonProcessingException {
-
-        String name = input.defaultInput("Название проекта: ");
+        String name = input.defaultInput("Project name: ");
 
         if (name == null || name.isBlank()) {
             throw new EmptyValueException("Project name can not be empty.");
@@ -53,47 +60,93 @@ public class CreateCommand extends AbstractShellComponent {
 
         // add amvera.yml
         if (config) {
-            // Select environment for amvera.yml
-            Environment environment = selector.selectEnvironment();
-            // Create amvera.yml depending on selected environment
-            AmveraConfiguration configuration = projectFlows.createConfig(environment);
+            AmveraConfiguration configuration = createConfiguration(projectService.getConfig());
             projectService.addConfig(configuration, slug);
         }
 
         helper.println("Project created:");
-//        return amveraTable.singleEntityTable(project);
 
         return amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff)));
     }
 
-}
+    private AmveraConfiguration createConfiguration(Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> params) {
+        AmveraConfiguration configuration = new AmveraConfiguration();
 
-/*
-{
-    "id": 11462,
-    "ownerId": "6df2158f-c101-42a5-9793-b0d9829b7564",
-    "ownerName": "kimutir",
-    "name": "test",
-    "slug": "test",
-    "serviceType": "compute",
-    "status": "EMPTY",
-    "statusMessage": "",
-    "requiredInstances": 1,
-    "instances": 0,
-    "active": true,
-    "created": 1702802626.867364000,
-    "deactivated": null
-}
+        // meta section
+        helper.println(toSectionTitle("meta"));
 
-//создание
-{
-    "username": "kimutir",
-    "name": "test2",
-    "slug": "test2",
-    "ready": false,
-    "instances": 0,
-    "requiredInstances": 1,
-    "buildStatus": "CREATING",
-    "buildStatusMessage": ""
+        List<SelectorItem<String>> environments = params.keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+        String selectedEnvironment = selector.singleSelector(environments, "Environment: ");
+        List<SelectorItem<String>> instruments = params.get(selectedEnvironment).keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+        String selectedInstrument = selector.singleSelector(instruments, "Instrument: ");
+
+        Map<String, DefaultConfValuesGetResponse> metaMap = params.get(selectedEnvironment).get(selectedInstrument).get("meta");
+        Meta meta = configMetaSection(configuration, metaMap, selectedEnvironment, selectedInstrument);
+
+        // build section
+        Map<String, DefaultConfValuesGetResponse> buildMap = params.get(selectedEnvironment).get(selectedInstrument).get("build");
+        configBuildSection(configuration, buildMap);
+
+        // run section
+        Map<String, DefaultConfValuesGetResponse> runMap = params.get(selectedEnvironment).get(selectedInstrument).get("run");
+        configRunSection(configuration, runMap);
+
+        configuration.setMeta(meta);
+
+        return configuration;
+    }
+
+    private void configRunSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map) {
+        if (map == null) return;
+        helper.println(toSectionTitle("run"));
+        map.forEach((k, v) -> {
+            if (v == null) return;
+            String inputValue = input.inputWithDefault(toTitle(k), v.defaultValue());
+            if (inputValue == null || inputValue.isBlank()) return;
+            config.getRun().put(k, inputValue);
+        });
+    }
+
+    private void configBuildSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map) {
+        if (map == null) return;
+        helper.println(toSectionTitle("build"));
+        map.forEach((k, v) -> {
+            if (v == null) return;
+            if (k.equals("artifacts")) {
+                List<String> artifacts = Arrays.stream(v.defaultValue().split(":")).toList();
+                String artifactKey = input.inputWithDefault(toTitle("artifacts-key"), artifacts.get(0).trim());
+                String artifactValue = input.inputWithDefault(toTitle("artifacts-value"), artifacts.get(1).trim());
+                config.getBuild().put("artifacts", new HashMap<>(Map.of(artifactKey, artifactValue)));
+                return;
+            }
+            String inputValue = input.inputWithDefault(toTitle(k), v.defaultValue());
+            if (inputValue == null || inputValue.isBlank()) return;
+            config.getBuild().put(k, inputValue);
+        });
+    }
+
+    private Meta configMetaSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map, String env, String inst) {
+        Meta meta = new Meta();
+        meta.setEnvironment(env);
+        meta.getToolchain().put("name", inst);
+
+        if (map != null) {
+            map.forEach((k, v) -> {
+                if (v == null) return;
+                String inputValue = input.inputWithDefault(toTitle(k), v.defaultValue());
+                meta.getToolchain().put(k, inputValue);
+            });
+        }
+
+        return meta;
+    }
+
+    private String toTitle(String value) {
+        return StringUtils.capitalize(value) + ": ";
+    }
+
+    private String toSectionTitle(String value) {
+        return new AttributedString((value + " section").toUpperCase(), AttributedStyle.DEFAULT.bold().underline()).toAnsi() + ":";
+    }
+
 }
- */

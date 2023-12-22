@@ -1,15 +1,13 @@
 package com.amvera.cli.config;
 
 import com.amvera.cli.AmveraCLIApplication;
-import com.amvera.cli.command.project.ProjectFlows;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.dto.auth.LogoutRequest;
 import com.amvera.cli.dto.billing.BalanceGetResponse;
 import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.*;
-import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.dto.project.config.Meta;
-import com.amvera.cli.dto.project.config.Toolchain;
+import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.model.ProjectTableModel;
@@ -35,7 +33,6 @@ import org.springframework.shell.AvailabilityProvider;
                 AmveraCLIApplication.class,
                 Meta.class,
                 Toolchain.class,
-                ProjectFlows.class,
                 LogGetResponse.class,
                 BalanceGetResponse.class,
                 TariffGetResponse.class,
@@ -47,7 +44,10 @@ import org.springframework.shell.AvailabilityProvider;
                 ProjectTableModel.class,
                 TariffTableModel.class,
                 InfoResponse.class,
-                AmveraConfiguration.class
+                AmveraConfiguration.class,
+                ConfigGetResponse.class,
+                DefaultConfValuesGetResponse.class,
+                LogoutRequest.class
         }
 )
 public class AppConfig {

@@ -20,31 +20,33 @@ public class AmveraSelector extends AbstractShellComponent {
             SelectorItem.of("Ультра", Tariff.ULTRA.title())
     );
 
-    private final List<SelectorItem<String>> envs = Arrays.asList(
-            SelectorItem.of("Python", Environment.PYTHON.name()),
-            SelectorItem.of("Java/Kotlin", Environment.JVM.name()),
-            SelectorItem.of("Node", Environment.NODE.name()),
-            SelectorItem.of("Docker", Environment.DOCKER.name()),
-            SelectorItem.of("DB", Environment.DB.name())
-    );
-
-    public Environment selectEnvironment() {
-        return Environment.valueOf(single(envs, "Environment"));
-    }
-
     public int selectTariff() {
-        return Tariff.value(single(tariffs, "Select tariff"));
+        return Tariff.value(singleSelector(tariffs, "Select tariff"));
     }
 
-    public String single(List<SelectorItem<String>> items, String name) {
-        SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(getTerminal(),
-                items, name, null);
-        component.setResourceLoader(getResourceLoader());
-        component.setTemplateExecutor(getTemplateExecutor());
-        SingleItemSelector.SingleItemSelectorContext<String, SelectorItem<String>> context = component
-                .run(SingleItemSelector.SingleItemSelectorContext.empty());
+    /**
+     * Ordered single item selector
+     *
+     * @param items items to select
+     * @param name title
+     * @return selected item
+     */
+    public String singleSelector(List<SelectorItem<String>> items, String name) {
+        try {
+            SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(getTerminal(),
+                    items, name, null);
+            component.setResourceLoader(getResourceLoader());
+            component.setTemplateExecutor(getTemplateExecutor());
+            component.setMaxItems(items.size());
+            SingleItemSelector.SingleItemSelectorContext<String, SelectorItem<String>> context = component
+                    .run(SingleItemSelector.SingleItemSelectorContext.empty());
 
-        return context.getResultItem().flatMap(si -> Optional.ofNullable(si.getItem())).get();
+            return context.getResultItem().flatMap(si -> Optional.ofNullable(si.getItem())).get();
+        } catch (Error e) {
+            System.exit(0);
+            return null;
+        }
+
     }
 
 

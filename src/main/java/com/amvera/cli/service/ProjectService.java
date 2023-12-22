@@ -3,7 +3,9 @@ package com.amvera.cli.service;
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.utils.ClientExceptions;
+import com.amvera.cli.dto.project.config.ConfigGetResponse;
+import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
+import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +13,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProjectService {
     private final HttpCustomClient client;
+
     @Autowired
     public ProjectService(
             HttpCustomClient client
@@ -34,6 +38,20 @@ public class ProjectService {
         }
 
         return projectList.getServices();
+    }
+
+    public Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> getConfig() {
+        String token = TokenUtils.readToken();
+
+        ConfigGetResponse config = client.configurations(token).build().get()
+                .retrieve()
+                .body(ConfigGetResponse.class);
+
+        if (config == null) {
+            throw ClientExceptions.noContent("Config default values were not found.");
+        }
+
+        return config.availableParameters();
     }
 
     public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
@@ -63,6 +81,8 @@ public class ProjectService {
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             throw new RuntimeException("Creating configuration failed.");
         }
+
+        System.out.println("config added");
     }
 
     public String rebuild(String p) {
@@ -150,12 +170,13 @@ public class ProjectService {
 
         if (projects.isEmpty()) {
             throw ClientExceptions.noContent("Project was not found.");
-        };
+        }
+        ;
 
         return projects.getFirst();
     }
 
-    public String  scale(String p, Integer num) {
+    public String scale(String p, Integer num) {
         ProjectGetResponse project = findBy(p);
         String token = TokenUtils.readToken();
 

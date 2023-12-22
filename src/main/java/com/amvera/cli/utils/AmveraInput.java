@@ -23,7 +23,15 @@ public class AmveraInput {
         try {
             return new LineReaderImpl(terminal).readLine(p, null, new CommonMask(), null);
         } catch (IOException e) {
-            System.out.println("CAUGHT IN TRY CATCH");
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String inputWithDefault(String prompt, String defaultValue) {
+        String p = new AttributedString(prompt, AttributedStyle.DEFAULT.bold()).toAnsi();
+        try {
+            return new LineReaderImpl(terminal).readLine(p, null, new CommonMask(), defaultValue);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -33,7 +41,6 @@ public class AmveraInput {
         try {
             return new LineReaderImpl(terminal).readLine(p, null, new SecretMask(), null);
         } catch (IOException e) {
-            System.out.println("CAUGHT IN TRY CATCH");
             throw new RuntimeException(e);
         }
     }
@@ -43,7 +50,6 @@ public class AmveraInput {
         try {
             return new LineReaderImpl(terminal).readLine(p, null, new CommonMask(confirm), null);
         } catch (IOException e) {
-            System.out.println("CAUGHT IN TRY CATCH");
             throw new RuntimeException(e);
         }
     }
@@ -73,7 +79,7 @@ public class AmveraInput {
         }
     }
 
-    class SecretMask implements MaskingCallback {
+    static class SecretMask implements MaskingCallback {
         @Override
         public String display(String line) {
 

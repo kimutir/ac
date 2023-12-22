@@ -36,6 +36,12 @@ public class UserService {
         return "Authorized successfully!";
     }
 
+    public String logout() {
+        TokenUtils.deleteToken();
+
+        return "Logged out successfully!";
+    }
+
     public InfoResponse info() {
         String token = TokenUtils.readToken();
         InfoResponse info = client.info(token).build()
