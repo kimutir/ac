@@ -3,6 +3,7 @@ package com.amvera.cli.exception;
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.reader.UserInterruptException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.shell.command.CommandExceptionResolver;
 import org.springframework.shell.command.CommandHandlingResult;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,7 +36,7 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
         if (e instanceof HttpClientErrorException) {
             int code = ((HttpClientErrorException) e).getStatusCode().value();
             if (code == 204) {
-                helper.println(e.getMessage());
+                helper.println("No content.");
             }
             if (code == 400) {
                 helper.printError("Request exception. Please contact us.");
@@ -44,7 +45,7 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
                 helper.printError("Unauthorized. Wrong credentials.");
             }
             if (code == 404) {
-                helper.println(e.getMessage());
+                helper.println("Not found.");
             }
             if (code == 409) {
                 helper.println("Project with such name is already exist.");
@@ -64,7 +65,7 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             System.exit(2);
         }
         if (e instanceof RuntimeException) {
-            helper.printError(e.getMessage());
+//            helper.printError(e.getMessage());
             System.exit(2);
         }
 

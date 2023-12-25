@@ -37,5 +37,4 @@ public class EnvCommand {
         helper.println("ENVIRONMENTS");
         return envs.isEmpty() ? "< empty >" : amveraTable.environments(envs);
     }
-
 }
