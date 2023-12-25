@@ -10,6 +10,7 @@ import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.exception.CustomExceptionResolver;
+import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.model.TariffTableModel;
 import com.amvera.cli.service.UserService;
@@ -20,6 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.shell.Availability;
 import org.springframework.shell.AvailabilityProvider;
+import org.springframework.shell.CommandNotCurrentlyAvailable;
+import org.springframework.shell.result.CommandNotFoundMessageProvider;
 
 @Configuration
 @RegisterReflectionForBinding(
@@ -78,6 +81,11 @@ public class AppConfig {
     @Bean
     public CustomExceptionResolver resolver() {
         return new CustomExceptionResolver();
+    }
+
+    @Bean
+    CommandNotFoundMessageProvider notFoundMessageProvider() {
+        return new CommandNotFoundMessageProviderCustom();
     }
 
 }
