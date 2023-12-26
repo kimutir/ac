@@ -18,16 +18,18 @@ import java.util.Map;
 @Service
 public class ProjectService {
     private final HttpCustomClient client;
+    private final TokenUtils tokenUtils;
 
     @Autowired
     public ProjectService(
-            HttpCustomClient client
-    ) {
+            HttpCustomClient client,
+            TokenUtils tokenUtils) {
         this.client = client;
+        this.tokenUtils = tokenUtils;
     }
 
     public List<ProjectGetResponse> getProjects() {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ProjectListResponse projectList = client.project(token).build().get()
                 .retrieve()
@@ -41,7 +43,7 @@ public class ProjectService {
     }
 
     public Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> getConfig() {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ConfigGetResponse config = client.configurations(token).build().get()
                 .retrieve()
@@ -55,7 +57,7 @@ public class ProjectService {
     }
 
     public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ProjectPostResponse project = client.project(token).build().post()
                 .body(new ProjectRequest(name, tariff))
@@ -70,7 +72,7 @@ public class ProjectService {
     }
 
     public void addConfig(AmveraConfiguration body, String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/config?slug={slug}", slug, slug)
@@ -87,7 +89,7 @@ public class ProjectService {
 
     public String rebuild(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/rebuild", project.getSlug())
@@ -102,7 +104,7 @@ public class ProjectService {
 
     public String restart(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/restart", project.getSlug())
@@ -117,7 +119,7 @@ public class ProjectService {
 
     public String delete(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().delete()
                 .uri("/{slug}", project.getSlug())
@@ -132,7 +134,7 @@ public class ProjectService {
 
     public String start(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())
@@ -148,7 +150,7 @@ public class ProjectService {
 
     public String stop(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())
@@ -178,7 +180,7 @@ public class ProjectService {
 
     public String scale(String p, Integer num) {
         ProjectGetResponse project = findBy(p);
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())

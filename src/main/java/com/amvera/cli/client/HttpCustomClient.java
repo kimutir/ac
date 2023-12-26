@@ -55,7 +55,7 @@ public class HttpCustomClient {
     }
     public RestClient.Builder auth() {
         return RestClient.builder()
-                .baseUrl(endpoints.auth())
+                .baseUrl(endpoints.token())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_FORM_URLENCODED));
     }
 

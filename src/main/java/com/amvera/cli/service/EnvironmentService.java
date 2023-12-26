@@ -12,15 +12,17 @@ import java.util.List;
 @Service
 public class EnvironmentService {
     private final HttpCustomClient client;
+    private final TokenUtils tokenUtils;
 
     public EnvironmentService(
-            HttpCustomClient client
-    ) {
+            HttpCustomClient client,
+            TokenUtils tokenUtils) {
         this.client = client;
+        this.tokenUtils = tokenUtils;
     }
 
     public List<EnvDTO> getEnvironment(ProjectGetResponse project) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", project.getSlug())
                 .retrieve()
@@ -34,7 +36,7 @@ public class EnvironmentService {
     }
 
     public void addEnvironment(EnvPostRequest env, String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         ResponseEntity<String> response = client.environment(token).build()
                 .post().uri("/{slug}", slug)
@@ -48,7 +50,7 @@ public class EnvironmentService {
     }
 
     public void updateEnvironment(EnvPutRequest env, String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         ResponseEntity<String> response = client.environment(token).build()
                 .put().uri("/{slug}/{id}", slug, env.id())
                 .retrieve()
@@ -60,7 +62,7 @@ public class EnvironmentService {
     }
 
     public void deleteEnvironment(Integer id, String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         ResponseEntity<String> response = client.environment(token).build()
                 .delete().uri("/{slug}/{id}", slug, id)
                 .retrieve()
@@ -72,7 +74,7 @@ public class EnvironmentService {
     }
 
     public List<EnvDTO> getEnvironmentBySlug(String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         EnvListGetResponse envs = client.environment(token).build()
                 .get().uri("/{slug}", slug)
                 .retrieve()

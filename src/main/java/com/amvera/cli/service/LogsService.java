@@ -17,17 +17,19 @@ import java.util.List;
 public class LogsService {
     private final HttpCustomClient client;
     private final ObjectMapper mapper;
+    private final TokenUtils tokenUtils;
 
     public LogsService(
             HttpCustomClient client,
-            ObjectMapper mapper
-    ) {
+            ObjectMapper mapper,
+            TokenUtils tokenUtils) {
         this.client = client;
         this.mapper = mapper;
+        this.tokenUtils = tokenUtils;
     }
 
     public List<LogGetResponse> logs(ProjectGetResponse project, String type, int limit) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         ResponseEntity<String> response = client.logs(token).build().get()
                 .uri("/{type}/history?username={user}&serviceName={name}&limit={limit}", type, project.getOwnerName(), project.getSlug(), limit)
                 .retrieve()

@@ -8,15 +8,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class BalanceService {
     private final HttpCustomClient client;
+    private final TokenUtils tokenUtils;
 
     public BalanceService(
-            HttpCustomClient client
-    ) {
+            HttpCustomClient client,
+            TokenUtils tokenUtils) {
         this.client = client;
+        this.tokenUtils = tokenUtils;
     }
 
     public BalanceGetResponse getBalance() {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
 
         BalanceGetResponse balance = client.balance(token).build()
                 .get()
@@ -28,6 +30,5 @@ public class BalanceService {
         }
 
         return balance;
-
     }
 }

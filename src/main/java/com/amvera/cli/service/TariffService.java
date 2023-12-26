@@ -12,13 +12,15 @@ import org.springframework.web.client.RestClient;
 public class TariffService {
 
     private final HttpCustomClient client;
+    private final TokenUtils tokenUtils;
 
-    public TariffService(HttpCustomClient client) {
+    public TariffService(HttpCustomClient client, TokenUtils tokenUtils) {
         this.client = client;
+        this.tokenUtils = tokenUtils;
     }
 
     public void changeTariff(String slug, int tariffId) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         ResponseEntity<String> response = client.tariff(token).build()
                 .post().uri("/{slug}/tariff", slug)
                 .body(tariffId)
@@ -32,7 +34,7 @@ public class TariffService {
     }
 
     public TariffGetResponse getTariff(String slug) {
-        String token = TokenUtils.readToken();
+        String token = tokenUtils.readToken();
         RestClient.Builder builder = client.tariff(token);
 
         TariffGetResponse tariff = builder.build().get()

@@ -6,35 +6,31 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @RegisterReflectionForBinding
-public class AuthRequest {
+public class RefreshTokenRequest {
 
     @JsonProperty("client_id")
     private String clientId;
-    @JsonProperty("username")
-    private String username;
-    @JsonProperty("password")
-    private String password;
+    @JsonProperty("client_secret")
+    private String clientSecret;
+    @JsonProperty("refresh_token")
+    private String refreshToken;
     @JsonProperty("grant_type")
     private String grantType;
-    @JsonProperty("scope")
-    private String scope;
 
-    public AuthRequest(String clientId, String username, String password) {
+    public RefreshTokenRequest(String clientId, String refreshToken) {
         this.clientId = clientId;
-        this.username = username.trim();
-        this.password = password.trim();
-        this.grantType = "password";
-        this.scope = "offline_access";
+        this.clientSecret = "password";
+        this.refreshToken = refreshToken.trim();
+        this.grantType = "refresh_token";
     }
 
     public MultiValueMap<String, String> toMultiValueMap() {
 
         LinkedMultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("client_id", clientId);
-        body.add("username", username);
-        body.add("password", password);
+        body.add("refresh_token", refreshToken);
+        body.add("client_secret", clientSecret);
         body.add("grant_type", grantType);
-        body.add("scope", scope);
 
         return body;
 
@@ -48,20 +44,20 @@ public class AuthRequest {
         this.clientId = clientId;
     }
 
-    public String getUsername() {
-        return username;
+    public String getClientSecret() {
+        return clientSecret;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
-    public String getPassword() {
-        return password;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getGrantType() {
@@ -70,13 +66,5 @@ public class AuthRequest {
 
     public void setGrantType(String grantType) {
         this.grantType = grantType;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
     }
 }
