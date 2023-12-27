@@ -2,16 +2,27 @@ package com.amvera.cli.config;
 
 import com.amvera.cli.AmveraCLIApplication;
 import com.amvera.cli.dto.auth.*;
-import com.amvera.cli.dto.billing.BalanceGetResponse;
-import com.amvera.cli.dto.billing.TariffGetResponse;
+import com.amvera.cli.dto.billing.BalanceResponse;
+import com.amvera.cli.dto.billing.TariffListResponse;
+import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.dto.domain.DomainResponse;
+import com.amvera.cli.dto.domain.IngressPort;
+import com.amvera.cli.dto.env.EnvPostRequest;
+import com.amvera.cli.dto.env.EnvPutRequest;
+import com.amvera.cli.dto.env.EnvResponse;
+import com.amvera.cli.dto.github.GithubRelease;
 import com.amvera.cli.dto.project.*;
+import com.amvera.cli.dto.project.cnpg.*;
 import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
+import com.amvera.cli.dto.user.UserConfig;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
-import com.amvera.cli.model.ProjectTableModel;
-import com.amvera.cli.model.TariffTableModel;
-import com.amvera.cli.model.TokenConfig;
+import com.amvera.cli.utils.table.CnpgTableModel;
+import com.amvera.cli.utils.table.MarketplaceTableModel;
+import com.amvera.cli.utils.table.ProjectTableModel;
+import com.amvera.cli.utils.table.TariffTableModel;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.TokenUtils;
 import org.jline.terminal.Terminal;
@@ -27,31 +38,47 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
         {
                 AuthResponse.class,
                 AuthRequest.class,
-                ProjectGetResponse.class,
+                AmveraConfiguration.class,
+                AmveraCLIApplication.class,
+                BalanceResponse.class,
+                CnpgTableModel.class,
+                CnpgBackupPostRequest.class,
+                CnpgBackupResponse.class,
+                CnpgPostRequest.class,
+                CnpgPutRequest.class,
+                CnpgResponse.class,
+                CnpgRestorePostRequest.class,
+                CnpgRestoreResponse.class,
+                ConfigResponse.class,
+                DefaultConfValuesResponse.class,
+                DomainResponse.class,
+                EnvResponse.class,
+                EnvPostRequest.class,
+                EnvPutRequest.class,
+                GithubRelease.class,
+                InfoResponse.class,
+                IngressPort.class,
+                LogoutRequest.class,
+                LogResponse.class,
+                MarketplaceTableModel.class,
+                MarketplaceConfig.class,
+                MarketplaceConfigPostRequest.class,
+                MarketplaceConfigResponse.class,
+                Meta.class,
+                ProjectResponse.class,
                 ProjectListResponse.class,
                 ProjectRequest.class,
                 ProjectPostResponse.class,
-                AmveraCLIApplication.class,
-                Meta.class,
-                Toolchain.class,
-                LogGetResponse.class,
-                BalanceGetResponse.class,
-                TariffGetResponse.class,
-                EnvDTO.class,
-                EnvListGetResponse.class,
-                EnvPostRequest.class,
-                EnvPutRequest.class,
-                ScalePostRequest.class,
                 ProjectTableModel.class,
-                TariffTableModel.class,
-                InfoResponse.class,
-                AmveraConfiguration.class,
-                ConfigGetResponse.class,
-                DefaultConfValuesGetResponse.class,
-                LogoutRequest.class,
-                TokenConfig.class,
                 RefreshTokenPostRequest.class,
-                RevokeTokenPostRequest.class
+                RevokeTokenPostRequest.class,
+                ScalePostRequest.class,
+                Toolchain.class,
+                TariffResponse.class,
+                TariffListResponse.class,
+                TariffTableModel.class,
+                TokenConfig.class,
+                UserConfig.class
         }
 )
 public class AppConfig {
@@ -62,22 +89,18 @@ public class AppConfig {
 
     @Bean
     public Boolean isValid(TokenUtils tokenUtils) {
-        try {
-            return tokenUtils.readToken() != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return tokenUtils.health(tokenUtils.readToken().accessToken());
     }
 
     @Bean
-    public AvailabilityProvider userLoggedProvider(Boolean isValid) {
+    public AvailabilityProvider userLoggedOutProvider(Boolean isValid) {
         return () -> !isValid
                 ? Availability.available()
                 : Availability.unavailable("you are already logged in.");
     }
 
     @Bean
-    public AvailabilityProvider userLoggedOutProvider(Boolean isValid) {
+    public AvailabilityProvider userLoggedInProvider(Boolean isValid) {
         return  () -> isValid
                 ? Availability.available()
                 : Availability.unavailable("you are not logged in.");

@@ -1,52 +1,70 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.billing.TariffGetResponse;
-import com.amvera.cli.exception.ClientExceptions;
-import com.amvera.cli.utils.TokenUtils;
-import org.springframework.http.ResponseEntity;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.dto.billing.Tariff;
+import com.amvera.cli.dto.billing.TariffListResponse;
+import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.utils.ShellHelper;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.select.TariffSelectItem;
+import com.amvera.cli.utils.table.AmveraTable;
+import com.amvera.cli.utils.table.TariffTableModel;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.util.Currency;
+import java.util.List;
 
 @Service
 public class TariffService {
 
-    private final HttpCustomClient client;
-    private final TokenUtils tokenUtils;
+    private final AmveraTable table;
+    private final ShellHelper helper;
+    private final AmveraSelector selector;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
-    public TariffService(HttpCustomClient client, TokenUtils tokenUtils) {
+    public TariffService(
+            AmveraTable table,
+            ShellHelper helper,
+            AmveraSelector selector,
+            Endpoints endpoints,
+            AmveraHttpClient client
+    ) {
+        this.table = table;
+        this.helper = helper;
+        this.selector = selector;
+        this.endpoints = endpoints;
         this.client = client;
-        this.tokenUtils = tokenUtils;
     }
 
-    public void changeTariff(String slug, int tariffId) {
-        String token = tokenUtils.readToken().accessToken();
-        ResponseEntity<String> response = client.tariff(token).build()
-                .post().uri("/{slug}/tariff", slug)
-                .body(tariffId)
-                .retrieve()
-                .toEntity(String.class);
+    public Tariff select() {
+        List<SelectorItem<TariffSelectItem>> tariffs = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.tariff())
+                        .queryParam("currency", Currency.getInstance("RUB"))
+                        .build().toUri(),
+                TariffListResponse.class,
+                "Error when getting tariff list"
+        ).tariffs().stream().map(TariffResponse::toSelectItem).toList();
 
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Changing tariff failed.");
-        }
+        if (tariffs.isEmpty()) throw new RuntimeException("No tariffs found");
 
+        return selector.singleSelector(tariffs, "Select tariff: ", true).getTariff();
     }
 
-    public TariffGetResponse getTariff(String slug) {
-        String token = tokenUtils.readToken().accessToken();
-        RestClient.Builder builder = client.tariff(token);
+    public void renderTable() {
+        List<TariffTableModel> tariffs = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.tariff())
+                        .queryParam("currency", Currency.getInstance("RUB"))
+                        .build().toUri(),
+                TariffListResponse.class,
+                "Error when getting tariff list"
+        ).tariffs().stream().map(TariffTableModel::new).toList();
 
-        TariffGetResponse tariff = builder.build().get()
-                .uri("/{slug}/tariff", slug)
-                .retrieve()
-                .body(TariffGetResponse.class);
-
-        if (tariff == null) {
-            throw ClientExceptions.noContent("Tariff loading failed.");
-        }
-
-        return tariff;
+        helper.println(table.tariffs(tariffs));
     }
 
 }

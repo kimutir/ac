@@ -1,10 +1,13 @@
 package com.amvera.cli.utils;
 
 import org.jline.terminal.Terminal;
+import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ShellHelper {
 
     @Value("${shell.out.info}")
@@ -124,6 +127,12 @@ public class ShellHelper {
             toPrint = getColored(message, color);
         }
         terminal.writer().print(toPrint);
+        terminal.flush();
+    }
+
+    public void printlnTitle(String title) {
+        String s = " " + new AttributedString((title).toUpperCase(), AttributedStyle.DEFAULT.bold().underline()).toAnsi() + ":";
+        terminal.writer().println(s);
         terminal.flush();
     }
 

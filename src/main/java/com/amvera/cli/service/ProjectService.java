@@ -1,171 +1,253 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.project.*;
-import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.dto.project.config.ConfigGetResponse;
-import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.dto.billing.Tariff;
+import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.dto.project.ProjectListResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ScalePostRequest;
+import com.amvera.cli.dto.project.ServiceType;
+import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.exception.ClientExceptions;
-import com.amvera.cli.utils.TokenUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.amvera.cli.exception.EmptyValueException;
+import com.amvera.cli.exception.UnsupportedServiceTypeException;
+import com.amvera.cli.utils.ShellHelper;
+import com.amvera.cli.utils.input.AmveraInput;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.select.ProjectSelectItem;
+import com.amvera.cli.utils.table.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Predicate;
 
 @Service
 public class ProjectService {
-    private final HttpCustomClient client;
-    private final TokenUtils tokenUtils;
+    private final AmveraTable table;
+    private final TariffService tariffService;
+    private final ShellHelper helper;
+    private final AmveraSelector selector;
+    private final AmveraInput input;
+    private final AmveraHttpClient client;
+    private final Endpoints endpoints;
 
     @Autowired
     public ProjectService(
-            HttpCustomClient client,
-            TokenUtils tokenUtils) {
+            AmveraTable table,
+            TariffService tariffService,
+            ShellHelper helper,
+            AmveraSelector selector,
+            AmveraInput input,
+            AmveraHttpClient client,
+            Endpoints endpoints
+    ) {
+        this.table = table;
+        this.tariffService = tariffService;
+        this.helper = helper;
+        this.selector = selector;
+        this.input = input;
         this.client = client;
-        this.tokenUtils = tokenUtils;
+        this.endpoints = endpoints;
     }
 
-    public List<ProjectGetResponse> getProjects() {
-        String token = tokenUtils.readToken().accessToken();
+    public void renderPreconfiguredTable(ProjectResponse project) {
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
+        helper.print(table.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariff.id()))));
+    }
 
-        ProjectListResponse projectList = client.project(token).build().get()
-                .retrieve()
-                .body(ProjectListResponse.class);
+    public void renderCnpgTable(String slug, CnpgResponse cnpg) {
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(slug),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", slug)
+        );
+        helper.print(table.singleEntityTable(new CnpgTableModel(cnpg, Tariff.value(tariff.id()))));
+    }
 
-        if (projectList == null || projectList.getServices().isEmpty()) {
-            throw ClientExceptions.noContent("Projects were not found.");
+    public void renderTable(Predicate<ProjectResponse> predicate) {
+        List<ProjectResponse> projectList = findAll(predicate);
+
+        if (projectList.isEmpty())
+            throw new EmptyValueException("No services found. You can start with 'amvera create'");
+
+        helper.print(table.projects(projectList));
+    }
+
+    public void renderTable() {
+        List<ProjectResponse> projectList = findAll();
+
+        if (projectList.isEmpty())
+            throw new EmptyValueException("No services found. You can start with 'amvera create'");
+
+        helper.print(table.projects(projectList));
+    }
+
+    public void renderTable(ProjectResponse project) {
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
+        helper.print(table.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff.id()))));
+    }
+
+    public void renderTariffTable(String slug) {
+        ProjectResponse project = findOrSelect(slug);
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
+        helper.print(table.singleEntityTable(new TariffTableModel(tariff)));
+    }
+
+    public void updateTariff(String slug) {
+        ProjectResponse project = findOrSelect(slug);
+        Tariff tariff = tariffService.select();
+
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                tariff.id(),
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
+
+        helper.println("Tariff has been updated. Your project will we restarted automatically");
+    }
+
+    public void rebuild(String slug) {
+        ProjectResponse project = findOrSelect(slug);
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/rebuild").build(slug),
+                String.format("Error when rebuilding %s", slug)
+        );
+        helper.println("Project rebuilding started...");
+    }
+
+    public void restart(String slug) {
+        slug = findOrSelect(slug, p -> p.getServiceType().equals(ServiceType.PROJECT) || p.getServiceType().equals(ServiceType.PRECONFIGURED)).getSlug();
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/restart").build(slug),
+                String.format("Error when restarting %s", slug)
+        );
+        helper.println("Project restarting started...");
+    }
+
+    public void start(String slug) {
+        slug = findOrSelect(slug, p -> p.getInstances() == 0 && p.getRequiredInstances() > 0).getSlug();
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/rebuild").build(slug),
+                new ScalePostRequest(1),
+                String.format("Error when starting %s", slug)
+        );
+        helper.println("Starting project...");
+    }
+
+    public void stop(String slug) {
+        slug = findOrSelect(slug, p -> p.getInstances() > 0 && p.getRequiredInstances() > 0).getSlug();
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
+                new ScalePostRequest(0),
+                String.format("Error when stopping %s", slug)
+        );
+        helper.println("Project stopped...");
+    }
+
+    public void scale(String slug, Integer instances) {
+        ProjectResponse project = findOrSelect(slug, p -> !p.getStatus().equals("EMPTY"));
+
+        while (instances == null) {
+            try {
+                instances = Integer.parseInt(input.notBlankOrNullInput("Enter desired replicas amount: "));
+            } catch (NumberFormatException e) {
+                helper.printError("Enter integer");
+                instances = null;
+            }
         }
 
-        return projectList.getServices();
-    }
-
-    public Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> getConfig() {
-        String token = tokenUtils.readToken().accessToken();
-
-        ConfigGetResponse config = client.configurations(token).build().get()
-                .retrieve()
-                .body(ConfigGetResponse.class);
-
-        if (config == null) {
-            throw ClientExceptions.noContent("Config default values were not found.");
+        if (project.getServiceType().equals(ServiceType.POSTGRESQL)) {
+            client.post(
+                    UriComponentsBuilder.fromUriString(endpoints.postgresql() + "/{slug}/scale").build(project.getSlug()),
+                    new ScalePostRequest(instances),
+                    String.format("Error when scaling '%s' postgres", project.getSlug())
+            );
+        } else {
+            client.post(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
+                    new ScalePostRequest(instances),
+                    String.format("Error when scaling %s", slug)
+            );
         }
 
-        return config.availableParameters();
+        helper.println("Project scaled...");
     }
 
-    public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
-        String token = tokenUtils.readToken().accessToken();
+    public void freeze(String slug) {
+        if (slug != null) {
+            ProjectResponse project = client.get(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                    ProjectResponse.class,
+                    String.format("Could not find %s", slug)
+            );
 
-        ProjectPostResponse project = client.project(token).build().post()
-                .body(new ProjectRequest(name, tariff))
-                .retrieve()
-                .body(ProjectPostResponse.class);
+            if (!project.getServiceType().equals(ServiceType.PROJECT)) {
+                throw new UnsupportedServiceTypeException("Unable to freeze not PROJECT type");
+            }
 
-        if (project == null) {
-            throw new RuntimeException("Project creation failed.");
+            slug = project.getSlug();
+        } else {
+            slug = select(p -> p.getServiceType().equals(ServiceType.PROJECT)).getSlug();
         }
 
-        return project;
+        client.put(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/freeze").build(slug),
+                String.format("Error when freezing %s", slug)
+        );
+
+        helper.print(String.format("Project %s has been frozen", slug));
     }
 
-    public void addConfig(AmveraConfiguration body, String slug) {
-        String token = tokenUtils.readToken().accessToken();
 
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/config?slug={slug}", slug, slug)
-                .body(body)
-                .retrieve()
-                .toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Creating configuration failed.");
+    public void delete(ProjectResponse project) {
+        switch (project.getServiceType()) {
+            case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> client.delete(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(project.getSlug()),
+                    String.format("Error when deleting %s", project.getSlug())
+            );
+            case ServiceType.POSTGRESQL -> client.delete(
+                    UriComponentsBuilder.fromUriString(endpoints.postgresql() + "/{slug}").build(project.getSlug()),
+                    "Error when deleting postgres"
+            );
         }
-
-        System.out.println("Config amvera.yml added");
+        ;
+        helper.println(String.format("Project %s has been deleted", project.getSlug()));
     }
 
-    public String rebuild(String p) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/rebuild", project.getSlug())
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Rebuilding failed.");
-        }
-
-        return "Project rebuilding started...";
+    public List<ProjectResponse> findAll() {
+        return client.get(
+                URI.create(endpoints.projects()),
+                ProjectListResponse.class,
+                "Error when getting project list"
+        ).getServices();
     }
 
-    public String restart(String p) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/restart", project.getSlug())
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Restarting failed.");
-        }
-
-        return "Project restarting started...";
+    public List<ProjectResponse> findAll(Predicate<ProjectResponse> predicate) {
+        return findAll()
+                .stream()
+                .filter(predicate)
+                .toList();
     }
 
-    public String delete(String p) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().delete()
-                .uri("/{slug}", project.getSlug())
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Deletion failed.");
-        }
-
-        return "Project has been deleted successfully!";
-    }
-
-    public String start(String p) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/scale", project.getSlug())
-                .body(new ScalePostRequest(1))
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to start project.");
-        }
-
-        return "Project started!";
-    }
-
-    public String stop(String p) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/scale", project.getSlug())
-                .body(new ScalePostRequest(0))
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to stop project.");
-        }
-
-        return "Project stopped!";
-    }
-
-    public ProjectGetResponse findBy(String name) {
-        List<ProjectGetResponse> projects = this.getProjects();
+    public ProjectResponse findBy(String name) {
+        List<ProjectResponse> projects = findAll();
         projects = projects.stream()
                 .filter(p -> String.valueOf(p.getId()).equals(name) || p.getName().equals(name) || p.getSlug().equals(name))
                 .toList();
@@ -177,21 +259,30 @@ public class ProjectService {
         return projects.getFirst();
     }
 
-    public String scale(String p, Integer num) {
-        ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
-
-        ResponseEntity<String> response = client.project(token).build().post()
-                .uri("/{slug}/scale", project.getSlug())
-                .body(new ScalePostRequest(num))
-                .retrieve().toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to change scale project.");
-        }
-
-        return "Required instances changed to " + num;
+    public ProjectResponse findOrSelect(String slug) {
+        return findOrSelect(slug, p -> true);
     }
 
+    public ProjectResponse findOrSelect(String slug, Predicate<ProjectResponse> predicate) {
+        return slug == null ?
+                select(predicate) :
+                client.get(
+                        UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                        ProjectResponse.class,
+                        String.format("Could not find %s", slug)
+                );
+    }
+
+    public ProjectResponse select() {
+        return select(p -> true);
+    }
+
+    public ProjectResponse select(Predicate<ProjectResponse> predicate) {
+        List<SelectorItem<ProjectSelectItem>> projectList = findAll()
+                .stream()
+                .filter(predicate)
+                .map(ProjectResponse::toSelectorItem).toList();
+        return selector.singleSelector(projectList, "Select project: ", true).getProject();
+    }
 
 }

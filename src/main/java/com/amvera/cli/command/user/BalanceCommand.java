@@ -1,6 +1,6 @@
 package com.amvera.cli.command.user;
 
-import com.amvera.cli.dto.billing.BalanceGetResponse;
+import com.amvera.cli.dto.billing.BalanceResponse;
 import com.amvera.cli.service.BalanceService;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.annotation.Command;
@@ -17,11 +17,11 @@ public class BalanceCommand {
     }
 
     @Command(command = "balance", description = "Current balance")
-    @CommandAvailability(provider = "userLoggedOutProvider")
-    public Object balance() {
-        BalanceGetResponse balance = balanceService.getBalance();
+    @CommandAvailability(provider = "userLoggedInProvider")
+    public void balance() {
+        BalanceResponse balance = balanceService.getBalance();
         helper.println("Your current balance:");
-        return balance.balance().toString() + " " + balance.currency();
+        helper.println(balance.balance().toString() + " " + balance.currency());
     }
 
 }

@@ -1,54 +1,92 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.project.LogGetResponse;
-import com.amvera.cli.dto.project.ProjectGetResponse;
-import com.amvera.cli.utils.TokenUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.dto.project.LogResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ServiceType;
+import com.amvera.cli.utils.ShellHelper;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
 public class LogsService {
-    private final HttpCustomClient client;
-    private final ObjectMapper mapper;
-    private final TokenUtils tokenUtils;
+    private final ShellHelper helper;
+    private final ProjectService projectService;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
     public LogsService(
-            HttpCustomClient client,
-            ObjectMapper mapper,
-            TokenUtils tokenUtils) {
+            ShellHelper helper,
+            ProjectService projectService,
+            Endpoints endpoints,
+            AmveraHttpClient client
+    ) {
+        this.helper = helper;
+        this.projectService = projectService;
+        this.endpoints = endpoints;
         this.client = client;
-        this.mapper = mapper;
-        this.tokenUtils = tokenUtils;
     }
 
-    public List<LogGetResponse> logs(ProjectGetResponse project, String type, int limit) {
-        String token = tokenUtils.readToken().accessToken();
-        ResponseEntity<String> response = client.logs(token).build().get()
-                .uri("/{type}/history?username={user}&serviceName={name}&limit={limit}", type, project.getOwnerName(), project.getSlug(), limit)
-                .retrieve()
-                .toEntity(String.class);
+    public void run(String slug, Integer limit, String query, Long last) {
+        ProjectResponse project = projectService.findOrSelect(slug);
 
-        List<LogGetResponse> logs;
+        OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC);
+        OffsetDateTime start = end.minusMinutes(last);
 
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Logs loading failed.");
+        List<LogResponse> logList = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.logs() + "/v2/run/history")
+                        .queryParam("serviceName", project.getSlug())
+                        .queryParam("limit", limit)
+                        .queryParam("query", query)
+                        .queryParam("start", start)
+                        .queryParam("end", end)
+                        .build()
+                        .toUri(),
+                new ParameterizedTypeReference<>() {
+                },
+                "Error when getting run logs"
+        );
+
+        if (logList.isEmpty()) {
+            helper.printWarning("Logs not found. Try again later");
+            return;
         }
 
-        try {
-            logs = mapper.readValue(response.getBody(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Logs loading failed.");
+        logList.forEach(l -> helper.println(l.content()));
+    }
+
+    public void build(String slug, Integer limit, String query, Long last) {
+        ProjectResponse project = projectService.findOrSelect(slug, p -> p.getServiceType().equals(ServiceType.PROJECT));
+
+        OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC);
+        OffsetDateTime start = end.minusMinutes(last);
+
+        List<LogResponse> logList = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.logs() + "/v2/build/history")
+                        .queryParam("serviceName", project.getSlug())
+                        .queryParam("limit", limit)
+                        .queryParam("query", query)
+                        .queryParam("start", start)
+                        .queryParam("end", end)
+                        .build()
+                        .toUri(),
+                new ParameterizedTypeReference<>() {
+                },
+                "Error when getting run logs"
+        );
+
+        if (logList.isEmpty()) {
+            helper.printWarning("Logs not found. Try again later");
+            return;
         }
 
-        return logs;
+        logList.forEach(l -> helper.println(l.content()));
     }
 
 }
