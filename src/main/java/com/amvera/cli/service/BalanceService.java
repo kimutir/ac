@@ -18,7 +18,7 @@ public class BalanceService {
     }
 
     public BalanceGetResponse getBalance() {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         BalanceGetResponse balance = client.balance(token).build()
                 .get()

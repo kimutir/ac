@@ -29,7 +29,7 @@ public class LogsService {
     }
 
     public List<LogGetResponse> logs(ProjectGetResponse project, String type, int limit) {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
         ResponseEntity<String> response = client.logs(token).build().get()
                 .uri("/{type}/history?username={user}&serviceName={name}&limit={limit}", type, project.getOwnerName(), project.getSlug(), limit)
                 .retrieve()

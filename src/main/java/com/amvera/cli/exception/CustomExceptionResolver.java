@@ -64,6 +64,10 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             helper.printError("Value is null.");
             System.exit(2);
         }
+        if (e instanceof InformException) {
+            helper.printError(e.getMessage());
+            System.exit(2);
+        }
         if (e instanceof RuntimeException) {
 //            helper.printError(e.getMessage());
             System.exit(2);

@@ -29,7 +29,7 @@ public class ProjectService {
     }
 
     public List<ProjectGetResponse> getProjects() {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ProjectListResponse projectList = client.project(token).build().get()
                 .retrieve()
@@ -43,7 +43,7 @@ public class ProjectService {
     }
 
     public Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> getConfig() {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ConfigGetResponse config = client.configurations(token).build().get()
                 .retrieve()
@@ -57,7 +57,7 @@ public class ProjectService {
     }
 
     public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ProjectPostResponse project = client.project(token).build().post()
                 .body(new ProjectRequest(name, tariff))
@@ -72,7 +72,7 @@ public class ProjectService {
     }
 
     public void addConfig(AmveraConfiguration body, String slug) {
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/config?slug={slug}", slug, slug)
@@ -89,7 +89,7 @@ public class ProjectService {
 
     public String rebuild(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/rebuild", project.getSlug())
@@ -104,7 +104,7 @@ public class ProjectService {
 
     public String restart(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/restart", project.getSlug())
@@ -119,7 +119,7 @@ public class ProjectService {
 
     public String delete(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().delete()
                 .uri("/{slug}", project.getSlug())
@@ -134,7 +134,7 @@ public class ProjectService {
 
     public String start(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())
@@ -150,7 +150,7 @@ public class ProjectService {
 
     public String stop(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())
@@ -173,14 +173,13 @@ public class ProjectService {
         if (projects.isEmpty()) {
             throw ClientExceptions.noContent("Project was not found.");
         }
-        ;
 
         return projects.getFirst();
     }
 
     public String scale(String p, Integer num) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken();
+        String token = tokenUtils.readToken().accessToken();
 
         ResponseEntity<String> response = client.project(token).build().post()
                 .uri("/{slug}/scale", project.getSlug())

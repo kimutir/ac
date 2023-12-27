@@ -28,8 +28,6 @@ public class LoginCommand extends AbstractShellComponent {
             @Option(longNames = "user", shortNames = 'u', arity = OptionArity.EXACTLY_ONE, description = "Username/email for authorization") String user,
             @Option(longNames = "password", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "User password for authorization") String password
     ) {
-//        user = "kimutir@gmail.com";
-//        password = "Ch3sh1r3";
 
         if (user == null || user.isBlank()) {
             user = input.defaultInput("Username/email: ");

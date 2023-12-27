@@ -1,9 +1,5 @@
 package com.amvera.cli.aspect;
 
-import com.amvera.cli.exception.CustomException;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.jline.terminal.Terminal;

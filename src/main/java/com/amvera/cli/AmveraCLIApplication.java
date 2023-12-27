@@ -23,12 +23,11 @@ import org.springframework.shell.jline.PromptProvider;
 @EnableConfigurationProperties({AppProperties.class, Endpoints.class})
 public class AmveraCLIApplication {
     public static void main(String[] args) {
-        new SpringApplicationBuilder()
-                .web(WebApplicationType.NONE)
-                .sources(AmveraCLIApplication.class)
-                .run(args);
         try {
-
+            new SpringApplicationBuilder()
+                    .web(WebApplicationType.NONE)
+                    .sources(AmveraCLIApplication.class)
+                    .run(args);
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CommandNotCurrentlyAvailable) {
                 // color removed because of incorrect output in PowerShell (windows)

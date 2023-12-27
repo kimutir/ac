@@ -1,10 +1,7 @@
 package com.amvera.cli.config;
 
 import com.amvera.cli.AmveraCLIApplication;
-import com.amvera.cli.dto.auth.AuthRequest;
-import com.amvera.cli.dto.auth.AuthResponse;
-import com.amvera.cli.dto.auth.LogoutRequest;
-import com.amvera.cli.dto.auth.RefreshTokenRequest;
+import com.amvera.cli.dto.auth.*;
 import com.amvera.cli.dto.billing.BalanceGetResponse;
 import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.*;
@@ -15,7 +12,6 @@ import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.model.TariffTableModel;
 import com.amvera.cli.model.TokenConfig;
-import com.amvera.cli.service.UserService;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.TokenUtils;
 import org.jline.terminal.Terminal;
@@ -54,7 +50,8 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
                 DefaultConfValuesGetResponse.class,
                 LogoutRequest.class,
                 TokenConfig.class,
-                RefreshTokenRequest.class
+                RefreshTokenPostRequest.class,
+                RevokeTokenPostRequest.class
         }
 )
 public class AppConfig {
@@ -86,7 +83,7 @@ public class AppConfig {
                 : Availability.unavailable("you are not logged in.");
     }
 
-//    @Bean
+    @Bean
     public CustomExceptionResolver resolver() {
         return new CustomExceptionResolver();
     }

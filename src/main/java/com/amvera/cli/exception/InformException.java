@@ -3,9 +3,9 @@ package com.amvera.cli.exception;
 /**
  * Custom exception for test
  */
-public class CustomException extends RuntimeException{
+public class InformException extends RuntimeException{
 
-    public CustomException(String message) {
+    public InformException(String message) {
         super(message);
 
     }

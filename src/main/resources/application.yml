@@ -26,9 +26,9 @@ shell:
     success: "GREEN"
     warning: "YELLOW"
     error: "RED"
-#logging:
-#  level:
-#    root: off
+logging:
+  level:
+    root: off
 
 amvera:
   keycloak-client: "amvera-cli"
@@ -43,7 +43,7 @@ endpoints:
 #  tariff: https://api.amvera.ru/tariff
 #  token: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token
 #  user: https://id.amvera.ru/auth/realms/amvera/account/
-#  logout: https://keycloak.example/auth/realms/amvera/protocol/openid-connect/logout
+#  logout: https://id.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/revoke
 
   configurations: https://api.staging.amvera.ru/configurations
   logs: https://notifications.amvera.ru/logs
@@ -52,5 +52,5 @@ endpoints:
   env: https://api.staging.amvera.ru/env
   tariff: https://api.staging.amvera.ru/tariff
   token: https://id.staging.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/token
-  logout: https://keycloak.example/auth/realms/amvera-staging/protocol/openid-connect/logout
+  logout: https://id.staging.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/revoke
   user: https://id.staging.amvera.ru/auth/realms/amvera-staging/account/

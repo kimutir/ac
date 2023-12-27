@@ -3,10 +3,10 @@ package com.amvera.cli.utils;
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.dto.auth.AuthResponse;
-import com.amvera.cli.dto.auth.RefreshTokenRequest;
+import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
+import com.amvera.cli.exception.InformException;
+import com.amvera.cli.exception.TokenNotFoundException;
 import com.amvera.cli.model.TokenConfig;
-import com.amvera.cli.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -41,44 +41,36 @@ public class TokenUtils {
         try {
             mapper.writeValue(new File(PATH), tokenConfig);
         } catch (IOException e) {
-            throw new RuntimeException("Unable to save token. Contact us to solve problem.");
+            throw new InformException("Unable to save token. Contact us to solve the problem.");
         }
     }
 
-    public String readToken() {
+    public TokenConfig readToken() {
         try {
-            String token;
             TokenConfig tokenConfig = mapper.readValue(new File(PATH), TokenConfig.class);
+            // check if access token is valid
             int health = health(tokenConfig.accessToken());
-
+            System.out.println("health " + health);
+            // if not, request new access and refresh tokens
             if (health != 200) {
+                System.out.println("TOKEN IS EXPIRED, NEED TO REFRESH");
                 tokenConfig = refreshToken(tokenConfig.refreshToken());
             }
 
-            token = tokenConfig.accessToken();
-            return token;
+            return tokenConfig;
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TokenNotFoundException("Token was not found.");
         }
-//        String token;
-//        try (FileInputStream fileInputStream = new FileInputStream(PATH)) {
-//            token = new String(fileInputStream.readAllBytes(), StandardCharsets.UTF_8);
-//            return token;
-//        }
-//        catch (IOException e) {
-//            throw new TokenNotFoundException("Token was not found.");
-//        }
-//        catch (Exception e) {
-//            throw new RuntimeException("Unable to read token. Contact us to solve problem.");
-//        }
     }
 
     public String deleteToken() {
-        File fileToDelete = new File(PATH);
-        fileToDelete.delete();
+        try {
+            File fileToDelete = new File(PATH);
+            fileToDelete.delete();
+        } catch (Exception e) {
+//            System.out.println("Try to delete .amvera.json manually.");
+        }
 
         return "Logged out successfully!";
     }
@@ -97,24 +89,32 @@ public class TokenUtils {
     }
 
     private TokenConfig refreshToken(String refreshToken) {
-        RefreshTokenRequest body = new RefreshTokenRequest(properties.keycloakClient(), refreshToken);
-
-        AuthResponse response = client.auth().build()
-                .post()
-                .body(body.toMultiValueMap())
-                .retrieve().body(AuthResponse.class);
-
-        System.out.println("refresh response: " + response.getAccessToken());
-
-        TokenConfig tokenConfig = new TokenConfig(response.getAccessToken(), response.getRefreshToken());
-
+        RefreshTokenPostRequest body = new RefreshTokenPostRequest(properties.keycloakClient(), refreshToken);
         try {
+            AuthResponse response = client.auth().build()
+                    .post()
+                    .body(body.toMultiValueMap())
+                    .retrieve().body(AuthResponse.class);
+
+            if (response == null) {
+                throw new InformException("Unable to refresh tokens. Contact us to solve the problem.");
+            }
+
+            System.out.println("new access token: " + response.getAccessToken());
+            System.out.println("new refresh token: " + response.getRefreshToken());
+
+            TokenConfig tokenConfig = new TokenConfig(response.getAccessToken(), response.getRefreshToken());
+
             mapper.writeValue(new File(PATH), tokenConfig);
+
+            System.out.println("NEW TOKENS HAVE BEEN WRITTEN");
+            return tokenConfig;
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InformException("Unable to save token. Contact us to solve the problem.");
         }
 
-        return tokenConfig;
+
     }
 
 }

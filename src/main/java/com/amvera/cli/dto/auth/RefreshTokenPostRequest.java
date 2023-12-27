@@ -6,7 +6,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @RegisterReflectionForBinding
-public class RefreshTokenRequest {
+public class RefreshTokenPostRequest {
 
     @JsonProperty("client_id")
     private String clientId;
@@ -17,7 +17,7 @@ public class RefreshTokenRequest {
     @JsonProperty("grant_type")
     private String grantType;
 
-    public RefreshTokenRequest(String clientId, String refreshToken) {
+    public RefreshTokenPostRequest(String clientId, String refreshToken) {
         this.clientId = clientId;
         this.clientSecret = "password";
         this.refreshToken = refreshToken.trim();
