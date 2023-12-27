@@ -43,7 +43,7 @@ endpoints:
   tariff: https://api.amvera.ru/tariff
   token: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token
   user: https://id.amvera.ru/auth/realms/amvera/account/
-  logout: https://id.amvera.ru/auth/realms/amvera-staging/protocol/openid-connect/revoke
+  logout: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/revoke
 
 #  configurations: https://api.staging.amvera.ru/configurations
 #  logs: https://notifications.amvera.ru/logs

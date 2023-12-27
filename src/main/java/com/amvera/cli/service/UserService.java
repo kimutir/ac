@@ -54,8 +54,6 @@ public class UserService {
                 .body(body.toMultiValueMap())
                 .retrieve().toEntity(String.class);
 
-        int code = response.getStatusCode().value();
-
         return tokenUtils.deleteToken();
     }
 
