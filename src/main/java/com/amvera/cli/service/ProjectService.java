@@ -84,7 +84,7 @@ public class ProjectService {
             throw new RuntimeException("Creating configuration failed.");
         }
 
-        System.out.println("config added");
+        System.out.println("Config amvera.yml added");
     }
 
     public String rebuild(String p) {

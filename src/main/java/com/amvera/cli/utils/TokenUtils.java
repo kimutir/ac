@@ -50,10 +50,8 @@ public class TokenUtils {
             TokenConfig tokenConfig = mapper.readValue(new File(PATH), TokenConfig.class);
             // check if access token is valid
             int health = health(tokenConfig.accessToken());
-            System.out.println("health " + health);
             // if not, request new access and refresh tokens
             if (health != 200) {
-                System.out.println("TOKEN IS EXPIRED, NEED TO REFRESH");
                 tokenConfig = refreshToken(tokenConfig.refreshToken());
             }
 
@@ -100,14 +98,9 @@ public class TokenUtils {
                 throw new InformException("Unable to refresh tokens. Contact us to solve the problem.");
             }
 
-            System.out.println("new access token: " + response.getAccessToken());
-            System.out.println("new refresh token: " + response.getRefreshToken());
-
             TokenConfig tokenConfig = new TokenConfig(response.getAccessToken(), response.getRefreshToken());
-
             mapper.writeValue(new File(PATH), tokenConfig);
 
-            System.out.println("NEW TOKENS HAVE BEEN WRITTEN");
             return tokenConfig;
 
         } catch (IOException e) {

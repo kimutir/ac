@@ -56,15 +56,11 @@ public class UserService {
 
         int code = response.getStatusCode().value();
 
-        System.out.println("Revoke code: " + code);
-
         return tokenUtils.deleteToken();
     }
 
     public InfoResponse info() {
         String token = tokenUtils.readToken().accessToken();
-
-        System.out.println("Access token from userinfo request: " + token);
 
         InfoResponse info = client.info(token).build()
                 .get().retrieve()
