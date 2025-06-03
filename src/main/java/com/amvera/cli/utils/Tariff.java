@@ -5,7 +5,8 @@ public enum Tariff {
     BEGINNER("Начальный"),
     BEGINNER_PLUS("Начальный Плюс"),
     STANDARD("Стандартный"),
-    ULTRA("Ультра");
+    ULTRA("Ультра"),
+    ULTRA_CPU("Ультра CPU");
 
     private final String title;
 
@@ -34,6 +35,9 @@ public enum Tariff {
             case "Ультра" -> {
                 return 3;
             }
+            case "Ультра CPU" -> {
+                return 6;
+            }
             default -> {
                 return 0;
             }
@@ -56,6 +60,9 @@ public enum Tariff {
             }
             case 3 -> {
                 return "Ультра";
+            }
+            case 6 -> {
+                return "Ультра CPU";
             }
             default -> {
                 return null;

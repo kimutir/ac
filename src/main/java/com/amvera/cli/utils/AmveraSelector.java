@@ -17,7 +17,8 @@ public class AmveraSelector extends AbstractShellComponent {
             SelectorItem.of("Начальный", Tariff.BEGINNER.title()),
             SelectorItem.of("Начальный Плюс", Tariff.BEGINNER_PLUS.title()),
             SelectorItem.of("Стандартный", Tariff.STANDARD.title()),
-            SelectorItem.of("Ультра", Tariff.ULTRA.title())
+            SelectorItem.of("Ультра", Tariff.ULTRA.title()),
+            SelectorItem.of("Ультра CPU", Tariff.ULTRA_CPU.title())
     );
 
     public int selectTariff() {
@@ -48,7 +49,5 @@ public class AmveraSelector extends AbstractShellComponent {
         }
 
     }
-
-
 
 }
