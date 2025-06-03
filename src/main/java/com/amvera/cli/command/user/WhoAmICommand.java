@@ -24,13 +24,9 @@ public class WhoAmICommand {
         InfoResponse info = authService.info();
 
         String username = new AttributedString("Username: ", AttributedStyle.DEFAULT.bold()).toAnsi();
-        String name = new AttributedString("First Name: ", AttributedStyle.DEFAULT.bold()).toAnsi();
-        String lastName = new AttributedString("Last Name: ", AttributedStyle.DEFAULT.bold()).toAnsi();
         String email = new AttributedString("Email: ", AttributedStyle.DEFAULT.bold()).toAnsi();
 
         helper.println(username + info.username());
-        helper.println(name + info.firstName());
-        helper.println(lastName + info.lastName());
         helper.println(email + info.email());
     }
 
