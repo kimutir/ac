@@ -4,7 +4,6 @@ import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
 import com.amvera.cli.dto.project.config.ConfigGetResponse;
-import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
 import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,7 +12,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ProjectService {
@@ -43,7 +41,7 @@ public class ProjectService {
         return projectList.getServices();
     }
 
-    public Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> getConfig() {
+    public ConfigGetResponse getConfig() {
         String token = tokenUtils.readToken().accessToken();
 
         ConfigGetResponse config = client.configurations(token).build().get()
@@ -54,7 +52,7 @@ public class ProjectService {
             throw ClientExceptions.noContent("Config default values were not found.");
         }
 
-        return config.availableParameters();
+        return config;
     }
 
     public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {

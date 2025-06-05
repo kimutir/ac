@@ -23,16 +23,29 @@ public class AmveraInput {
         this.helper = helper;
     }
 
-    public String notEmptyInput(String prompt) {
+    public String notBlankOrNullInput(String prompt) {
         String input = defaultInput(prompt);
 
         if (input == null || input.isBlank()) {
             helper.printError("Value can not be empty.");
-            return notEmptyInput(prompt);
+            return notBlankOrNullInput(prompt);
         }
 
         return input;
     }
+
+    public String notBlankOrNullInput(String prompt, String defaultValue) {
+        String input = inputWithDefault(prompt, defaultValue);
+
+        if (input == null || input.isBlank()) {
+            helper.printError("Value can not be empty.");
+            return notBlankOrNullInput(prompt, defaultValue);
+        }
+
+        return input;
+    }
+
+
 
     public String defaultInput(String prompt) {
         String p = new AttributedString(prompt, AttributedStyle.DEFAULT.bold()).toAnsi();

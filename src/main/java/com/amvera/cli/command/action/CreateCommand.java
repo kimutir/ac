@@ -1,11 +1,8 @@
-package com.amvera.cli.command.project;
+package com.amvera.cli.command.action;
 
+import com.amvera.cli.dto.project.EnvPostRequest;
 import com.amvera.cli.dto.project.ProjectPostResponse;
-import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.dto.project.config.ConfigGetResponse;
-import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
-import com.amvera.cli.dto.project.config.Meta;
-import com.amvera.cli.exception.EmptyValueException;
+import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.model.ProjectTableModel;
 import com.amvera.cli.service.MarketplaceService;
 import com.amvera.cli.service.ProjectService;
@@ -13,22 +10,15 @@ import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-//@Component
 @Command(command = "create", alias = "create", group = "Create commands")
 public class CreateCommand extends AbstractShellComponent {
     private final ProjectService projectService;
@@ -37,6 +27,8 @@ public class CreateCommand extends AbstractShellComponent {
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
     private final AmveraInput input;
+
+    private static final String MARKETPLACE_VERSION = "1";
 
     public CreateCommand(
             ProjectService projectService,
@@ -56,25 +48,26 @@ public class CreateCommand extends AbstractShellComponent {
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String create() {
         int serviceTypeId = selector.selectServiceType();
-        String name = input.notEmptyInput("Enter project name: ");
+        String name = input.notBlankOrNullInput("Enter project name: ");
         int tariff = selector.selectTariff();
+        boolean addConfig;
 
-        Boolean shouldSkipConfig = ServiceType.valueOf(serviceTypeId) == ServiceType.PROJECT
-                ? selector.yesOrNoSingleSelector("Would you like to add configuration?") : true;
-//
-//        Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> config = switch (ServiceType.valueOf(serviceTypeId)) {
-//            case PROJECT -> projectService.getConfig();
+        addConfig = ServiceType.valueOf(serviceTypeId) == ServiceType.PROJECT
+                ? selector.yesOrNoSingleSelector("Would you like to add configuration?") : false;
+
+//        ConfigGetResponse config = switch (ServiceType.valueOf(serviceTypeId)) {
+//            case PROJECT -> addConfig ? projectService.getConfig() : null;
 //            case POSTGRESQL -> null;
-//            case PRECONFIGURED -> marketplaceService.getMarketplaceConfig().availableParameters();
+//            case PRECONFIGURED -> marketplaceService.getMarketplaceConfig();
 //            case null -> null;
 //        };
-//
-//        Boolean skip = selector.yesOrNoSingleSelector("Would you like to add configuration?");
-//        System.out.println(skip);
 
-//        System.out.println(shouldSkipConfig);
+        MarketplaceConfigGetResponse config = marketplaceService.getMarketplaceConfig();
 
-//        System.out.println(config);
+        if (config != null) {
+            marketConfig(config);
+        }
+
 
         return "todo: create command"; // todo: add create command logic
     }
@@ -95,10 +88,10 @@ public class CreateCommand extends AbstractShellComponent {
         String slug = project.slug();
 
         // add amvera.yml
-        if (config) {
-            AmveraConfiguration configuration = createConfiguration(projectService.getConfig());
-            projectService.addConfig(configuration, slug);
-        }
+//        if (config) {
+//            AmveraConfiguration configuration = createConfiguration(projectService.getConfig());
+//            projectService.addConfig(configuration, slug);
+//        }
 
         helper.println("Project created:");
 
@@ -115,6 +108,81 @@ public class CreateCommand extends AbstractShellComponent {
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String preconfigured() {
         return "todo: add preconfigured creation logic"; // todo: add preconfigured creation logic
+    }
+
+    private AmveraConfiguration yamlConfig() {
+        AmveraConfiguration config = new AmveraConfiguration();
+        return config;
+    }
+
+    private MarketplaceConfigPostRequest marketConfig(MarketplaceConfigGetResponse params) {
+        MarketplaceConfigPostRequest config = new MarketplaceConfigPostRequest();
+
+        List<SelectorItem<String>> serviceTypes = params.availableParameters()
+                .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+
+        String selectedServiceType = selector.singleSelector(serviceTypes, "Service type: ");
+
+        List<SelectorItem<String>> service = params.availableParameters().get(selectedServiceType)
+                .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+
+        String selectedService = selector.singleSelector(service, "Service: ");
+
+        Map<String, DefaultConfValuesGetResponse> metaSection = params.availableParameters()
+                .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("meta");
+
+        if (metaSection != null) {
+            Meta meta = new Meta();
+            Map<String, Object> metaToolchainMap = new HashMap<>();
+            meta.setEnvironment(selectedServiceType);
+
+            helper.println(toSectionTitle("meta"));
+            String version = input.notBlankOrNullInput("Version: ", metaSection.get("version").defaultValue());
+            metaToolchainMap.put("version", version);
+            metaToolchainMap.put("name", selectedService);
+
+            meta.setToolchain(metaToolchainMap);
+            config.setMeta(meta);
+        } else {
+            config.setMeta(new Meta());
+        }
+
+        Map<String, DefaultConfValuesGetResponse> runSection = params.availableParameters()
+                .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("run");
+
+        if (runSection != null) {
+            helper.println(toSectionTitle("run"));
+            Map<String, Object> runMap = new HashMap<>();
+            String runArgs = input.inputWithDefault("Args: ", runSection.get("args").defaultValue());
+
+            runMap.put("args", runArgs.isBlank() ? null : runArgs);
+            config.setRun(runMap);
+        } else  {
+            config.setRun(new HashMap<>());
+        }
+
+        Map<String, DefaultConfValuesGetResponse> envsSection = params.availableParameters()
+                .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("envvars");
+
+        if (envsSection != null) {
+            helper.println(toSectionTitle("envs"));
+            List<EnvPostRequest> envs = new ArrayList<>();
+            boolean isSecret;
+
+            for (Map.Entry<String, DefaultConfValuesGetResponse> entry : envsSection.entrySet()) {
+                String secretKey = entry.getKey();
+                DefaultConfValuesGetResponse secretValue = entry.getValue();
+                String value = input.notBlankOrNullInput(String.format("%s: ", secretKey), secretValue.defaultValue());
+                isSecret = secretValue.type().equals("Secret");
+                envs.add(new EnvPostRequest(secretKey, value, isSecret));
+            }
+
+            config.setEnvvars(envs);
+        } else {
+            config.setEnvvars(new ArrayList<>());
+        }
+
+        return config;
     }
 
     private AmveraConfiguration createConfiguration(Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> params) {
@@ -195,18 +263,6 @@ public class CreateCommand extends AbstractShellComponent {
 
     private String toSectionTitle(String value) {
         return new AttributedString((value + " section").toUpperCase(), AttributedStyle.DEFAULT.bold().underline()).toAnsi() + ":";
-    }
-
-    private String inputProjectName() {
-        String name = input.defaultInput("Project name: ");
-
-        if (name == null || name.isBlank()) {
-//            System.out.println("Project name can not be empty.");
-            throw new EmptyValueException("Project name can not be empty.");
-//            inputProjectName();
-        }
-
-        return name;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.amvera.cli.command.project;
+package com.amvera.cli.command.action;
 
 import com.amvera.cli.service.ProjectService;
 import org.springframework.shell.command.CommandRegistration;

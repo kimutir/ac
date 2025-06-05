@@ -29,11 +29,11 @@ public class AmveraSelector extends AbstractShellComponent {
     );
 
     public int selectTariff() {
-        return Tariff.value(singleSelector(tariffs, "Select tariff"));
+        return Tariff.value(singleSelector(tariffs, "Select tariff: "));
     }
 
     public int selectServiceType() {
-        return ServiceType.valueOf(singleSelector(serviceTypes, "Select service type")).getId();
+        return ServiceType.valueOf(singleSelector(serviceTypes, "Select service type: ")).getId();
     }
 
     /**
@@ -46,7 +46,7 @@ public class AmveraSelector extends AbstractShellComponent {
     public String singleSelector(List<SelectorItem<String>> items, String name) {
         try {
             SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(getTerminal(),
-                    items, name, null);
+                    items, name , null);
             component.setResourceLoader(getResourceLoader());
             component.setTemplateExecutor(getTemplateExecutor());
             component.setMaxItems(items.size());

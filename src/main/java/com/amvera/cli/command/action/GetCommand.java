@@ -1,4 +1,4 @@
-package com.amvera.cli.command.project;
+package com.amvera.cli.command.action;
 
 import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.EnvDTO;

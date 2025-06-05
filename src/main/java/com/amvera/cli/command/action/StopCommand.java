@@ -1,13 +1,10 @@
-package com.amvera.cli.command.project;
+package com.amvera.cli.command.action;
 
 import com.amvera.cli.service.ProjectService;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
 
 @Command(group = "Project commands")
 public class StopCommand {

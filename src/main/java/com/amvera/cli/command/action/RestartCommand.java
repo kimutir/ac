@@ -1,26 +1,25 @@
-package com.amvera.cli.command.project;
+package com.amvera.cli.command.action;
 
 import com.amvera.cli.service.ProjectService;
-import org.springframework.shell.command.CommandRegistration.OptionArity;
+import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
-import org.springframework.shell.standard.ShellMethod;
 
 @Command(group = "Project commands")
-public class RebuildCommand {
+public class RestartCommand {
     private final ProjectService projectService;
 
-    public RebuildCommand(ProjectService projectService) {
+    public RestartCommand(ProjectService projectService) {
         this.projectService = projectService;
     }
 
-    @Command(command = "rebuild", description = "Rebuild project only! Does not work for postgresql and preconfigured services")
+    @Command(command = "restart", description = "Restart project")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String rebuild(
+    public String restart(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
     ) {
-        return projectService.rebuild(project);
+        return projectService.restart(project);
     }
 
 }

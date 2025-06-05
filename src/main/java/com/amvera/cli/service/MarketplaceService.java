@@ -2,6 +2,7 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.config.ConfigGetResponse;
+import com.amvera.cli.dto.project.config.MarketplaceConfigGetResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,11 @@ public class MarketplaceService {
         return "test";
     }
 
-    public ConfigGetResponse getMarketplaceConfig() {
+    public MarketplaceConfigGetResponse getMarketplaceConfig() {
         return client.marketplace()
                 .get()
                 .uri("/configuration")
                 .retrieve()
-                .body(ConfigGetResponse.class);
+                .body(MarketplaceConfigGetResponse.class);
     }
 }
