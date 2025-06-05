@@ -1,17 +1,26 @@
 package com.amvera.cli.client;
 
 import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.utils.TokenReader;
+import com.amvera.cli.utils.TokenUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-@Component
+@Service
 public class HttpCustomClient {
     private final Endpoints endpoints;
+    private final TokenReader tokenUtils;
 
-    public HttpCustomClient(Endpoints endpoints) {
+    @Autowired
+    public HttpCustomClient(
+            Endpoints endpoints,
+            TokenReader tokenUtils
+    ) {
         this.endpoints = endpoints;
+        this.tokenUtils = tokenUtils;
     }
 
     public RestClient.Builder project(String token) {
@@ -19,6 +28,13 @@ public class HttpCustomClient {
                 .baseUrl(endpoints.projects())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    }
+
+    public RestClient.Builder project() {
+        return RestClient.builder()
+                .baseUrl(endpoints.projects())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken());
     }
 
     public RestClient.Builder configurations(String token) {
@@ -74,5 +90,13 @@ public class HttpCustomClient {
                 .baseUrl(endpoints.logout())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_FORM_URLENCODED))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    }
+
+    public RestClient marketplace() {
+        return RestClient.builder()
+                .baseUrl(endpoints.marketplace())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
     }
 }

@@ -10,6 +10,7 @@ public record DefaultConfValuesGetResponse(
         String defaultValue,
         String type,
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        Object blockedBy
+        Object blockedBy,
+        Boolean advanced
 ) {
 }

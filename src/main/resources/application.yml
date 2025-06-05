@@ -37,6 +37,7 @@ amvera:
 endpoints:
   logs: https://notifications.amvera.ru/logs
   projects: https://api.amvera.ru/projects
+  marketplace: https://api.amvera.ru/marketplace
   configurations: https://api.amvera.ru/configurations
   balance: https://api.amvera.ru/balance
   env: https://api.amvera.ru/env

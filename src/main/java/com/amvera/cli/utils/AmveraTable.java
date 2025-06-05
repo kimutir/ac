@@ -29,7 +29,7 @@ public class AmveraTable {
     public String projects(List<ProjectGetResponse> projects) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("id", "ID");
-        headers.put("name", "TITLE");
+        headers.put("name", "NAME");
         headers.put("slug", "SLUG");
         headers.put("status", "Status");
         headers.put("requiredInstances", "REQ INST");

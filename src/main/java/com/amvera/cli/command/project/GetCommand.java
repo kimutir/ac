@@ -17,15 +17,15 @@ import org.springframework.shell.command.annotation.Option;
 
 import java.util.List;
 
-@Command(group = "Project commands")
-public class ProjectCommand {
+@Command(command = "get", alias = "get", group = "Project commands")
+public class GetCommand {
     private final ProjectService projectService;
     private final TariffService tariffService;
     private final EnvironmentService envService;
     private final AmveraTable amveraTable;
     private final ShellHelper helper;
 
-    public ProjectCommand(
+    public GetCommand(
             ProjectService projectService,
             TariffService tariffService, EnvironmentService envService,
             AmveraTable amveraTable,
@@ -38,7 +38,13 @@ public class ProjectCommand {
         this.helper = helper;
     }
 
-    @Command(command = "project", description = "Get list of projects or single project")
+    @Command(command = "", description = "Get list of all projects including postgres and configured services")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String get() {
+        return "all projects"; // todo: get all projects
+    }
+
+    @Command(command = "project", description = "Get list of projects")
     @CommandAvailability(provider = "userLoggedOutProvider")
     // todo: org.springframework.core.convert.ConversionFailedException
     public String project(
@@ -74,5 +80,21 @@ public class ProjectCommand {
         // return all found projects
         return amveraTable.projects(projects);
     }
+
+    @Command(command = "postgresql", alias = "psql", description = "Get list of postgresql (cnpg) clusters")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String postgresql(
+            // if (name, slug, id) return with envs
+    ) {
+        return "all postgres"; // todo: get all cnpg with envs
+    }
+
+    @Command(command = "preconfigured", alias = "conf", description = "Get list of preconfigured services")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String preconfigured() {
+        return "all conf"; // todo: get all conf with env
+    }
+
+
 
 }

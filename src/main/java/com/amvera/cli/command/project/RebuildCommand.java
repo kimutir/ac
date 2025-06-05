@@ -15,7 +15,7 @@ public class RebuildCommand {
         this.projectService = projectService;
     }
 
-    @Command(command = "rebuild", description = "Rebuild project")
+    @Command(command = "rebuild", description = "Rebuild project only! Does not work for postgresql and preconfigured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String rebuild(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project

@@ -34,7 +34,7 @@ public class LoginCommand extends AbstractShellComponent {
         }
 
         if (user == null || user.isBlank()) {
-            throw new EmptyValueException("Username can not be empty.");
+//            throw new EmptyValueException("Username can not be empty.");
         }
 
         if (password == null || password.isBlank()) {
@@ -42,7 +42,7 @@ public class LoginCommand extends AbstractShellComponent {
         }
 
         if (password == null || password.isBlank()) {
-            throw new EmptyValueException("Password can not be empty.");
+//            throw new EmptyValueException("Password can not be empty.");
         }
 
 

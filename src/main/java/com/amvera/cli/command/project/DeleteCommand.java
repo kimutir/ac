@@ -9,7 +9,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(group = "Project commands")
+@Command(command = "delete", group = "Delete commands")
 public class DeleteCommand {
     private final ProjectService projectService;
     private final AmveraInput input;
@@ -19,7 +19,7 @@ public class DeleteCommand {
         this.input = input;
     }
 
-    @Command(command = "delete", description = "Delete project")
+    @Command(command = "", description = "Delete project by id, name or slug")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String delete(
             @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
@@ -37,6 +37,7 @@ public class DeleteCommand {
 
         if (phrase.trim().equals(confirmPhrase)) {
             return projectService.delete(project);
+            // todo: add deletion fo cnpg
         } else {
             throw new ConfirmationException("Incorrect phrase.");
         }

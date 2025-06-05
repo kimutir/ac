@@ -23,7 +23,8 @@ public class ProjectService {
     @Autowired
     public ProjectService(
             HttpCustomClient client,
-            TokenUtils tokenUtils) {
+            TokenUtils tokenUtils
+    ) {
         this.client = client;
         this.tokenUtils = tokenUtils;
     }
@@ -31,7 +32,7 @@ public class ProjectService {
     public List<ProjectGetResponse> getProjects() {
         String token = tokenUtils.readToken().accessToken();
 
-        ProjectListResponse projectList = client.project(token).build().get()
+        ProjectListResponse projectList = client.project().build().get()
                 .retrieve()
                 .body(ProjectListResponse.class);
 

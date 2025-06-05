@@ -2,20 +2,25 @@ package com.amvera.cli.command.project;
 
 import com.amvera.cli.dto.project.ProjectPostResponse;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
+import com.amvera.cli.dto.project.config.ConfigGetResponse;
 import com.amvera.cli.dto.project.config.DefaultConfValuesGetResponse;
 import com.amvera.cli.dto.project.config.Meta;
 import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.model.ProjectTableModel;
+import com.amvera.cli.service.MarketplaceService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
@@ -23,9 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Command(group = "Project commands")
+//@Component
+@Command(command = "create", alias = "create", group = "Create commands")
 public class CreateCommand extends AbstractShellComponent {
     private final ProjectService projectService;
+    private final MarketplaceService marketplaceService;
     private final ShellHelper helper;
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
@@ -33,25 +40,54 @@ public class CreateCommand extends AbstractShellComponent {
 
     public CreateCommand(
             ProjectService projectService,
+            MarketplaceService marketplaceService,
             ShellHelper helper,
             AmveraTable amveraTable,
             AmveraSelector selector, AmveraInput input) {
         this.projectService = projectService;
+        this.marketplaceService = marketplaceService;
         this.helper = helper;
         this.amveraTable = amveraTable;
         this.selector = selector;
         this.input = input;
     }
 
-    @Command(command = "create", description = "Create new project")
+    @Command(command = "", description = "todo: add description")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String create(
+    public String create() {
+        int serviceTypeId = selector.selectServiceType();
+        String name = input.notEmptyInput("Enter project name: ");
+        int tariff = selector.selectTariff();
+
+        Boolean shouldSkipConfig = ServiceType.valueOf(serviceTypeId) == ServiceType.PROJECT
+                ? selector.yesOrNoSingleSelector("Would you like to add configuration?") : true;
+//
+//        Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> config = switch (ServiceType.valueOf(serviceTypeId)) {
+//            case PROJECT -> projectService.getConfig();
+//            case POSTGRESQL -> null;
+//            case PRECONFIGURED -> marketplaceService.getMarketplaceConfig().availableParameters();
+//            case null -> null;
+//        };
+//
+//        Boolean skip = selector.yesOrNoSingleSelector("Would you like to add configuration?");
+//        System.out.println(skip);
+
+//        System.out.println(shouldSkipConfig);
+
+//        System.out.println(config);
+
+        return "todo: create command"; // todo: add create command logic
+    }
+
+    @Command(command = "project", description = "Create new project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String project(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
     ) throws JsonProcessingException {
         String name = input.defaultInput("Project name: ");
 
         if (name == null || name.isBlank()) {
-            throw new EmptyValueException("Project name can not be empty.");
+//            throw new EmptyValueException("Project name can not be empty.");
         }
 
         int tariff = selector.selectTariff();
@@ -67,6 +103,18 @@ public class CreateCommand extends AbstractShellComponent {
         helper.println("Project created:");
 
         return amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff)));
+    }
+
+    @Command(command = "postgresql", alias = "psql", description = "Create postgres (cnpg) cluster")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String postgresql() {
+        return "todo: add cnpg creation logic"; // todo: add cnpg creation logic
+    }
+
+    @Command(command = "preconfigured", alias = "conf", description = "Create preconfigured service from marketplace")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public String preconfigured() {
+        return "todo: add preconfigured creation logic"; // todo: add preconfigured creation logic
     }
 
     private AmveraConfiguration createConfiguration(Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> params) {
@@ -147,6 +195,18 @@ public class CreateCommand extends AbstractShellComponent {
 
     private String toSectionTitle(String value) {
         return new AttributedString((value + " section").toUpperCase(), AttributedStyle.DEFAULT.bold().underline()).toAnsi() + ":";
+    }
+
+    private String inputProjectName() {
+        String name = input.defaultInput("Project name: ");
+
+        if (name == null || name.isBlank()) {
+//            System.out.println("Project name can not be empty.");
+            throw new EmptyValueException("Project name can not be empty.");
+//            inputProjectName();
+        }
+
+        return name;
     }
 
 }

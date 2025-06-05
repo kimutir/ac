@@ -8,14 +8,30 @@ import org.jline.utils.AttributedStyle;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
+// todo: add validation
 @Component
 public class AmveraInput {
 
     private final Terminal terminal;
+    private final ShellHelper helper;
 
-    public AmveraInput(Terminal terminal) {
+    public AmveraInput(
+            Terminal terminal,
+            ShellHelper helper
+    ) {
         this.terminal = terminal;
+        this.helper = helper;
+    }
+
+    public String notEmptyInput(String prompt) {
+        String input = defaultInput(prompt);
+
+        if (input == null || input.isBlank()) {
+            helper.printError("Value can not be empty.");
+            return notEmptyInput(prompt);
+        }
+
+        return input;
     }
 
     public String defaultInput(String prompt) {
@@ -53,7 +69,6 @@ public class AmveraInput {
             throw new RuntimeException(e);
         }
     }
-
 
     static class CommonMask implements MaskingCallback {
         private String mask;

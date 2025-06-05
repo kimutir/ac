@@ -4,12 +4,15 @@ import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
 import com.amvera.cli.dto.auth.RevokeTokenPostRequest;
 import com.amvera.cli.dto.user.InfoResponse;
+import com.amvera.cli.exception.InformException;
 import com.amvera.cli.model.TokenConfig;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class UserService {
@@ -69,6 +72,39 @@ public class UserService {
         }
 
         return info;
+    }
+
+    public int health(String token) {
+        try {
+            ResponseEntity<String> response = client.info(token).build()
+                    .get().retrieve()
+                    .toEntity(String.class);
+            return response.getStatusCode().value();
+        } catch (HttpClientErrorException e) {
+            return e.getStatusCode().value();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        RefreshTokenPostRequest body = new RefreshTokenPostRequest(properties.keycloakClient(), refreshToken);
+        try {
+            AuthResponse response = client.auth().build()
+                    .post()
+                    .body(body.toMultiValueMap())
+                    .retrieve().body(AuthResponse.class);
+
+            if (response == null) {
+                throw new InformException("Unable to refresh tokens. Contact us to solve the problem.");
+            }
+
+            return response;
+
+        } catch (Exception e) {
+            throw new InformException("Unable to save token. Contact us to solve the problem.");
+        }
+
     }
 
 }

@@ -12,6 +12,7 @@ public record Endpoints(
         String balance,
         String user,
         String configurations,
-        String logout
+        String logout,
+        String marketplace
 ) {
 }
