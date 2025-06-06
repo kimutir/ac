@@ -1,15 +1,23 @@
 package com.amvera.cli.command.action;
 
 import com.amvera.cli.dto.project.EnvPostRequest;
+import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.amvera.cli.dto.project.ProjectPostResponse;
+import com.amvera.cli.dto.project.cnpg.CnpgPostRequest;
+import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.dto.project.config.*;
+import com.amvera.cli.model.CnpgTableModel;
+import com.amvera.cli.model.MarketplaceTableModel;
 import com.amvera.cli.model.ProjectTableModel;
+import com.amvera.cli.service.CnpgService;
 import com.amvera.cli.service.MarketplaceService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
@@ -23,6 +31,7 @@ import java.util.*;
 public class CreateCommand extends AbstractShellComponent {
     private final ProjectService projectService;
     private final MarketplaceService marketplaceService;
+    private final CnpgService cnpgService;
     private final ShellHelper helper;
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
@@ -33,6 +42,7 @@ public class CreateCommand extends AbstractShellComponent {
     public CreateCommand(
             ProjectService projectService,
             MarketplaceService marketplaceService,
+            CnpgService cnpgService,
             ShellHelper helper,
             AmveraTable amveraTable,
             AmveraSelector selector, AmveraInput input) {
@@ -42,93 +52,174 @@ public class CreateCommand extends AbstractShellComponent {
         this.amveraTable = amveraTable;
         this.selector = selector;
         this.input = input;
+        this.cnpgService = cnpgService;
     }
 
-    @Command(command = "", description = "todo: add description")
+    @Command(command = "", description = "Add new project")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String create() {
+    public void create() {
         int serviceTypeId = selector.selectServiceType();
-        String name = input.notBlankOrNullInput("Enter project name: ");
-        int tariff = selector.selectTariff();
-        boolean addConfig;
 
-        addConfig = ServiceType.valueOf(serviceTypeId) == ServiceType.PROJECT
-                ? selector.yesOrNoSingleSelector("Would you like to add configuration?") : false;
-
-//        ConfigGetResponse config = switch (ServiceType.valueOf(serviceTypeId)) {
-//            case PROJECT -> addConfig ? projectService.getConfig() : null;
-//            case POSTGRESQL -> null;
-//            case PRECONFIGURED -> marketplaceService.getMarketplaceConfig();
-//            case null -> null;
-//        };
-
-        MarketplaceConfigGetResponse config = marketplaceService.getMarketplaceConfig();
-
-        if (config != null) {
-            marketConfig(config);
+        switch (ServiceType.valueOf(serviceTypeId)) {
+            case PROJECT -> createProject();
+            case PRECONFIGURED -> createPreconfigured();
+            case POSTGRESQL -> createCnpg();
+            case null -> {
+                helper.printError("Invalid service type");
+                System.exit(0);
+            }
         }
-
-
-        return "todo: create command"; // todo: add create command logic
     }
 
     @Command(command = "project", description = "Create new project")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String project(
+    public void project(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
     ) throws JsonProcessingException {
-        String name = input.defaultInput("Project name: ");
-
-        if (name == null || name.isBlank()) {
-//            throw new EmptyValueException("Project name can not be empty.");
-        }
-
-        int tariff = selector.selectTariff();
-        ProjectPostResponse project = projectService.createProject(name, tariff);
-        String slug = project.slug();
-
-        // add amvera.yml
-//        if (config) {
-//            AmveraConfiguration configuration = createConfiguration(projectService.getConfig());
-//            projectService.addConfig(configuration, slug);
-//        }
-
-        helper.println("Project created:");
-
-        return amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff)));
+        createProject();
     }
 
     @Command(command = "postgresql", alias = "psql", description = "Create postgres (cnpg) cluster")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String postgresql() {
-        return "todo: add cnpg creation logic"; // todo: add cnpg creation logic
+    public void postgresql() {
+        createCnpg();
     }
 
     @Command(command = "preconfigured", alias = "conf", description = "Create preconfigured service from marketplace")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String preconfigured() {
-        return "todo: add preconfigured creation logic"; // todo: add preconfigured creation logic
+    public void preconfigured() {
+        createPreconfigured();
     }
 
-    private AmveraConfiguration yamlConfig() {
+    private void createPreconfigured() {
+        Pair<String, Integer> serviceNameAndTariff = getServiceNameAndTariff();
+        String serviceName = serviceNameAndTariff.first();
+        int tariffId = serviceNameAndTariff.second();
+
+        ResponseEntity<MarketplaceConfigGetResponse> configResponse = marketplaceService.getMarketplaceConfig();
+
+        if (configResponse.getStatusCode().is2xxSuccessful()) {
+            MarketplaceConfigPostRequest config = marketConfig(Objects.requireNonNull(configResponse.getBody()), serviceName, tariffId);
+            HttpStatusCode marketplaceStatus = marketplaceService.saveMarketplaceConfig(config);
+
+            if (marketplaceStatus.is2xxSuccessful()) {
+                ProjectGetResponse project = projectService.findBy(serviceName);
+                helper.print(amveraTable.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariffId))));
+            }
+        }
+    }
+
+    private void createCnpg() {
+        Pair<String, Integer> serviceNameAndTariff = getServiceNameAndTariff();
+        String serviceName = serviceNameAndTariff.first();
+        int tariffId = serviceNameAndTariff.second();
+
+        String database = input.notBlankOrNullInput("Enter database name: ");
+        String username = input.notBlankOrNullInput("Enter database username: ");
+        String password = input.notBlankOrNullInput("Enter database password: ");
+        String superUserPassword = null;
+
+        boolean superUserEnabled = selector.yesOrNoSingleSelector("Would you like to enable super user access?");
+
+        if (superUserEnabled) {
+            superUserPassword = input.notBlankOrNullInput("Enter super user password: ");
+        }
+
+        ResponseEntity<CnpgResponse> cnpgResponse = cnpgService.create(
+                new CnpgPostRequest(
+                        serviceName,
+                        tariffId,
+                        null,
+                        database,
+                        username,
+                        password,
+                        1,
+                        superUserEnabled,
+                        superUserPassword
+                )
+        );
+
+        if (cnpgResponse.getStatusCode().is2xxSuccessful()) {
+            helper.print(amveraTable.singleEntityTable(new CnpgTableModel(Objects.requireNonNull(cnpgResponse.getBody()), Tariff.value(tariffId))));
+        } else {
+            helper.print("Unable to create postgresql. Please contact us.");
+        }
+
+    }
+
+    private void createProject() {
+        Pair<String, Integer> serviceNameAndTariff = getServiceNameAndTariff();
+        String serviceName = serviceNameAndTariff.first();
+        int tariffId = serviceNameAndTariff.second();
+        ProjectPostResponse project;
+
+        boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
+
+        if (addConfig) {
+            ResponseEntity<ConfigGetResponse> configTemplateResponse = projectService.getConfig();
+
+            if (configTemplateResponse.getStatusCode().is2xxSuccessful()) {
+                AmveraConfiguration config = yamlConfig(Objects.requireNonNull(configTemplateResponse.getBody()));
+
+                project = projectService.createProject(serviceName, tariffId);
+                projectService.addConfig(config, project.slug());
+                helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
+            } else {
+                project = projectService.createProject(serviceName, tariffId);
+                helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
+                helper.printWarning("Project has been created. But you have to add configuration manually.");
+            }
+
+        } else {
+            project = projectService.createProject(serviceName, tariffId);
+        }
+
+        helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
+    }
+
+    private AmveraConfiguration yamlConfig(ConfigGetResponse template) {
         AmveraConfiguration config = new AmveraConfiguration();
+
+        List<SelectorItem<String>> environments = template.availableParameters()
+                .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+        String selectedEnvironment = selector.singleSelector(environments, "Environment: ");
+
+        List<SelectorItem<String>> instruments = template.availableParameters()
+                .get(selectedEnvironment).keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
+        String selectedInstrument = selector.singleSelector(instruments, "Instrument: ");
+
+        Map<String, DefaultConfValuesGetResponse> metaMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("meta");
+        configMetaSection(config, metaMap, selectedEnvironment, selectedInstrument);
+
+        // build section
+        Map<String, DefaultConfValuesGetResponse> buildMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("build");
+        configBuildSection(config, buildMap);
+
+        // run section
+        Map<String, DefaultConfValuesGetResponse> runMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("run");
+        configRunSection(config, runMap);
+
         return config;
     }
 
-    private MarketplaceConfigPostRequest marketConfig(MarketplaceConfigGetResponse params) {
+    private MarketplaceConfigPostRequest marketConfig(MarketplaceConfigGetResponse template, String serviceName, int tariffId) {
         MarketplaceConfigPostRequest config = new MarketplaceConfigPostRequest();
 
-        List<SelectorItem<String>> serviceTypes = params.availableParameters()
+        config.setVersion(MARKETPLACE_VERSION);
+        config.setName(serviceName);
+        config.setTariffId(tariffId);
+
+        List<SelectorItem<String>> serviceTypes = template.availableParameters()
                 .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
 
         String selectedServiceType = selector.singleSelector(serviceTypes, "Service type: ");
 
-        List<SelectorItem<String>> service = params.availableParameters().get(selectedServiceType)
+        List<SelectorItem<String>> service = template.availableParameters().get(selectedServiceType)
                 .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
 
         String selectedService = selector.singleSelector(service, "Service: ");
 
-        Map<String, DefaultConfValuesGetResponse> metaSection = params.availableParameters()
+        Map<String, DefaultConfValuesGetResponse> metaSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("meta");
 
         if (metaSection != null) {
@@ -147,7 +238,7 @@ public class CreateCommand extends AbstractShellComponent {
             config.setMeta(new Meta());
         }
 
-        Map<String, DefaultConfValuesGetResponse> runSection = params.availableParameters()
+        Map<String, DefaultConfValuesGetResponse> runSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("run");
 
         if (runSection != null) {
@@ -157,11 +248,11 @@ public class CreateCommand extends AbstractShellComponent {
 
             runMap.put("args", runArgs.isBlank() ? null : runArgs);
             config.setRun(runMap);
-        } else  {
+        } else {
             config.setRun(new HashMap<>());
         }
 
-        Map<String, DefaultConfValuesGetResponse> envsSection = params.availableParameters()
+        Map<String, DefaultConfValuesGetResponse> envsSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("envvars");
 
         if (envsSection != null) {
@@ -183,33 +274,6 @@ public class CreateCommand extends AbstractShellComponent {
         }
 
         return config;
-    }
-
-    private AmveraConfiguration createConfiguration(Map<String, Map<String, Map<String, Map<String, DefaultConfValuesGetResponse>>>> params) {
-        AmveraConfiguration configuration = new AmveraConfiguration();
-
-        // meta section
-        helper.println(toSectionTitle("meta"));
-
-        List<SelectorItem<String>> environments = params.keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
-        String selectedEnvironment = selector.singleSelector(environments, "Environment: ");
-        List<SelectorItem<String>> instruments = params.get(selectedEnvironment).keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
-        String selectedInstrument = selector.singleSelector(instruments, "Instrument: ");
-
-        Map<String, DefaultConfValuesGetResponse> metaMap = params.get(selectedEnvironment).get(selectedInstrument).get("meta");
-        Meta meta = configMetaSection(configuration, metaMap, selectedEnvironment, selectedInstrument);
-
-        // build section
-        Map<String, DefaultConfValuesGetResponse> buildMap = params.get(selectedEnvironment).get(selectedInstrument).get("build");
-        configBuildSection(configuration, buildMap);
-
-        // run section
-        Map<String, DefaultConfValuesGetResponse> runMap = params.get(selectedEnvironment).get(selectedInstrument).get("run");
-        configRunSection(configuration, runMap);
-
-        configuration.setMeta(meta);
-
-        return configuration;
     }
 
     private void configRunSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map) {
@@ -241,7 +305,7 @@ public class CreateCommand extends AbstractShellComponent {
         });
     }
 
-    private Meta configMetaSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map, String env, String inst) {
+    private void configMetaSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map, String env, String inst) {
         Meta meta = new Meta();
         meta.setEnvironment(env);
         meta.getToolchain().put("name", inst);
@@ -254,8 +318,16 @@ public class CreateCommand extends AbstractShellComponent {
             });
         }
 
-        return meta;
+        config.setMeta(meta);
     }
+
+    private Pair<String, Integer> getServiceNameAndTariff() {
+        String name = input.notBlankOrNullInput("Enter project name: ");
+        int tariffId = selector.selectTariff();
+
+        return new Pair<>(name, tariffId);
+    }
+
 
     private String toTitle(String value) {
         return StringUtils.capitalize(value) + ": ";
@@ -264,5 +336,4 @@ public class CreateCommand extends AbstractShellComponent {
     private String toSectionTitle(String value) {
         return new AttributedString((value + " section").toUpperCase(), AttributedStyle.DEFAULT.bold().underline()).toAnsi() + ":";
     }
-
 }

@@ -6,7 +6,6 @@ import com.amvera.cli.dto.project.config.AmveraConfiguration;
 import com.amvera.cli.dto.project.config.ConfigGetResponse;
 import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.TokenUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -41,21 +40,15 @@ public class ProjectService {
         return projectList.getServices();
     }
 
-    public ConfigGetResponse getConfig() {
+    public ResponseEntity<ConfigGetResponse> getConfig() {
         String token = tokenUtils.readToken().accessToken();
 
-        ConfigGetResponse config = client.configurations(token).build().get()
+        return client.configurations(token).build().get()
                 .retrieve()
-                .body(ConfigGetResponse.class);
-
-        if (config == null) {
-            throw ClientExceptions.noContent("Config default values were not found.");
-        }
-
-        return config;
+                .toEntity(ConfigGetResponse.class);
     }
 
-    public ProjectPostResponse createProject(String name, Integer tariff) throws JsonProcessingException {
+    public ProjectPostResponse createProject(String name, Integer tariff)  {
         String token = tokenUtils.readToken().accessToken();
 
         ProjectPostResponse project = client.project(token).build().post()

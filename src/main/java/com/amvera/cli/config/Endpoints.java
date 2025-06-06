@@ -13,6 +13,7 @@ public record Endpoints(
         String user,
         String configurations,
         String logout,
-        String marketplace
+        String marketplace,
+        String postgresql
 ) {
 }

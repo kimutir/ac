@@ -82,7 +82,7 @@ public class AmveraTable {
     /**
      * Returns 2 columns table for single entity.
      *
-     * @param obj  target entity
+     * @param obj target entity
      * @return table as String
      */
     public String singleEntityTable(Object obj) {

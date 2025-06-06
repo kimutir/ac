@@ -99,4 +99,12 @@ public class HttpCustomClient {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
                 .build();
     }
+
+    public RestClient postgresql() {
+        return RestClient.builder()
+                .baseUrl(endpoints.postgresql())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
+    }
 }
