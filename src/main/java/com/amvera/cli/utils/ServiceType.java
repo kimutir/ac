@@ -17,11 +17,28 @@ public enum ServiceType {
         return id;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public static ServiceType valueOf(int id) {
         return switch (id) {
             case 1 -> PROJECT;
             case 2 -> POSTGRESQL;
             case 4 -> PRECONFIGURED;
+            default -> null;
+        };
+    }
+
+    public static ServiceType valueOfString(String name) {
+        if (name == null) {
+            return null;
+        }
+
+        return switch (name) {
+            case "compute" -> PROJECT;
+            case "cnpg" -> POSTGRESQL;
+            case "marketplace" -> PRECONFIGURED;
             default -> null;
         };
     }

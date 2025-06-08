@@ -5,6 +5,7 @@ import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
 import com.amvera.cli.dto.project.config.ConfigGetResponse;
 import com.amvera.cli.exception.ClientExceptions;
+import com.amvera.cli.utils.ServiceType;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -16,19 +17,20 @@ import java.util.List;
 public class ProjectService {
     private final HttpCustomClient client;
     private final TokenUtils tokenUtils;
+    private final CnpgService cnpgService;
 
     @Autowired
     public ProjectService(
             HttpCustomClient client,
-            TokenUtils tokenUtils
+            TokenUtils tokenUtils,
+            CnpgService cnpgService
     ) {
         this.client = client;
         this.tokenUtils = tokenUtils;
+        this.cnpgService = cnpgService;
     }
 
     public List<ProjectGetResponse> getProjects() {
-        String token = tokenUtils.readToken().accessToken();
-
         ProjectListResponse projectList = client.project().build().get()
                 .retrieve()
                 .body(ProjectListResponse.class);
@@ -48,7 +50,7 @@ public class ProjectService {
                 .toEntity(ConfigGetResponse.class);
     }
 
-    public ProjectPostResponse createProject(String name, Integer tariff)  {
+    public ProjectPostResponse createProject(String name, Integer tariff) {
         String token = tokenUtils.readToken().accessToken();
 
         ProjectPostResponse project = client.project(token).build().post()
@@ -109,19 +111,28 @@ public class ProjectService {
         return "Project restarting started...";
     }
 
-    public String delete(String p) {
+    public ResponseEntity<Void> delete(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
 
-        ResponseEntity<String> response = client.project(token).build().delete()
-                .uri("/{slug}", project.getSlug())
-                .retrieve().toEntity(String.class);
+        ResponseEntity<Void> response = switch (ServiceType.valueOfString(project.getServiceType())) {
+            case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> deleteBySlug(project.getSlug());
+            case ServiceType.POSTGRESQL -> cnpgService.delete(project.getSlug());
+        };
 
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+        if (response.getStatusCode().isError()) {
             throw new RuntimeException("Deletion failed.");
         }
 
-        return "Project has been deleted successfully!";
+        return response;
+    }
+
+
+    public ResponseEntity<Void> deleteBySlug(String slug) {
+        String token = tokenUtils.readToken().accessToken();
+
+        return client.project(token).build().delete()
+                .uri("/{slug}", slug)
+                .retrieve().toBodilessEntity();
     }
 
     public String start(String p) {

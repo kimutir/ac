@@ -29,27 +29,34 @@ public class AmveraSelector extends AbstractShellComponent {
     );
 
     public int selectTariff() {
-        return Tariff.value(singleSelector(tariffs, "Select tariff: "));
+        return Tariff.value(singleSelector(tariffs, "Select tariff: ", true));
     }
 
     public int selectServiceType() {
-        return ServiceType.valueOf(singleSelector(serviceTypes, "Select service type: ")).getId();
+        return ServiceType.valueOf(singleSelector(serviceTypes, "Select service type: ", true)).getId();
     }
 
     /**
      * Ordered single item selector
      *
-     * @param items items to select
-     * @param name  title
+     * @param items  items to select
+     * @param prompt title
      * @return selected item
      */
-    public String singleSelector(List<SelectorItem<String>> items, String name) {
+    public String singleSelector(List<SelectorItem<String>> items, String prompt, boolean showResult) {
         try {
-            SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(getTerminal(),
-                    items, name , null);
+            SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(
+                    getTerminal(),
+                    items,
+                    prompt,
+                    null
+            );
+
             component.setResourceLoader(getResourceLoader());
             component.setTemplateExecutor(getTemplateExecutor());
             component.setMaxItems(items.size());
+            component.setPrintResults(showResult);
+
             SingleItemSelector.SingleItemSelectorContext<String, SelectorItem<String>> context = component
                     .run(SingleItemSelector.SingleItemSelectorContext.empty());
 

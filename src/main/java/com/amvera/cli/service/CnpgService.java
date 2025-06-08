@@ -20,15 +20,15 @@ public class CnpgService {
         this.client = client;
     }
 
-    public ResponseEntity<MarketplaceConfigGetResponse> creasdate() {
-        return client.marketplace()
-                .get()
-                .uri("/configuration")
+    public ResponseEntity<Void> delete(String slug) {
+        return client.postgresql()
+                .delete()
+                .uri("/{slug}", slug)
                 .retrieve()
-                .toEntity(MarketplaceConfigGetResponse.class);
+                .toBodilessEntity();
     }
 
-    public ResponseEntity<CnpgResponse>  create(CnpgPostRequest request) {
+    public ResponseEntity<CnpgResponse> create(CnpgPostRequest request) {
         return client.postgresql()
                 .post()
                 .body(request)

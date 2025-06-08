@@ -182,12 +182,13 @@ public class CreateCommand extends AbstractShellComponent {
 
         List<SelectorItem<String>> environments = template.availableParameters()
                 .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
-        String selectedEnvironment = selector.singleSelector(environments, "Environment: ");
+        String selectedEnvironment = selector.singleSelector(environments, "Environment: ", true);
 
         List<SelectorItem<String>> instruments = template.availableParameters()
                 .get(selectedEnvironment).keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
-        String selectedInstrument = selector.singleSelector(instruments, "Instrument: ");
+        String selectedInstrument = selector.singleSelector(instruments, "Instrument: ", true);
 
+        // meta section
         Map<String, DefaultConfValuesGetResponse> metaMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("meta");
         configMetaSection(config, metaMap, selectedEnvironment, selectedInstrument);
 
@@ -212,12 +213,12 @@ public class CreateCommand extends AbstractShellComponent {
         List<SelectorItem<String>> serviceTypes = template.availableParameters()
                 .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
 
-        String selectedServiceType = selector.singleSelector(serviceTypes, "Service type: ");
+        String selectedServiceType = selector.singleSelector(serviceTypes, "Service type: ", true);
 
         List<SelectorItem<String>> service = template.availableParameters().get(selectedServiceType)
                 .keySet().stream().map(i -> SelectorItem.of(i, i)).toList();
 
-        String selectedService = selector.singleSelector(service, "Service: ");
+        String selectedService = selector.singleSelector(service, "Service: ", true);
 
         Map<String, DefaultConfValuesGetResponse> metaSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("meta");

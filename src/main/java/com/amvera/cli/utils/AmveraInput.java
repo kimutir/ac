@@ -8,6 +8,7 @@ import org.jline.utils.AttributedStyle;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+
 // todo: add validation
 @Component
 public class AmveraInput {
@@ -45,8 +46,6 @@ public class AmveraInput {
         return input;
     }
 
-
-
     public String defaultInput(String prompt) {
         String p = new AttributedString(prompt, AttributedStyle.DEFAULT.bold()).toAnsi();
         try {
@@ -71,6 +70,22 @@ public class AmveraInput {
             return new LineReaderImpl(terminal).readLine(p, null, new SecretMask(), null);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean checkedConfirmInput(String prompt, String confirm) {
+        String input = confirmInput(prompt, confirm);
+
+        if (input == null || input.isBlank()) {
+            helper.printError("Phrase can not be empty.");
+            return checkedConfirmInput(prompt, confirm);
+        }
+
+        if (input.trim().equals(confirm)) {
+            return true;
+        } else {
+            helper.printError("Incorrect phrase.");
+            return checkedConfirmInput(prompt, confirm);
         }
     }
 

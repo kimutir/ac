@@ -14,6 +14,11 @@ public class ProjectGetResponse {
     private String statusMessage;
     private Integer requiredInstances;
     private Integer instances;
+    private String serviceType;
+
+    public String getServiceType() {return serviceType;}
+
+    public void setServiceType(String serviceType) {this.serviceType = serviceType;}
 
     public String getStatusMessage() {
         return statusMessage;
