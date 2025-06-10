@@ -41,6 +41,7 @@ endpoints:
   postgresql: https://api.amvera.ru/postgresql
   configurations: https://api.amvera.ru/configurations
   balance: https://api.amvera.ru/balance
+  domain: https://api.amvera.ru/domain
   env: https://api.amvera.ru/env
   tariff: https://api.amvera.ru/tariff
   token: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token

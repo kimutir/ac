@@ -1,8 +1,9 @@
 package com.amvera.cli.utils;
 
+import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.service.ProjectService;
 import org.springframework.shell.component.SingleItemSelector;
 import org.springframework.shell.component.support.SelectorItem;
-import org.springframework.shell.component.support.SelectorList;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,8 @@ import java.util.Optional;
 
 @Component
 public class AmveraSelector extends AbstractShellComponent {
+
+    private final ProjectService projectService;
 
     private final List<SelectorItem<String>> tariffs = Arrays.asList(
             SelectorItem.of("Пробный", Tariff.TRY.title()),
@@ -28,6 +31,10 @@ public class AmveraSelector extends AbstractShellComponent {
             SelectorItem.of("Preconfigured service", ServiceType.PRECONFIGURED.name())
     );
 
+    public AmveraSelector(ProjectService projectService) {
+        this.projectService = projectService;
+    }
+
     public int selectTariff() {
         return Tariff.value(singleSelector(tariffs, "Select tariff: ", true));
     }
@@ -43,9 +50,9 @@ public class AmveraSelector extends AbstractShellComponent {
      * @param prompt title
      * @return selected item
      */
-    public String singleSelector(List<SelectorItem<String>> items, String prompt, boolean showResult) {
+    public <T> T singleSelector(List<SelectorItem<T>> items, String prompt, boolean showResult) {
         try {
-            SingleItemSelector<String, SelectorItem<String>> component = new SingleItemSelector<>(
+            SingleItemSelector<T, SelectorItem<T>> component = new SingleItemSelector<>(
                     getTerminal(),
                     items,
                     prompt,
@@ -57,7 +64,7 @@ public class AmveraSelector extends AbstractShellComponent {
             component.setMaxItems(items.size());
             component.setPrintResults(showResult);
 
-            SingleItemSelector.SingleItemSelectorContext<String, SelectorItem<String>> context = component
+            SingleItemSelector.SingleItemSelectorContext<T, SelectorItem<T>> context = component
                     .run(SingleItemSelector.SingleItemSelectorContext.empty());
 
             return context.getResultItem().flatMap(si -> Optional.ofNullable(si.getItem())).get();

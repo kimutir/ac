@@ -23,8 +23,6 @@ public class ProjectTableModel {
     private String clone;
     @JsonProperty("git remote")
     private String remote;
-    private String domain;
-    private String url;
 
     public ProjectTableModel(ProjectGetResponse p, String tariff) {
         this.ownerName = p.getOwnerName();
@@ -39,8 +37,6 @@ public class ProjectTableModel {
         this.git = this.git + ownerName + "/" + slug;
         this.clone = "git clone " + git;
         this.remote = "git remote add amvera " + git;
-        this.domain = "amvera-" + ownerName + "-run-" + slug;
-        this.url = String.format("https://%s-%s.amvera.io", slug, ownerName);
     }
 
 
@@ -56,8 +52,6 @@ public class ProjectTableModel {
         this.git = this.git + ownerName + "/" + slug;
         this.clone = "git clone " + git;
         this.remote = "git remote add amvera " + git;
-        this.domain = "amvera-" + ownerName + "-run-" + slug;
-        this.url = String.format("https://%s-%s.amvera.io", slug, ownerName);
     }
 
     public Integer getId() {
@@ -130,22 +124,6 @@ public class ProjectTableModel {
 
     public void setRemote(String remote) {
         this.remote = remote;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     public String getTariff() {

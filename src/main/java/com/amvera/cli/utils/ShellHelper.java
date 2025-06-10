@@ -127,6 +127,14 @@ public class ShellHelper {
         terminal.flush();
     }
 
+    public void printTitle(String title, PromptColor color) {
+
+    }
+
+    public void printTitle(String title) {
+        printTitle(title, null);
+    }
+
     //--- set / get methods ---------------------------------------------------
 
     public Terminal getTerminal() {

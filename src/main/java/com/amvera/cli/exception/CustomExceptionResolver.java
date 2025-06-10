@@ -25,6 +25,10 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
                 System.exit(2);
             }
         }
+        if (e instanceof UnsupportedServiceTypeException) {
+            helper.printError(e.getMessage());
+            System.exit(2);
+        }
         if (e instanceof EmptyValueException) {
             helper.printError(e.getMessage());
             System.exit(2);

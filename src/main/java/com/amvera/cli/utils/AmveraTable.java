@@ -1,5 +1,6 @@
 package com.amvera.cli.utils;
 
+import com.amvera.cli.dto.project.DomainResponse;
 import com.amvera.cli.dto.project.EnvDTO;
 import com.amvera.cli.dto.project.ProjectGetResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,9 +32,10 @@ public class AmveraTable {
         headers.put("id", "ID");
         headers.put("name", "NAME");
         headers.put("slug", "SLUG");
-        headers.put("status", "Status");
+        headers.put("status", "STATUS");
         headers.put("requiredInstances", "REQ INST");
         headers.put("instances", "CUR INST");
+        headers.put("serviceType", "TYPE");
         TableModel model = new BeanListTableModel<>(projects, headers);
         TableBuilder tableBuilder = new TableBuilder(model);
         tableBuilder
@@ -41,15 +43,16 @@ public class AmveraTable {
                 .addHeaderBorder(BorderStyle.fancy_light);
 
         for (int i = 0; i < projects.size() + 1; i++) {
-            tableBuilder.on(at(i, 0)).addFormatter(new SpaceFormatter());
-            tableBuilder.on(at(i, 1)).addFormatter(new SpaceFormatter());
-            tableBuilder.on(at(i, 2)).addFormatter(new SpaceFormatter());
-            tableBuilder.on(at(i, 3)).addFormatter(new SpaceFormatter());
+            tableBuilder.on(at(i, 0)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            tableBuilder.on(at(i, 1)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            tableBuilder.on(at(i, 2)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            tableBuilder.on(at(i, 3)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
             tableBuilder.on(at(i, 4)).addAligner(SimpleHorizontalAligner.center);
             tableBuilder.on(at(i, 5)).addAligner(SimpleHorizontalAligner.center);
+            tableBuilder.on(at(i, 6)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
         }
 
-        return tableBuilder.build().render(180);
+        return tableBuilder.build().render(200);
     }
 
     /**
@@ -80,6 +83,36 @@ public class AmveraTable {
     }
 
     /**
+     * Returns table of all project domains.
+     *
+     * @param domains list of domains
+     * @return table as String
+     */
+    public String domains(List<DomainResponse> domains) {
+        LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
+        headers.put("id", "ID");
+        headers.put("domainName", "DOMAIN_NAME");
+        headers.put("isDefault", "IS_DEFAULT");
+        headers.put("activated", "IS_ACTIVE");
+        headers.put("domainType", "DOMAIN_TYPE");
+        headers.put("ingressType", "CONNECTION_TYPE");
+
+        TableModel model = new BeanListTableModel<>(domains, headers);
+
+        TableBuilder tableBuilder = new TableBuilder(model)
+                .addInnerBorder(BorderStyle.oldschool)
+                .addHeaderBorder(BorderStyle.fancy_light);
+
+        for (int i = 0; i < domains.size() + 1; i++) {
+            for (int j = 0; j < headers.size(); j++) {
+                tableBuilder.on(at(i, j)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            }
+        }
+
+        return tableBuilder.build().render(180);
+    }
+
+    /**
      * Returns 2 columns table for single entity.
      *
      * @param obj target entity
@@ -90,8 +123,7 @@ public class AmveraTable {
         TableModel model = tableModelBuilder.build();
         TableBuilder tableBuilder = new TableBuilder(model);
         return tableBuilder
-                .addInnerBorder(BorderStyle.oldschool)
-                .addHeaderBorder(BorderStyle.fancy_light)
+                .addFullBorder(BorderStyle.fancy_light)
                 .on(CellMatchers.column(0)).addFormatter(value -> new String[]{value + "  "})
                 .on(CellMatchers.column(1)).addFormatter(value -> new String[]{value + "  "})
                 .build()

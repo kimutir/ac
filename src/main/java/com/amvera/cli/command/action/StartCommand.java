@@ -17,9 +17,12 @@ public class StartCommand {
     @Command(command = "start", description = "Start project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public String start(
-            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
+            @Option(longNames = "id", shortNames = 'i', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String id
     ) {
-        return projectService.start(project);
+
+
+
+        return projectService.start(id);
     }
 
 }

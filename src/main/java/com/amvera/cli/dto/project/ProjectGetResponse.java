@@ -1,7 +1,12 @@
 package com.amvera.cli.dto.project;
 
+import com.amvera.cli.utils.ProjectSelectItem;
+import com.amvera.cli.utils.ServiceType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import org.springframework.shell.component.support.*;
+
+import java.util.Objects;
 
 @RegisterReflectionForBinding
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,11 +19,13 @@ public class ProjectGetResponse {
     private String statusMessage;
     private Integer requiredInstances;
     private Integer instances;
-    private String serviceType;
+    private ServiceType serviceType;
 
-    public String getServiceType() {return serviceType;}
+    public ServiceType getServiceType() {return serviceType;}
 
-    public void setServiceType(String serviceType) {this.serviceType = serviceType;}
+    public void setServiceType(String serviceType) {
+        this.serviceType = ServiceType.valueOfString(serviceType);
+    }
 
     public String getStatusMessage() {
         return statusMessage;
@@ -82,5 +89,37 @@ public class ProjectGetResponse {
 
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ProjectGetResponse that = (ProjectGetResponse) o;
+        return Objects.equals(id, that.id) && Objects.equals(ownerName, that.ownerName) && Objects.equals(name, that.name) && Objects.equals(status, that.status) && Objects.equals(slug, that.slug) && Objects.equals(statusMessage, that.statusMessage) && Objects.equals(requiredInstances, that.requiredInstances) && Objects.equals(instances, that.instances) && Objects.equals(serviceType, that.serviceType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, ownerName, name, status, slug, statusMessage, requiredInstances, instances, serviceType);
+    }
+
+    @Override
+    public String toString() {
+        return "ProjectGetResponse{" +
+                "id=" + id +
+                ", ownerName='" + ownerName + '\'' +
+                ", name='" + name + '\'' +
+                ", status='" + status + '\'' +
+                ", slug='" + slug + '\'' +
+                ", statusMessage='" + statusMessage + '\'' +
+                ", requiredInstances=" + requiredInstances +
+                ", instances=" + instances +
+                ", serviceType='" + serviceType + '\'' +
+                '}';
+    }
+
+    public SelectorItem<ProjectSelectItem> toSelectorItem() {
+        ProjectSelectItem selectItem = new ProjectSelectItem(this);
+        return SelectorItem.of(selectItem.getName(), selectItem);
     }
 }

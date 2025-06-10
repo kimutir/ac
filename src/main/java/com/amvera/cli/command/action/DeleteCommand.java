@@ -1,10 +1,10 @@
 package com.amvera.cli.command.action;
 
 import com.amvera.cli.dto.project.ProjectGetResponse;
-import com.amvera.cli.exception.ConfirmationException;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.AmveraInput;
 import com.amvera.cli.utils.AmveraSelector;
+import com.amvera.cli.utils.ProjectSelectItem;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
@@ -13,7 +13,6 @@ import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.support.SelectorItem;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @Command(command = "delete", group = "Delete commands")
 public class DeleteCommand {
@@ -37,14 +36,15 @@ public class DeleteCommand {
     @Command(command = "", description = "Delete project by id, name or slug")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void delete(
-            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String project
+            @Option(longNames = "id", shortNames = 'i', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String id
     ) {
         String projectSlugToDelete;
 
-        if (project == null) {
-            projectSlugToDelete = selectProjectToDelete();
+        if (id == null) {
+            List<SelectorItem<ProjectSelectItem>> projectSelectorItemList = projectService.getProjects().stream().map(ProjectGetResponse::toSelectorItem).toList();
+            projectSlugToDelete = selector.singleSelector(projectSelectorItemList, "Select project to delete: ", true).getProject().getSlug();
         } else {
-            projectSlugToDelete = projectService.findBy(project).getSlug();
+            projectSlugToDelete = projectService.findBy(id).getSlug();
         }
 
         String confirmPhrase = "delete forever " + projectSlugToDelete;
@@ -52,28 +52,9 @@ public class DeleteCommand {
         boolean confirmed = input.checkedConfirmInput("Enter to delete: ", confirmPhrase);
 
         if (confirmed) {
-            projectService.delete(projectSlugToDelete);
+            projectService.deleteBySlug(projectSlugToDelete);
             helper.println(String.format("Project %s has been deleted", projectSlugToDelete));
         }
-    }
-
-    private String selectProjectToDelete() {
-        List<ProjectGetResponse> projectList = projectService.getProjects();
-        List<SelectorItem<String>> list = projectService.getProjects()
-                .stream()
-                .map(p -> {
-                    String serviceType = switch (p.getServiceType()) {
-                        case "compute" -> "project";
-                        case "marketplace" -> "preconfigured";
-                        case "cnpg" -> "postgresql";
-                        default -> "unknown";
-                    };
-
-                    return SelectorItem.of(String.format("%s [ %s ]", p.getName(), serviceType), p.getSlug());
-                })
-                .toList();
-
-        return selector.singleSelector(list, "Select project to delete: ", false);
     }
 
 }

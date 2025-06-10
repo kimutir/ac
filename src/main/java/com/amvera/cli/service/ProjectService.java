@@ -1,12 +1,13 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.dto.billing.TariffGetResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
 import com.amvera.cli.dto.project.config.ConfigGetResponse;
 import com.amvera.cli.exception.ClientExceptions;
-import com.amvera.cli.utils.ServiceType;
-import com.amvera.cli.utils.TokenUtils;
+import com.amvera.cli.model.ProjectTableModel;
+import com.amvera.cli.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -18,16 +19,36 @@ public class ProjectService {
     private final HttpCustomClient client;
     private final TokenUtils tokenUtils;
     private final CnpgService cnpgService;
+    private final AmveraTable table;
+    private final TariffService tariffService;
+    private final ShellHelper helper;
 
     @Autowired
     public ProjectService(
             HttpCustomClient client,
             TokenUtils tokenUtils,
-            CnpgService cnpgService
+            CnpgService cnpgService,
+            AmveraTable table,
+            TariffService tariffService,
+            ShellHelper helper
     ) {
         this.client = client;
         this.tokenUtils = tokenUtils;
         this.cnpgService = cnpgService;
+        this.table = table;
+        this.tariffService = tariffService;
+        this.helper = helper;
+    }
+
+    public void renderTable(String id) {
+        ProjectGetResponse project = findBy(id);
+        TariffGetResponse tariff = tariffService.getTariff(project.getSlug());
+        helper.println(table.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff.id()))));
+    }
+
+    public void renderTable(ProjectGetResponse project) {
+        TariffGetResponse tariff = tariffService.getTariff(project.getSlug());
+        helper.print(table.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff.id()))));
     }
 
     public List<ProjectGetResponse> getProjects() {
@@ -51,9 +72,7 @@ public class ProjectService {
     }
 
     public ProjectPostResponse createProject(String name, Integer tariff) {
-        String token = tokenUtils.readToken().accessToken();
-
-        ProjectPostResponse project = client.project(token).build().post()
+        ProjectPostResponse project = client.project().build().post()
                 .body(new ProjectRequest(name, tariff))
                 .retrieve()
                 .body(ProjectPostResponse.class);
@@ -83,9 +102,8 @@ public class ProjectService {
 
     public String rebuild(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
 
-        ResponseEntity<String> response = client.project(token).build().post()
+        ResponseEntity<String> response = client.project().build().post()
                 .uri("/{slug}/rebuild", project.getSlug())
                 .retrieve().toEntity(String.class);
 
@@ -98,9 +116,8 @@ public class ProjectService {
 
     public String restart(String p) {
         ProjectGetResponse project = findBy(p);
-        String token = tokenUtils.readToken().accessToken();
 
-        ResponseEntity<String> response = client.project(token).build().post()
+        ResponseEntity<String> response = client.project().build().post()
                 .uri("/{slug}/restart", project.getSlug())
                 .retrieve().toEntity(String.class);
 
@@ -114,7 +131,7 @@ public class ProjectService {
     public ResponseEntity<Void> delete(String p) {
         ProjectGetResponse project = findBy(p);
 
-        ResponseEntity<Void> response = switch (ServiceType.valueOfString(project.getServiceType())) {
+        ResponseEntity<Void> response = switch (project.getServiceType()) {
             case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> deleteBySlug(project.getSlug());
             case ServiceType.POSTGRESQL -> cnpgService.delete(project.getSlug());
         };
@@ -194,6 +211,20 @@ public class ProjectService {
         }
 
         return "Required instances changed to " + num;
+    }
+
+    public ResponseEntity<Void> freeze(String slug) {
+        ResponseEntity<Void> response = client.project().build().put()
+                .uri("/{slug}/freeze", slug)
+                .retrieve()
+                .toBodilessEntity();
+
+        if (response.getStatusCode().isError()) {
+            // todo: throw exception and handle it
+            System.out.println("Freezing failed.");
+        }
+
+        return response;
     }
 
 

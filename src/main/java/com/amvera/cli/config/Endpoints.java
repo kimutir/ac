@@ -10,6 +10,7 @@ public record Endpoints(
         String tariff,
         String logs,
         String balance,
+        String domain,
         String user,
         String configurations,
         String logout,

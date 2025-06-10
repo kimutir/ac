@@ -58,11 +58,11 @@ public class HttpCustomClient {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
-    public RestClient.Builder environment(String token) {
+    public RestClient.Builder environment() {
         return RestClient.builder()
                 .baseUrl(endpoints.env())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken());
     }
 
     public RestClient.Builder tariff(String token) {
@@ -103,6 +103,14 @@ public class HttpCustomClient {
     public RestClient postgresql() {
         return RestClient.builder()
                 .baseUrl(endpoints.postgresql())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
+    }
+
+    public RestClient domain() {
+        return RestClient.builder()
+                .baseUrl(endpoints.domain())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
                 .build();
