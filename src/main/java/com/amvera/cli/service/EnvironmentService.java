@@ -3,11 +3,15 @@ package com.amvera.cli.service;
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.exception.ClientExceptions;
-import com.amvera.cli.utils.AmveraTable;
-import com.amvera.cli.utils.ShellHelper;
-import com.amvera.cli.utils.TokenUtils;
+import com.amvera.cli.utils.*;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.select.EnvSelectItem;
+import com.amvera.cli.utils.table.AmveraTable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.shell.component.context.ComponentContext;
+import org.springframework.shell.component.flow.ComponentFlow;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,29 +21,117 @@ public class EnvironmentService {
     private final HttpCustomClient client;
     private final ShellHelper helper;
     private final AmveraTable table;
+    private final AmveraSelector selector;
+    private final ProjectService projectService;
+    private final ComponentFlow.Builder componentFlowBuilder;
 
     public EnvironmentService(
             HttpCustomClient client,
             ShellHelper helper,
-            AmveraTable table
+            AmveraTable table, AmveraSelector selector, ProjectService projectService, ComponentFlow.Builder componentFlowBuilder
     ) {
         this.client = client;
         this.helper = helper;
         this.table = table;
+        this.selector = selector;
+        this.projectService = projectService;
+        this.componentFlowBuilder = componentFlowBuilder;
+    }
+
+    public void create(String slug) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withConfirmationInput("secret")
+                .defaultValue(false)
+                .name("Is secret?")
+                .and()
+                .withStringInput("name")
+                .name("Name:")
+                .and()
+                .withStringInput("value")
+                .name("Value:")
+                .and()
+                .build()
+                .run().getContext();
+
+        Boolean secret = context.get("secret");
+        String name = context.get("name");
+        String value = context.get("value");
+
+        if (name == null || name.isBlank() || value == null || value.isBlank()) {
+            // todo throw exception
+        }
+
+        createRequest(new EnvPostRequest(name, value, secret), project.getSlug());
+        helper.printInfo("Environment has been created. Do not forget to restart project to apply it.");
+
+        renderTable(project);
+    }
+
+    public void delete(String slug) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+
+        EnvResponse env = select(project.getSlug());
+
+        deleteRequest(env.id(), project.getSlug());
+        helper.printInfo("Environment has been deleted.");
+
+        renderTable(project);
+    }
+
+    public void update(String slug) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+
+        EnvResponse env = select(project.getSlug());
+
+        ComponentContext<?> context = componentFlowBuilder.clone().reset()
+                .withStringInput("name")
+                .name("Name:")
+                .and()
+                .withStringInput("value")
+                .name("Value:")
+                .and()
+                .build()
+                .run().getContext();
+
+        String name = context.get("name");
+        String value = context.get("value");
+
+        if (name == null || name.isBlank() || value == null || value.isBlank()) {
+            // todo throw exception
+        }
+
+        updateRequest(new EnvPutRequest(env.id(), name, value, env.isSecret()), project.getSlug());
+        helper.printInfo("Environment has been updated. Do not forget to restart project to apply it.");
+
+        renderTable(project);
     }
 
     public void renderTable(String slug) {
-        List<EnvDTO> envList = getEnvironmentBySlug(slug);
+        ProjectResponse project;
+
+        if (slug == null) {
+            project = projectService.select();
+        } else {
+            project = projectService.findBySlug(slug);
+        }
+
+        renderTable(project);
+    }
+
+    public void renderTable(ProjectResponse project) {
+        List<EnvResponse> envList = getRequest(project.getSlug());
 
         if (envList.isEmpty()) {
-            helper.printWarning("No environments found. You can add environment by 'amvera create env'\n");
+            helper.printWarning("No environment found. You can add environment by 'amvera create env'");
         } else {
             helper.print(table.environments(envList));
         }
     }
 
-    public List<EnvDTO> getEnvironment(ProjectGetResponse project) {
-        EnvListGetResponse envs = client.environment().build()
+    public List<EnvResponse> getEnv(ProjectResponse project) {
+        EnvListGetResponse envs = client.environment()
                 .get().uri("/{slug}", project.getSlug())
                 .retrieve()
                 .body(EnvListGetResponse.class);
@@ -51,31 +143,34 @@ public class EnvironmentService {
         return envs.environmentVariables();
     }
 
-    public void addEnvironment(EnvPostRequest env, String slug) {
-        ResponseEntity<String> response = client.environment().build()
+    public ResponseEntity<EnvResponse> createRequest(EnvPostRequest req, String slug) {
+        ResponseEntity<EnvResponse> response = client.environment()
                 .post().uri("/{slug}", slug)
-                .body(env)
+                .body(req)
                 .retrieve()
-                .toEntity(String.class);
+                .toEntity(EnvResponse.class);
 
         if (response.getStatusCode().value() != 200) {
             throw new RuntimeException("Unable to add environment variables.");
         }
+
+        return response;
     }
 
-    public void updateEnvironment(EnvPutRequest env, String slug) {
-        ResponseEntity<String> response = client.environment().build()
+    public void updateRequest(EnvPutRequest env, String slug) {
+        ResponseEntity<EnvResponse> response = client.environment()
                 .put().uri("/{slug}/{id}", slug, env.id())
+                .body(env)
                 .retrieve()
-                .toEntity(String.class);
+                .toEntity(EnvResponse.class);
 
         if (response.getStatusCode().value() != 200) {
             throw new RuntimeException("Unable to update environment variables.");
         }
     }
 
-    public void deleteEnvironment(Integer id, String slug) {
-        ResponseEntity<String> response = client.environment().build()
+    public void deleteRequest(Long id, String slug) {
+        ResponseEntity<String> response = client.environment()
                 .delete().uri("/{slug}/{id}", slug, id)
                 .retrieve()
                 .toEntity(String.class);
@@ -85,8 +180,8 @@ public class EnvironmentService {
         }
     }
 
-    public List<EnvDTO> getEnvironmentBySlug(String slug) {
-        ResponseEntity<List<EnvDTO>> envResponse = client.environment().build()
+    public List<EnvResponse> getRequest(String slug) {
+        ResponseEntity<List<EnvResponse>> envResponse = client.environment()
                 .get().uri("/{slug}", slug)
                 .retrieve()
                 .toEntity(new ParameterizedTypeReference<>() {
@@ -98,6 +193,14 @@ public class EnvironmentService {
         }
 
         return envResponse.getBody();
+    }
+
+    public EnvResponse select(String slug) {
+        List<SelectorItem<EnvSelectItem>> projectList = getRequest(slug)
+                .stream()
+                .map(EnvResponse::toSelectorItem).toList();
+
+        return selector.singleSelector(projectList, "Select environment: ", true).getEnv();
     }
 
 }

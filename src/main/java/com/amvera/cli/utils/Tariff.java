@@ -1,72 +1,59 @@
 package com.amvera.cli.utils;
 
 public enum Tariff {
-    TRY("Пробный"),
-    BEGINNER("Начальный"),
-    BEGINNER_PLUS("Начальный Плюс"),
-    STANDARD("Стандартный"),
-    ULTRA("Ультра"),
-    ULTRA_CPU("Ультра CPU");
+    TRIAL("Пробный", 4),
+    BEGINNER("Начальный", 1),
+    BEGINNER_PLUS("Начальный Плюс", 5),
+    STANDARD("Стандартный", 2),
+    ULTRA("Ультра", 3),
+    ULTRA_CPU("Ультра CPU", 6),
+    UNKNOWN("Неизвестный", 0);
 
     private final String title;
+    private final int id;
 
-    Tariff(String title) {
+    Tariff(String title, int id) {
         this.title = title;
+        this.id = id;
     }
 
     public String title() {
         return this.title;
     }
+    public int id() {return this.id;}
 
-    public static int value(String title) {
-        switch (title) {
-            case "Пробный" -> {
-                return 4;
-            }
-            case "Начальный" -> {
-                return 1;
-            }
-            case "Начальный Плюс" -> {
-                return 5;
-            }
-            case "Стандартный" -> {
-                return 2;
-            }
-            case "Ультра" -> {
-                return 3;
-            }
-            case "Ультра CPU" -> {
-                return 6;
-            }
-            default -> {
-                return 0;
-            }
-        }
+    public static Tariff value(String title) {
+        return switch (title) {
+            case "Пробный" -> TRIAL;
+            case "Начальный" -> BEGINNER;
+            case "Начальный Плюс" -> BEGINNER_PLUS;
+            case "Стандартный" -> STANDARD;
+            case "Ультра" -> ULTRA;
+            case "Ультра CPU" -> ULTRA_CPU;
+            default -> UNKNOWN;
+        };
     }
 
-    public static String value(int num) {
-        switch (num) {
-            case 4 -> {
-                return "Пробный";
-            }
-            case 1 -> {
-                return "Начальный";
-            }
-            case 5 -> {
-                return "Начальный Плюс";
-            }
-            case 2 -> {
-                return "Стандартный";
-            }
-            case 3 -> {
-                return "Ультра";
-            }
-            case 6 -> {
-                return "Ультра CPU";
-            }
-            default -> {
-                return null;
-            }
-        }
+    public static Tariff value(int num) {
+        return switch (num) {
+            case 4 -> TRIAL;
+            case 1 -> BEGINNER;
+            case 5 -> BEGINNER_PLUS;
+            case 2 -> STANDARD;
+            case 3 -> ULTRA;
+            case 6 -> ULTRA_CPU;
+            default -> UNKNOWN;
+        };
+    }
+
+    public static Tariff valueOfName(String name) {
+        if (name.startsWith("Пробный")) return TRIAL;
+        if (name.startsWith("Начальный Плюс")) return BEGINNER_PLUS;
+        if (name.startsWith("Начальный")) return BEGINNER;
+        if (name.startsWith("Стандартный")) return STANDARD;
+        if (name.startsWith("Ультра")) return ULTRA;
+        if (name.startsWith("Ультра CPU")) return ULTRA_CPU;
+
+        return UNKNOWN;
     }
 }

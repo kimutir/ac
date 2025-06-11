@@ -1,7 +1,8 @@
-package com.amvera.cli.model;
+package com.amvera.cli.utils.table;
 
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ProjectPostResponse;
+import com.amvera.cli.utils.Tariff;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,12 +25,12 @@ public class ProjectTableModel {
     @JsonProperty("git remote")
     private String remote;
 
-    public ProjectTableModel(ProjectGetResponse p, String tariff) {
+    public ProjectTableModel(ProjectResponse p, Tariff tariff) {
         this.ownerName = p.getOwnerName();
         this.id = p.getId();
         this.name = p.getName();
         this.slug = p.getSlug();
-        this.tariff = tariff;
+        this.tariff = tariff.name();
         this.instances = p.getInstances();
         this.requiredInstances = p.getRequiredInstances();
         this.status = p.getStatus();
@@ -40,11 +41,11 @@ public class ProjectTableModel {
     }
 
 
-    public ProjectTableModel(ProjectPostResponse p, String tariff) {
+    public ProjectTableModel(ProjectPostResponse p, Tariff tariff) {
         this.ownerName = p.username();
         this.name = p.name();
         this.slug = p.slug();
-        this.tariff = tariff;
+        this.tariff = tariff.name();
         this.instances = p.instances();
         this.requiredInstances = p.requiredInstances();
         this.status = p.buildStatus();

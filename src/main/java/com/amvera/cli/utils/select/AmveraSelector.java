@@ -1,7 +1,7 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.utils.select;
 
-import com.amvera.cli.dto.project.ProjectGetResponse;
-import com.amvera.cli.service.ProjectService;
+import com.amvera.cli.utils.ServiceType;
+import com.amvera.cli.utils.Tariff;
 import org.springframework.shell.component.SingleItemSelector;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
@@ -14,10 +14,8 @@ import java.util.Optional;
 @Component
 public class AmveraSelector extends AbstractShellComponent {
 
-    private final ProjectService projectService;
-
     private final List<SelectorItem<String>> tariffs = Arrays.asList(
-            SelectorItem.of("Пробный", Tariff.TRY.title()),
+            SelectorItem.of("Пробный", Tariff.TRIAL.title()),
             SelectorItem.of("Начальный", Tariff.BEGINNER.title()),
             SelectorItem.of("Начальный Плюс", Tariff.BEGINNER_PLUS.title()),
             SelectorItem.of("Стандартный", Tariff.STANDARD.title()),
@@ -31,12 +29,9 @@ public class AmveraSelector extends AbstractShellComponent {
             SelectorItem.of("Preconfigured service", ServiceType.PRECONFIGURED.name())
     );
 
-    public AmveraSelector(ProjectService projectService) {
-        this.projectService = projectService;
-    }
 
     public int selectTariff() {
-        return Tariff.value(singleSelector(tariffs, "Select tariff: ", true));
+        return Tariff.value(singleSelector(tariffs, "Select tariff: ", true)).id();
     }
 
     public int selectServiceType() {

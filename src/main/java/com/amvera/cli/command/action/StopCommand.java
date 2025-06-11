@@ -16,10 +16,10 @@ public class StopCommand {
 
     @Command(command = "stop", description = "Stop project")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String stop(
-            @Option(longNames = "project", shortNames = 'p', arity = CommandRegistration.OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
+    public void stop(
+            @Option(longNames = "slug", shortNames = 's', arity = CommandRegistration.OptionArity.EXACTLY_ONE, description = "Project slug") String slug
     ) {
-        return projectService.stop(project);
+        projectService.stop(slug);
     }
 
 }

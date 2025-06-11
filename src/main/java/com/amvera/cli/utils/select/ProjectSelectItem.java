@@ -1,14 +1,15 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.utils.select;
 
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.utils.ServiceType;
 
 public class ProjectSelectItem {
 
     private final String name;
     private final ServiceType serviceType;
-    private final ProjectGetResponse project;
+    private final ProjectResponse project;
 
-    public ProjectSelectItem(ProjectGetResponse project) {
+    public ProjectSelectItem(ProjectResponse project) {
         this.name = project.getName();
         this.serviceType = project.getServiceType();
         this.project = project;
@@ -18,7 +19,7 @@ public class ProjectSelectItem {
         return String.format("%s [ %s ]", name, serviceType.name().toLowerCase());
     }
 
-    public ProjectGetResponse getProject() {
+    public ProjectResponse getProject() {
         return project;
     }
 

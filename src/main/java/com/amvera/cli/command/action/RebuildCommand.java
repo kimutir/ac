@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(group = "Project commands")
+@Command(command = "rebuild", group = "Project commands")
 public class RebuildCommand {
     private final ProjectService projectService;
 
@@ -14,12 +14,12 @@ public class RebuildCommand {
         this.projectService = projectService;
     }
 
-    @Command(command = "rebuild", description = "Rebuild project only! Does not work for postgresql and preconfigured services")
+    @Command(command = "", description = "Rebuild project only. Does not work for postgresql and preconfigured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String rebuild(
-            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
+    public void rebuild(
+            @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
     ) {
-        return projectService.rebuild(project);
+        projectService.rebuild(slug);
     }
 
 }

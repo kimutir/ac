@@ -1,11 +1,10 @@
-package com.amvera.cli.command.logs;
+package com.amvera.cli.command;
 
 import com.amvera.cli.dto.project.LogGetResponse;
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.LogsService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.ShellHelper;
-import org.jline.reader.EndOfFileException;
 import org.jline.reader.MaskingCallback;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.LineReaderImpl;
@@ -51,7 +50,7 @@ public class LogsCommand {
         if (limit > 1000) limit = 1000;
         if (limit < 1) limit = 50;
 
-        ProjectGetResponse projectResponse = projectService.findBy(project);
+        ProjectResponse projectResponse = projectService.findBy(project);
 
         List<String> availableTypes = new ArrayList<>(List.of("run", "build"));
 

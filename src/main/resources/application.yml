@@ -32,7 +32,6 @@ logging:
 
 amvera:
   keycloak-client: "amvera-cli"
-#  keycloak-client: "amvera-web"
   version: ^project.version^
 endpoints:
   logs: https://notifications.amvera.ru/logs

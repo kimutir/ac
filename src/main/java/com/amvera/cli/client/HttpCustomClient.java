@@ -23,18 +23,12 @@ public class HttpCustomClient {
         this.tokenUtils = tokenUtils;
     }
 
-    public RestClient.Builder project(String token) {
+    public RestClient project() {
         return RestClient.builder()
                 .baseUrl(endpoints.projects())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-    }
-
-    public RestClient.Builder project() {
-        return RestClient.builder()
-                .baseUrl(endpoints.projects())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken());
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
     }
 
     public RestClient.Builder configurations(String token) {
@@ -58,18 +52,20 @@ public class HttpCustomClient {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
-    public RestClient.Builder environment() {
+    public RestClient environment() {
         return RestClient.builder()
                 .baseUrl(endpoints.env())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken());
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
     }
 
-    public RestClient.Builder tariff(String token) {
+    public RestClient tariff() {
         return RestClient.builder()
-                .baseUrl(endpoints.projects())
+                .baseUrl(endpoints.tariff())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
     }
 
     public RestClient.Builder auth() {

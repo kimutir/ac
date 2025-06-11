@@ -1,6 +1,7 @@
-package com.amvera.cli.model;
+package com.amvera.cli.utils.table;
 
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
+import com.amvera.cli.utils.Tariff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -19,7 +20,7 @@ public class CnpgTableModel {
     private boolean isScheduledBackupEnabled;
     private String tariff;
 
-    public CnpgTableModel(CnpgResponse c, String tariff) {
+    public CnpgTableModel(CnpgResponse c, Tariff tariff) {
         this.name = c.name();
         this.database = c.database();
         this.dbUsername = c.dbUsername();
@@ -27,7 +28,7 @@ public class CnpgTableModel {
         this.enableSuperuserAccess = c.enableSuperuserAccess();
         this.status = c.status();
         this.isScheduledBackupEnabled = c.isScheduledBackupEnabled();
-        this.tariff = tariff;
+        this.tariff = tariff.name();
     }
 
     public String getName() {

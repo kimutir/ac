@@ -9,8 +9,8 @@ import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
-import com.amvera.cli.model.ProjectTableModel;
-import com.amvera.cli.model.TariffTableModel;
+import com.amvera.cli.utils.table.ProjectTableModel;
+import com.amvera.cli.utils.table.TariffTableModel;
 import com.amvera.cli.model.TokenConfig;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.TokenUtils;
@@ -27,7 +27,7 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
         {
                 AuthResponse.class,
                 AuthRequest.class,
-                ProjectGetResponse.class,
+                ProjectResponse.class,
                 ProjectListResponse.class,
                 ProjectRequest.class,
                 ProjectPostResponse.class,
@@ -37,7 +37,7 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
                 LogGetResponse.class,
                 BalanceGetResponse.class,
                 TariffGetResponse.class,
-                EnvDTO.class,
+                EnvResponse.class,
                 EnvListGetResponse.class,
                 EnvPostRequest.class,
                 EnvPutRequest.class,

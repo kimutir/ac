@@ -1,6 +1,7 @@
-package com.amvera.cli.model;
+package com.amvera.cli.utils.table;
 
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.utils.Tariff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -17,11 +18,11 @@ public class MarketplaceTableModel {
     private Integer requiredInstances;
     private Integer instances;
 
-    public MarketplaceTableModel(ProjectGetResponse p, String tariff) {
+    public MarketplaceTableModel(ProjectResponse p, Tariff tariff) {
         this.id = p.getId();
         this.name = p.getName();
         this.slug = p.getSlug();
-        this.tariff = tariff;
+        this.tariff = tariff.name();
         this.status = p.getStatus();
         this.statusMessage = p.getStatusMessage();
         this.requiredInstances = p.getRequiredInstances();

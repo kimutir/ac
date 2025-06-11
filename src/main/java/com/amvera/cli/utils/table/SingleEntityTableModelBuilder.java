@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.utils.table;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

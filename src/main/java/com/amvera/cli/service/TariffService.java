@@ -1,52 +1,74 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.billing.TariffGetResponse;
-import com.amvera.cli.exception.ClientExceptions;
-import com.amvera.cli.utils.TokenUtils;
+import com.amvera.cli.dto.billing.TariffListResponse;
+import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.utils.ShellHelper;
+import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.select.TariffSelectItem;
+import com.amvera.cli.utils.table.AmveraTable;
+import com.amvera.cli.utils.table.TariffTableModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+
+import java.util.Currency;
+import java.util.List;
 
 @Service
 public class TariffService {
 
     private final HttpCustomClient client;
-    private final TokenUtils tokenUtils;
+    private final AmveraTable table;
+    private final ShellHelper helper;
+    private final AmveraSelector selector;
 
-    public TariffService(HttpCustomClient client, TokenUtils tokenUtils) {
+    public TariffService(HttpCustomClient client, AmveraTable table, ShellHelper helper, AmveraSelector selector) {
         this.client = client;
-        this.tokenUtils = tokenUtils;
+        this.table = table;
+        this.helper = helper;
+        this.selector = selector;
     }
 
-    public void changeTariff(String slug, int tariffId) {
-        String token = tokenUtils.readToken().accessToken();
-        ResponseEntity<String> response = client.tariff(token).build()
-                .post().uri("/{slug}/tariff", slug)
-                .body(tariffId)
-                .retrieve()
-                .toEntity(String.class);
-
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Changing tariff failed.");
-        }
-
+    public Tariff select() {
+        List<SelectorItem<TariffSelectItem>> tariffs = getAllRequest().tariffs().stream().map(TariffResponse::toSelectItem).toList();
+        return selector.singleSelector(tariffs, "Select tariff: ", true).getTariff();
     }
 
-    public TariffGetResponse getTariff(String slug) {
-        String token = tokenUtils.readToken().accessToken();
-        RestClient.Builder builder = client.tariff(token);
+    public void renderTable() {
+        List<TariffTableModel> tariffs = getAllRequest().tariffs().stream().map(TariffTableModel::new).toList();
+        helper.println(table.tariffs(tariffs));
+    }
 
-        TariffGetResponse tariff = builder.build().get()
-                .uri("/{slug}/tariff", slug)
+    public TariffListResponse getAllRequest() {
+        ResponseEntity<TariffListResponse> response = client.tariff()
+                .get()
+                .uri("?currency={currency}", Currency.getInstance("RUB"))
                 .retrieve()
-                .body(TariffGetResponse.class);
+                .toEntity(TariffListResponse.class);
 
-        if (tariff == null) {
-            throw ClientExceptions.noContent("Tariff loading failed.");
-        }
+        // todo: check and throw exception
+//        if (tariff == null) {
+//            throw ClientExceptions.noContent("Tariff loading failed.");
+//        }
 
-        return tariff;
+        return response.getBody();
+    }
+
+    public TariffResponse getByTariffSlugRequest(String slug) {
+        ResponseEntity<TariffResponse> response = client.tariff()
+                .get()
+                .uri("/slug/{slug}?currency={currency}", slug, Currency.getInstance("RUB"))
+                .retrieve()
+                .toEntity(TariffResponse.class);
+
+        // todo: check and throw exception
+//        if (tariff == null) {
+//            throw ClientExceptions.noContent("Tariff loading failed.");
+//        }
+        System.out.println(response.getBody());
+        return response.getBody();
     }
 
 }

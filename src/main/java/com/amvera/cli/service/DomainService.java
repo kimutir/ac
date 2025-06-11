@@ -2,8 +2,9 @@ package com.amvera.cli.service;
 
 import com.amvera.cli.client.HttpCustomClient;
 import com.amvera.cli.dto.project.DomainResponse;
-import com.amvera.cli.dto.project.ProjectGetResponse;
-import com.amvera.cli.utils.AmveraTable;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.utils.table.AmveraTable;
+import com.amvera.cli.utils.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +18,16 @@ public class DomainService {
     private final HttpCustomClient client;
     private final AmveraTable table;
     private final ShellHelper helper;
+    private final ProjectService projectService;
 
-    public DomainService(HttpCustomClient client, AmveraTable table, ShellHelper helper) {
+    public DomainService(HttpCustomClient client, AmveraTable table, ShellHelper helper, ProjectService projectService) {
         this.client = client;
         this.table = table;
         this.helper = helper;
+        this.projectService = projectService;
     }
 
-    public void renderTable(ProjectGetResponse project) {
+    public void renderTable(ProjectResponse project) {
         List<DomainResponse> domainList = getDomains(project.getSlug());
 
         switch (project.getServiceType()) {
@@ -34,6 +37,32 @@ public class DomainService {
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-rw", project.getOwnerName(), project.getSlug()), null));
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-ro", project.getOwnerName(), project.getSlug()), null));
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-r", project.getOwnerName(), project.getSlug()), null));
+            }
+        }
+
+        if (domainList.isEmpty()) {
+            helper.printWarning("No domains found. You can start with 'amvera create domain'\n");
+        } else {
+            helper.println(table.domains(domainList));
+        }
+    }
+
+
+    public void renderTable(String slug) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+        renderTable(project);
+    }
+
+    public void renderTable(String slug, String ownerName, ServiceType serviceType) {
+        List<DomainResponse> domainList = getDomains(slug);
+
+        switch (serviceType) {
+            case PROJECT -> domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", ownerName, slug), null));
+            case PRECONFIGURED -> {}
+            case POSTGRESQL -> {
+                domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-rw", ownerName, slug), null));
+                domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-ro", ownerName, slug), null));
+                domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-r", ownerName, slug), null));
             }
         }
 

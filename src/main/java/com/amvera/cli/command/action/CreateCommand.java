@@ -1,18 +1,20 @@
 package com.amvera.cli.command.action;
 
 import com.amvera.cli.dto.project.EnvPostRequest;
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ProjectPostResponse;
 import com.amvera.cli.dto.project.cnpg.CnpgPostRequest;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.dto.project.config.*;
-import com.amvera.cli.model.CnpgTableModel;
-import com.amvera.cli.model.MarketplaceTableModel;
-import com.amvera.cli.model.ProjectTableModel;
+import com.amvera.cli.utils.table.CnpgTableModel;
+import com.amvera.cli.utils.table.MarketplaceTableModel;
+import com.amvera.cli.utils.table.ProjectTableModel;
 import com.amvera.cli.service.CnpgService;
 import com.amvera.cli.service.MarketplaceService;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.*;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.table.AmveraTable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
@@ -79,13 +81,13 @@ public class CreateCommand extends AbstractShellComponent {
         createProject();
     }
 
-    @Command(command = "postgresql", alias = "psql", description = "Create postgres (cnpg) cluster")
+    @Command(command = "postgresql", alias = {"create psql", "create postgre"}, description = "Create postgres (cnpg) cluster")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql() {
         createCnpg();
     }
 
-    @Command(command = "preconfigured", alias = "conf", description = "Create preconfigured service from marketplace")
+    @Command(command = "preconfigured", alias = "create preconf", description = "Create preconfigured service from marketplace")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured() {
         createPreconfigured();
@@ -103,7 +105,7 @@ public class CreateCommand extends AbstractShellComponent {
             HttpStatusCode marketplaceStatus = marketplaceService.saveMarketplaceConfig(config);
 
             if (marketplaceStatus.is2xxSuccessful()) {
-                ProjectGetResponse project = projectService.findBy(serviceName);
+                ProjectResponse project = projectService.findBy(serviceName);
                 helper.print(amveraTable.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariffId))));
             }
         }
@@ -125,7 +127,7 @@ public class CreateCommand extends AbstractShellComponent {
             superUserPassword = input.notBlankOrNullInput("Enter super user password: ");
         }
 
-        ResponseEntity<CnpgResponse> cnpgResponse = cnpgService.create(
+        ResponseEntity<CnpgResponse> cnpgResponse = cnpgService.createRequest(
                 new CnpgPostRequest(
                         serviceName,
                         tariffId,
@@ -156,22 +158,22 @@ public class CreateCommand extends AbstractShellComponent {
         boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
 
         if (addConfig) {
-            ResponseEntity<ConfigGetResponse> configTemplateResponse = projectService.getConfig();
+            ResponseEntity<ConfigGetResponse> configTemplateResponse = projectService.getConfigRequest();
 
             if (configTemplateResponse.getStatusCode().is2xxSuccessful()) {
                 AmveraConfiguration config = yamlConfig(Objects.requireNonNull(configTemplateResponse.getBody()));
 
-                project = projectService.createProject(serviceName, tariffId);
-                projectService.addConfig(config, project.slug());
+                project = projectService.createProjectRequest(serviceName, tariffId);
+                projectService.addConfigRequest(config, project.slug());
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
             } else {
-                project = projectService.createProject(serviceName, tariffId);
+                project = projectService.createProjectRequest(serviceName, tariffId);
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
                 helper.printWarning("Project has been created. But you have to add configuration manually.");
             }
 
         } else {
-            project = projectService.createProject(serviceName, tariffId);
+            project = projectService.createProjectRequest(serviceName, tariffId);
         }
 
         helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));

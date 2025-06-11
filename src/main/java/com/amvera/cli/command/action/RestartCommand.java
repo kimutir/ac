@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(group = "Project commands")
+@Command(command = "restart", group = "Project commands")
 public class RestartCommand {
     private final ProjectService projectService;
 
@@ -14,12 +14,12 @@ public class RestartCommand {
         this.projectService = projectService;
     }
 
-    @Command(command = "restart", description = "Restart project")
+    @Command(command = "", description = "Restart project")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    public String restart(
-            @Option(longNames = "project", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug", required = true) String project
+    public void restart(
+            @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
     ) {
-        return projectService.restart(project);
+        projectService.restart(slug);
     }
 
 }

@@ -1,8 +1,9 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.utils.table;
 
 import com.amvera.cli.dto.project.DomainResponse;
-import com.amvera.cli.dto.project.EnvDTO;
-import com.amvera.cli.dto.project.ProjectGetResponse;
+import com.amvera.cli.dto.project.EnvResponse;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.cnpg.CnpgBackupResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.table.*;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class AmveraTable {
      * @param projects list of projects
      * @return table as String
      */
-    public String projects(List<ProjectGetResponse> projects) {
+    public String projects(List<ProjectResponse> projects) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("id", "ID");
         headers.put("name", "NAME");
@@ -61,7 +62,7 @@ public class AmveraTable {
      * @param envs list of environment variables
      * @return table as String
      */
-    public String environments(List<EnvDTO> envs) {
+    public String environments(List<EnvResponse> envs) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("id", "ID");
         headers.put("name", "NAME");
@@ -104,6 +105,63 @@ public class AmveraTable {
                 .addHeaderBorder(BorderStyle.fancy_light);
 
         for (int i = 0; i < domains.size() + 1; i++) {
+            for (int j = 0; j < headers.size(); j++) {
+                tableBuilder.on(at(i, j)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            }
+        }
+
+        return tableBuilder.build().render(180);
+    }
+
+    /**
+     * Returns table of all tariffs.
+     *
+     * @param tariffs list of tariffs
+     * @return table as String
+     */
+    public String tariffs(List<TariffTableModel> tariffs) {
+        LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
+        headers.put("name", "TARIFF_NAME");
+        headers.put("cpu", "CPU_LIMIT");
+        headers.put("ram", "RAM_LIMIT");
+        headers.put("volume", "SSD_LIMIT");
+
+        TableModel model = new BeanListTableModel<>(tariffs, headers);
+
+        TableBuilder tableBuilder = new TableBuilder(model)
+                .addInnerBorder(BorderStyle.oldschool)
+                .addHeaderBorder(BorderStyle.fancy_light);
+
+        for (int i = 0; i < tariffs.size() + 1; i++) {
+            for (int j = 0; j < headers.size(); j++) {
+                tableBuilder.on(at(i, j)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
+            }
+        }
+
+        return tableBuilder.build().render(180);
+    }
+
+    /**
+     * Returns table of all cnpg backups.
+     *
+     * @param backups list of cnpg backups
+     * @return table as String
+     */
+    public String cnpgBackups(List<CnpgBackupResponse> backups) {
+        LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
+        headers.put("backupId", "ID");
+        headers.put("name", "NAME");
+        headers.put("isScheduled", "IS_SCHEDULED");
+        headers.put("status", "STATUS");
+        headers.put("createdAt", "CREATED_AT");
+
+        TableModel model = new BeanListTableModel<>(backups, headers);
+
+        TableBuilder tableBuilder = new TableBuilder(model)
+                .addInnerBorder(BorderStyle.oldschool)
+                .addHeaderBorder(BorderStyle.fancy_light);
+
+        for (int i = 0; i < backups.size() + 1; i++) {
             for (int j = 0; j < headers.size(); j++) {
                 tableBuilder.on(at(i, j)).addFormatter(new SpaceFormatter()).addAligner(SimpleHorizontalAligner.center);
             }

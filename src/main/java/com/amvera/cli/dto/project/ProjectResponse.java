@@ -1,6 +1,6 @@
 package com.amvera.cli.dto.project;
 
-import com.amvera.cli.utils.ProjectSelectItem;
+import com.amvera.cli.utils.select.ProjectSelectItem;
 import com.amvera.cli.utils.ServiceType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -10,7 +10,7 @@ import java.util.Objects;
 
 @RegisterReflectionForBinding
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProjectGetResponse {
+public class ProjectResponse {
     private Integer id;
     private String ownerName;
     private String name;
@@ -94,7 +94,7 @@ public class ProjectGetResponse {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ProjectGetResponse that = (ProjectGetResponse) o;
+        ProjectResponse that = (ProjectResponse) o;
         return Objects.equals(id, that.id) && Objects.equals(ownerName, that.ownerName) && Objects.equals(name, that.name) && Objects.equals(status, that.status) && Objects.equals(slug, that.slug) && Objects.equals(statusMessage, that.statusMessage) && Objects.equals(requiredInstances, that.requiredInstances) && Objects.equals(instances, that.instances) && Objects.equals(serviceType, that.serviceType);
     }
 

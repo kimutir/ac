@@ -1,0 +1,35 @@
+package com.amvera.cli.command;
+
+import org.springframework.shell.command.CommandRegistration;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
+import org.springframework.shell.command.annotation.Option;
+
+@Command(command = "domain")
+public class DomainCommand {
+
+    @Command(command = "add", description = "Environment variables for specified project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public void add(
+            @Option(longNames = "slug", shortNames = 's', arity = CommandRegistration.OptionArity.EXACTLY_ONE, description = "Project slug") String slug
+    ) {
+//        envService.create(slug);
+    }
+
+    @Command(command = "delete", description = "Environment variables for specified project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public void delete(
+            @Option(longNames = "slug", shortNames = 's', arity = CommandRegistration.OptionArity.EXACTLY_ONE, description = "Project slug") String slug
+    ) {
+//        envService.create(slug);
+    }
+
+    @Command(command = "update", description = "Environment variables for specified project")
+    @CommandAvailability(provider = "userLoggedOutProvider")
+    public void update(
+            @Option(longNames = "slug", shortNames = 's', arity = CommandRegistration.OptionArity.EXACTLY_ONE, description = "Project slug") String slug
+    ) {
+//        envService.create(slug);
+    }
+
+}
