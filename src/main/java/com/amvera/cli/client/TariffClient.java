@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Currency;
 
 @Component
-public class TariffClient extends HttpClientAbs {
+public class TariffClient extends BaseHttpClient {
 
     public TariffClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.tariff(), tokenUtils.readToken().accessToken());

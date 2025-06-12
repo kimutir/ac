@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class EnvClient extends HttpClientAbs{
+public class EnvClient extends BaseHttpClient {
 
     public EnvClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.env(), tokenUtils.readToken().accessToken());

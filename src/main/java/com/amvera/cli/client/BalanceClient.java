@@ -6,7 +6,7 @@ import com.amvera.cli.utils.TokenUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BalanceClient extends HttpClientAbs{
+public class BalanceClient extends BaseHttpClient {
     public BalanceClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.balance(), tokenUtils.readToken().accessToken());
     }

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfigClient extends HttpClientAbs {
+public class ConfigClient extends BaseHttpClient {
 
     public ConfigClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.configurations(), tokenUtils.readToken().accessToken());

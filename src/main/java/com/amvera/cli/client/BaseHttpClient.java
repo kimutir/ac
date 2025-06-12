@@ -4,19 +4,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
-public abstract class HttpClientAbs {
+public abstract class BaseHttpClient {
 
     private final String url;
     private final String token;
-    private final MediaType contentType;
 
-    public HttpClientAbs(String url, String token) {
-        this.url = url;
-        this.token = "Bearer " + token;
-        this.contentType = MediaType.APPLICATION_JSON;
-    }
-
-    public HttpClientAbs(String url, String token, MediaType contentType) {
+    public BaseHttpClient(String url, String token) {
         this.url = url;
         this.token = "Bearer " + token;
     }
@@ -24,7 +17,7 @@ public abstract class HttpClientAbs {
     public RestClient client() {
         return RestClient.builder()
                 .baseUrl(this.url)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, this.token)
                 .build();
     }

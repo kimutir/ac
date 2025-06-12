@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CnpgClient extends HttpClientAbs{
+public class CnpgClient extends BaseHttpClient {
 
     public CnpgClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.postgresql(), tokenUtils.readToken().accessToken());

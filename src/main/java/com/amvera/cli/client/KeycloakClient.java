@@ -4,27 +4,30 @@ import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
-import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
 import com.amvera.cli.dto.auth.RevokeTokenPostRequest;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.utils.TokenUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 @Component
-public class KeycloakClient extends HttpClientAbs {
+public class KeycloakClient extends BaseHttpClient {
     private final AppProperties properties;
     private final TokenUtils tokenUtils;
+    private final Endpoints endpoints;
 
     public KeycloakClient(
-            Endpoints endpoints,
             AppProperties properties,
-            TokenUtils tokenUtils
+            TokenUtils tokenUtils,
+            Endpoints endpoints
     ) {
         super(endpoints.keycloak(), tokenUtils.readToken().accessToken());
+        this.endpoints = endpoints;
         this.properties = properties;
-
         this.tokenUtils = tokenUtils;
     }
 
@@ -34,22 +37,13 @@ public class KeycloakClient extends HttpClientAbs {
         AuthResponse response = client()
                 .post()
                 .uri("/protocol/openid-connect/token")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(body.toMultiValueMap())
                 .retrieve().body(AuthResponse.class);
 
         if (response != null) {
             tokenUtils.saveToken(response.getAccessToken(), response.getRefreshToken());
         }
-
-        return response;
-    }
-
-    public AuthResponse refresh() {
-        RefreshTokenPostRequest body = new RefreshTokenPostRequest(properties.keycloakClient(), tokenUtils.readToken().refreshToken());
-        AuthResponse response = client()
-                .post().uri("/protocol/openid-connect/token")
-                .body(body.toMultiValueMap())
-                .retrieve().body(AuthResponse.class);
 
         return response;
     }
@@ -63,6 +57,7 @@ public class KeycloakClient extends HttpClientAbs {
         ResponseEntity<String> response = client()
                 .post()
                 .uri("/protocol/openid-connect/revoke")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken)
                 .body(body.toMultiValueMap())
                 .retrieve().toEntity(String.class);
 
@@ -70,7 +65,7 @@ public class KeycloakClient extends HttpClientAbs {
     }
 
     public InfoResponse info() {
-        InfoResponse info = client()
+        InfoResponse info = super.client()
                 .get().uri("/account")
                 .retrieve()
                 .body(InfoResponse.class);
@@ -80,6 +75,13 @@ public class KeycloakClient extends HttpClientAbs {
         }
 
         return info;
+    }
+
+    public RestClient client() {
+       return RestClient.builder()
+                .baseUrl(endpoints.keycloak())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
     }
 
 }

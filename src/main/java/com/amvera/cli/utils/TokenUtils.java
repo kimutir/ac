@@ -1,22 +1,29 @@
 package com.amvera.cli.utils;
 
-import com.amvera.cli.client.KeycloakClient;
+import com.amvera.cli.config.AppProperties;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.auth.AuthResponse;
+import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
+import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.exception.InformException;
 import com.amvera.cli.exception.TokenNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
 
 import java.io.File;
 import java.io.IOException;
 
 @Component
 public class TokenUtils {
+    private final AppProperties properties;
     private final ObjectMapper mapper;
-    private final KeycloakClient keycloakClient;
+    private final Endpoints endpoints;
 
     // HOME - Mac OS
     // USERPROFILE - Windows
@@ -24,11 +31,13 @@ public class TokenUtils {
     private static final String PATH = HOME + File.separator + ".amvera.json";
 
     public TokenUtils(
+            AppProperties properties,
             ObjectMapper mapper,
-            KeycloakClient keycloakClient
+            Endpoints endpoints
     ) {
+        this.properties = properties;
         this.mapper = mapper;
-        this.keycloakClient = keycloakClient;
+        this.endpoints = endpoints;
     }
 
     public void saveToken(String accessToken, String refreshToken) {
@@ -70,8 +79,8 @@ public class TokenUtils {
 
     private int health(String token) {
         try {
-            keycloakClient.info();
-            return HttpStatus.OK.value();
+            ResponseEntity<InfoResponse> response = info();
+            return response.getStatusCode().value();
         } catch (HttpClientErrorException e) {
             return e.getStatusCode().value();
         } catch (Exception e) {
@@ -81,7 +90,7 @@ public class TokenUtils {
 
     private TokenConfig refreshToken(String refreshToken) {
         try {
-            AuthResponse response = keycloakClient.refresh();
+            AuthResponse response = refresh(refreshToken);
 
             if (response == null) {
                 throw new InformException("Unable to refresh tokens. Contact us to solve the problem.");
@@ -96,6 +105,34 @@ public class TokenUtils {
             throw new InformException("Unable to save token. Contact us to solve the problem.");
         }
 
+    }
+
+    private ResponseEntity<InfoResponse> info() {
+        ResponseEntity<InfoResponse> info = client()
+                .get().uri("/account")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .toEntity(InfoResponse.class);
+
+        if (info == null) {
+            throw new RuntimeException("Unable to get user information.");
+        }
+
+        return info;
+    }
+
+    private AuthResponse refresh(String refreshToken) {
+        RefreshTokenPostRequest body = new RefreshTokenPostRequest(properties.keycloakClient(), refreshToken);
+        AuthResponse response = client()
+                .post().uri("/protocol/openid-connect/token")
+                .body(body.toMultiValueMap())
+                .retrieve().body(AuthResponse.class);
+
+        return response;
+    }
+
+    private RestClient client() {
+        return RestClient.create(endpoints.keycloak());
     }
 
 }

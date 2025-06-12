@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
-public class LogClient extends HttpClientAbs {
+public class LogClient extends BaseHttpClient {
 
     public LogClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.logs(), tokenUtils.readToken().accessToken());

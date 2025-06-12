@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class ProjectClient extends HttpClientAbs {
+public class ProjectClient extends BaseHttpClient {
 
     public ProjectClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.projects(), tokenUtils.readToken().accessToken());

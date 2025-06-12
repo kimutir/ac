@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class DomainClient extends HttpClientAbs{
+public class DomainClient extends BaseHttpClient {
 
     public DomainClient(Endpoints endpoints, TokenUtils tokenUtils) {
         super(endpoints.domain(), tokenUtils.readToken().accessToken());

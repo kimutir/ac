@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MarketClient extends HttpClientAbs {
+public class MarketClient extends BaseHttpClient {
 
 
     public MarketClient(Endpoints endpoints, TokenUtils tokenUtils) {
