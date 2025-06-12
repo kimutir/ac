@@ -34,7 +34,7 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
                 AmveraCLIApplication.class,
                 Meta.class,
                 Toolchain.class,
-                LogGetResponse.class,
+                LogResponse.class,
                 BalanceGetResponse.class,
                 TariffGetResponse.class,
                 EnvResponse.class,

@@ -44,6 +44,14 @@ public class AmveraHttpClient {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
     }
 
+    public RestClient logs() {
+        return RestClient.builder()
+                .baseUrl(endpoints.logs())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, String.valueOf(MediaType.APPLICATION_JSON))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUtils.readToken().accessToken())
+                .build();
+    }
+
     public RestClient.Builder balance(String token) {
         return RestClient.builder()
                 .baseUrl(endpoints.balance())
