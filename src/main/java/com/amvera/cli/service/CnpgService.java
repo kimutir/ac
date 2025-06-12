@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ProjectListResponse;
@@ -17,6 +17,8 @@ import com.amvera.cli.utils.table.CnpgTableModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
+import org.springframework.shell.component.context.ComponentContext;
+import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
 
@@ -26,19 +28,21 @@ import java.util.function.Predicate;
 @Service
 public class CnpgService {
 
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final AmveraTable table;
     private final ShellHelper helper;
     private final AmveraSelector selector;
     private final AmveraInput input;
+    private final ComponentFlow.Builder componentFlowBuilder;
 
     @Autowired
-    public CnpgService(HttpCustomClient client, AmveraTable table, ShellHelper helper, AmveraSelector selector, AmveraInput input) {
+    public CnpgService(AmveraHttpClient client, AmveraTable table, ShellHelper helper, AmveraSelector selector, AmveraInput input, ComponentFlow.Builder componentFlowBuilder) {
         this.client = client;
         this.table = table;
         this.helper = helper;
         this.selector = selector;
         this.input = input;
+        this.componentFlowBuilder = componentFlowBuilder;
     }
 
     public void renderTable() {
@@ -108,6 +112,21 @@ public class CnpgService {
         helper.println(table.singleEntityTable(new CnpgTableModel(restored, tariff)));
     }
 
+    public void update(String slug, Boolean isEnabled) {
+        ProjectResponse project = findOrSelect(slug);
+        CnpgResponse cnpg = findBySlugDetailedRequest(project.getSlug());
+
+        if (cnpg.isScheduledBackupEnabled() == isEnabled) {
+            System.out.println("the same");
+            throw new RuntimeException("The same value");
+        }
+
+        cnpg = updateRequest(slug, isEnabled);
+        Tariff tariff = Tariff.value(getTariffRequest(slug).id());
+
+        helper.println(table.singleEntityTable(new CnpgTableModel(cnpg, tariff)));
+    }
+
     public List<ProjectResponse> getAllRequest() {
         ResponseEntity<ProjectListResponse> response = client.postgresql()
                 .get().retrieve()
@@ -162,7 +181,7 @@ public class CnpgService {
     }
 
     public CnpgRestoreResponse restoreRequest(String newSlug, String oldSlug, String backupName) {
-        ResponseEntity<CnpgRestoreResponse>  response = client.postgresql()
+        ResponseEntity<CnpgRestoreResponse> response = client.postgresql()
                 .post().uri("/restore")
                 .body(new CnpgRestorePostRequest(newSlug, oldSlug, backupName))
                 .retrieve()
@@ -175,7 +194,8 @@ public class CnpgService {
         ResponseEntity<List<CnpgBackupResponse>> response = client.postgresql()
                 .get().uri("/backup/{slug}", slug)
                 .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {});
+                .toEntity(new ParameterizedTypeReference<>() {
+                });
 
         return response.getBody();
     }
@@ -195,7 +215,7 @@ public class CnpgService {
 
     public ProjectResponse findBySlugRequest(String slug) {
         ResponseEntity<ProjectResponse> response = client.project().get()
-                .uri("/{slug", slug)
+                .uri("/{slug}", slug)
                 .retrieve()
                 .toEntity(ProjectResponse.class);
 
@@ -234,6 +254,15 @@ public class CnpgService {
 //        if (tariff == null) {
 //            throw ClientExceptions.noContent("Tariff loading failed.");
 //        }
+
+        return response.getBody();
+    }
+
+    public CnpgResponse updateRequest(String slug, boolean isEnabled) {
+        ResponseEntity<CnpgResponse> response = client.postgresql().put()
+                .body(new CnpgPutRequest(slug, isEnabled))
+                .retrieve()
+                .toEntity(CnpgResponse.class);
 
         return response.getBody();
     }

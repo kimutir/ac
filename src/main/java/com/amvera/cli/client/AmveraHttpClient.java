@@ -2,7 +2,6 @@ package com.amvera.cli.client;
 
 import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.utils.TokenReader;
-import com.amvera.cli.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
-public class HttpCustomClient {
+public class AmveraHttpClient {
     private final Endpoints endpoints;
     private final TokenReader tokenUtils;
 
     @Autowired
-    public HttpCustomClient(
+    public AmveraHttpClient(
             Endpoints endpoints,
             TokenReader tokenUtils
     ) {

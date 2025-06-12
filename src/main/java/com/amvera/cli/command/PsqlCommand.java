@@ -36,12 +36,19 @@ public class PsqlCommand {
         cnpgService.deleteBackup(slug, backupName);
     }
 
-    @Command(command = "enable scheduled")
+    @Command(command = "scheduled")
     public void scheduledBackup(
-            @Option(longNames = "enable", shortNames = 'e', required = false) boolean enable
+            @Option(longNames = "slug", shortNames = 's', required = true) String slug,
+            @Option(longNames = "enable", shortNames = 'e', required = true) Boolean enable
     ) {
-        System.out.println("Creating backup...");
+        System.out.println(enable);
+        System.out.println(slug);
+        cnpgService.update(slug, enable);
     }
+
+    /*
+    would you like to disable/enable scheduled?
+     */
 
     @Command(command = "backup list", alias = "psql backup ls")
     public void getBackupList(

@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.*;
@@ -18,7 +18,7 @@ import java.util.List;
 
 @Service
 public class EnvironmentService {
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final ShellHelper helper;
     private final AmveraTable table;
     private final AmveraSelector selector;
@@ -26,7 +26,7 @@ public class EnvironmentService {
     private final ComponentFlow.Builder componentFlowBuilder;
 
     public EnvironmentService(
-            HttpCustomClient client,
+            AmveraHttpClient client,
             ShellHelper helper,
             AmveraTable table, AmveraSelector selector, ProjectService projectService, ComponentFlow.Builder componentFlowBuilder
     ) {

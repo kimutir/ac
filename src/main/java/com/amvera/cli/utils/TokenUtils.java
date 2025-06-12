@@ -1,6 +1,6 @@
 package com.amvera.cli.utils;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.dto.auth.AuthResponse;
 import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
@@ -18,7 +18,7 @@ import java.io.IOException;
 @Component
 public class TokenUtils {
     private final ObjectMapper mapper;
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final AppProperties properties;
 
     // HOME - Mac OS
@@ -28,7 +28,7 @@ public class TokenUtils {
 
     public TokenUtils(
             ObjectMapper mapper,
-            HttpCustomClient client,
+            AmveraHttpClient client,
             AppProperties properties
     ) {
         this.mapper = mapper;

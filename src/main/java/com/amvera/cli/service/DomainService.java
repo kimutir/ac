@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.project.DomainResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.utils.table.AmveraTable;
@@ -15,12 +15,12 @@ import java.util.List;
 @Service
 public class DomainService {
 
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final AmveraTable table;
     private final ShellHelper helper;
     private final ProjectService projectService;
 
-    public DomainService(HttpCustomClient client, AmveraTable table, ShellHelper helper, ProjectService projectService) {
+    public DomainService(AmveraHttpClient client, AmveraTable table, ShellHelper helper, ProjectService projectService) {
         this.client = client;
         this.table = table;
         this.helper = helper;

@@ -1,8 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.MarketplaceConfig;
-import com.amvera.cli.dto.project.config.ConfigGetResponse;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.project.config.MarketplaceConfigGetResponse;
 import com.amvera.cli.dto.project.config.MarketplaceConfigPostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +11,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class MarketplaceService {
 
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
 
     @Autowired
-    public MarketplaceService(HttpCustomClient client) {
+    public MarketplaceService(AmveraHttpClient client) {
         this.client = client;
     }
 

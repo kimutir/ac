@@ -1,17 +1,17 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.billing.BalanceGetResponse;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BalanceService {
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final TokenUtils tokenUtils;
 
     public BalanceService(
-            HttpCustomClient client,
+            AmveraHttpClient client,
             TokenUtils tokenUtils) {
         this.client = client;
         this.tokenUtils = tokenUtils;

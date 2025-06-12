@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.config.AppProperties;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
@@ -17,12 +17,12 @@ import org.springframework.web.client.HttpClientErrorException;
 @Service
 public class UserService {
     private final AppProperties properties;
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final TokenUtils tokenUtils;
 
     public UserService(
             AppProperties properties,
-            HttpCustomClient client,
+            AmveraHttpClient client,
             TokenUtils tokenUtils
     ) {
         this.properties = properties;

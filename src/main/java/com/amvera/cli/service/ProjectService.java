@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 
 @Service
 public class ProjectService {
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final TokenUtils tokenUtils;
     private final CnpgService cnpgService;
     private final AmveraTable table;
@@ -33,7 +33,7 @@ public class ProjectService {
 
     @Autowired
     public ProjectService(
-            HttpCustomClient client,
+            AmveraHttpClient client,
             TokenUtils tokenUtils,
             CnpgService cnpgService,
             AmveraTable table,

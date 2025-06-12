@@ -1,6 +1,6 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.billing.TariffListResponse;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.utils.ShellHelper;
@@ -19,12 +19,12 @@ import java.util.List;
 @Service
 public class TariffService {
 
-    private final HttpCustomClient client;
+    private final AmveraHttpClient client;
     private final AmveraTable table;
     private final ShellHelper helper;
     private final AmveraSelector selector;
 
-    public TariffService(HttpCustomClient client, AmveraTable table, ShellHelper helper, AmveraSelector selector) {
+    public TariffService(AmveraHttpClient client, AmveraTable table, ShellHelper helper, AmveraSelector selector) {
         this.client = client;
         this.table = table;
         this.helper = helper;
