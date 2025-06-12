@@ -6,7 +6,7 @@ import org.springframework.shell.style.ThemeSettings;
 /**
  * Class for customization default theme.
  */
-public class CustomThemeSettings extends ThemeSettings {
+public class AmveraThemeSettings extends ThemeSettings {
 
     /**
      * Apply custom styles settings.
@@ -14,6 +14,6 @@ public class CustomThemeSettings extends ThemeSettings {
      */
     @Override
     public StyleSettings styles() {
-        return new CustomStyleSettings();
+        return new AmveraStyleSettings();
     }
 }

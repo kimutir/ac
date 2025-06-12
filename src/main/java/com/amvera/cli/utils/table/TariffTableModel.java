@@ -2,9 +2,9 @@ package com.amvera.cli.utils.table;
 
 import com.amvera.cli.dto.billing.ConditionResponse;
 import com.amvera.cli.dto.billing.TariffResponse;
-import com.amvera.cli.utils.ConditionType;
-import com.amvera.cli.utils.ResourceType;
-import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.dto.billing.ConditionType;
+import com.amvera.cli.dto.billing.ResourceType;
+import com.amvera.cli.dto.billing.Tariff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;

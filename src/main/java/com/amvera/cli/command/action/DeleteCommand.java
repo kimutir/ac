@@ -2,7 +2,7 @@ package com.amvera.cli.command.action;
 
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.ProjectService;
-import com.amvera.cli.utils.AmveraInput;
+import com.amvera.cli.utils.input.AmveraInput;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.OptionArity;

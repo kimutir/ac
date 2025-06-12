@@ -1,11 +1,14 @@
 package com.amvera.cli.command.action;
 
-import com.amvera.cli.dto.project.EnvPostRequest;
+import com.amvera.cli.dto.billing.Tariff;
+import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ProjectPostResponse;
+import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgPostRequest;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.dto.project.config.*;
+import com.amvera.cli.utils.input.AmveraInput;
 import com.amvera.cli.utils.table.CnpgTableModel;
 import com.amvera.cli.utils.table.MarketplaceTableModel;
 import com.amvera.cli.utils.table.ProjectTableModel;
@@ -98,7 +101,7 @@ public class CreateCommand extends AbstractShellComponent {
         String serviceName = serviceNameAndTariff.first();
         int tariffId = serviceNameAndTariff.second();
 
-        ResponseEntity<MarketplaceConfigGetResponse> configResponse = marketplaceService.getMarketplaceConfig();
+        ResponseEntity<MarketplaceConfigResponse> configResponse = marketplaceService.getMarketplaceConfig();
 
         if (configResponse.getStatusCode().is2xxSuccessful()) {
             MarketplaceConfigPostRequest config = marketConfig(Objects.requireNonNull(configResponse.getBody()), serviceName, tariffId);
@@ -158,7 +161,7 @@ public class CreateCommand extends AbstractShellComponent {
         boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
 
         if (addConfig) {
-            ResponseEntity<ConfigGetResponse> configTemplateResponse = projectService.getConfigRequest();
+            ResponseEntity<ConfigResponse> configTemplateResponse = projectService.getConfigRequest();
 
             if (configTemplateResponse.getStatusCode().is2xxSuccessful()) {
                 AmveraConfiguration config = yamlConfig(Objects.requireNonNull(configTemplateResponse.getBody()));
@@ -179,7 +182,7 @@ public class CreateCommand extends AbstractShellComponent {
         helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
     }
 
-    private AmveraConfiguration yamlConfig(ConfigGetResponse template) {
+    private AmveraConfiguration yamlConfig(ConfigResponse template) {
         AmveraConfiguration config = new AmveraConfiguration();
 
         List<SelectorItem<String>> environments = template.availableParameters()
@@ -191,21 +194,21 @@ public class CreateCommand extends AbstractShellComponent {
         String selectedInstrument = selector.singleSelector(instruments, "Instrument: ", true);
 
         // meta section
-        Map<String, DefaultConfValuesGetResponse> metaMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("meta");
+        Map<String, DefaultConfValuesResponse> metaMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("meta");
         configMetaSection(config, metaMap, selectedEnvironment, selectedInstrument);
 
         // build section
-        Map<String, DefaultConfValuesGetResponse> buildMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("build");
+        Map<String, DefaultConfValuesResponse> buildMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("build");
         configBuildSection(config, buildMap);
 
         // run section
-        Map<String, DefaultConfValuesGetResponse> runMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("run");
+        Map<String, DefaultConfValuesResponse> runMap = template.availableParameters().get(selectedEnvironment).get(selectedInstrument).get("run");
         configRunSection(config, runMap);
 
         return config;
     }
 
-    private MarketplaceConfigPostRequest marketConfig(MarketplaceConfigGetResponse template, String serviceName, int tariffId) {
+    private MarketplaceConfigPostRequest marketConfig(MarketplaceConfigResponse template, String serviceName, int tariffId) {
         MarketplaceConfigPostRequest config = new MarketplaceConfigPostRequest();
 
         config.setVersion(MARKETPLACE_VERSION);
@@ -222,7 +225,7 @@ public class CreateCommand extends AbstractShellComponent {
 
         String selectedService = selector.singleSelector(service, "Service: ", true);
 
-        Map<String, DefaultConfValuesGetResponse> metaSection = template.availableParameters()
+        Map<String, DefaultConfValuesResponse> metaSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("meta");
 
         if (metaSection != null) {
@@ -241,7 +244,7 @@ public class CreateCommand extends AbstractShellComponent {
             config.setMeta(new Meta());
         }
 
-        Map<String, DefaultConfValuesGetResponse> runSection = template.availableParameters()
+        Map<String, DefaultConfValuesResponse> runSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("run");
 
         if (runSection != null) {
@@ -255,7 +258,7 @@ public class CreateCommand extends AbstractShellComponent {
             config.setRun(new HashMap<>());
         }
 
-        Map<String, DefaultConfValuesGetResponse> envsSection = template.availableParameters()
+        Map<String, DefaultConfValuesResponse> envsSection = template.availableParameters()
                 .get(selectedServiceType).get(selectedService).get(MARKETPLACE_VERSION).get("envvars");
 
         if (envsSection != null) {
@@ -263,9 +266,9 @@ public class CreateCommand extends AbstractShellComponent {
             List<EnvPostRequest> envs = new ArrayList<>();
             boolean isSecret;
 
-            for (Map.Entry<String, DefaultConfValuesGetResponse> entry : envsSection.entrySet()) {
+            for (Map.Entry<String, DefaultConfValuesResponse> entry : envsSection.entrySet()) {
                 String secretKey = entry.getKey();
-                DefaultConfValuesGetResponse secretValue = entry.getValue();
+                DefaultConfValuesResponse secretValue = entry.getValue();
                 String value = input.notBlankOrNullInput(String.format("%s: ", secretKey), secretValue.defaultValue());
                 isSecret = secretValue.type().equals("Secret");
                 envs.add(new EnvPostRequest(secretKey, value, isSecret));
@@ -279,7 +282,7 @@ public class CreateCommand extends AbstractShellComponent {
         return config;
     }
 
-    private void configRunSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map) {
+    private void configRunSection(AmveraConfiguration config, Map<String, DefaultConfValuesResponse> map) {
         if (map == null) return;
         helper.println(toSectionTitle("run"));
         map.forEach((k, v) -> {
@@ -290,7 +293,7 @@ public class CreateCommand extends AbstractShellComponent {
         });
     }
 
-    private void configBuildSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map) {
+    private void configBuildSection(AmveraConfiguration config, Map<String, DefaultConfValuesResponse> map) {
         if (map == null) return;
         helper.println(toSectionTitle("build"));
         map.forEach((k, v) -> {
@@ -308,7 +311,7 @@ public class CreateCommand extends AbstractShellComponent {
         });
     }
 
-    private void configMetaSection(AmveraConfiguration config, Map<String, DefaultConfValuesGetResponse> map, String env, String inst) {
+    private void configMetaSection(AmveraConfiguration config, Map<String, DefaultConfValuesResponse> map, String env, String inst) {
         Meta meta = new Meta();
         meta.setEnvironment(env);
         meta.getToolchain().put("name", inst);

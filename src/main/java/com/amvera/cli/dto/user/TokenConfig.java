@@ -1,4 +1,4 @@
-package com.amvera.cli.model;
+package com.amvera.cli.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

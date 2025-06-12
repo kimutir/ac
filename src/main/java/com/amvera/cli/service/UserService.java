@@ -8,7 +8,7 @@ import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
 import com.amvera.cli.dto.auth.RevokeTokenPostRequest;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.exception.InformException;
-import com.amvera.cli.model.TokenConfig;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

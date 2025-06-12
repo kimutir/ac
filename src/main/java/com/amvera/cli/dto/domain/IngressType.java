@@ -1,4 +1,4 @@
-package com.amvera.cli.dto.project;
+package com.amvera.cli.dto.domain;
 
 public enum IngressType {
     HTTP,

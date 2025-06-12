@@ -3,6 +3,7 @@ package com.amvera.cli.service;
 import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.project.LogResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.TokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +56,7 @@ public class LogsService {
     }
 
     public void build(String slug, Integer limit, String query, Long last) {
-        ProjectResponse project = projectService.findOrSelect(slug);
+        ProjectResponse project = projectService.findOrSelect(slug, p -> p.getServiceType().equals(ServiceType.PROJECT));
 
         OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC);
         OffsetDateTime start = end.minusMinutes(last);

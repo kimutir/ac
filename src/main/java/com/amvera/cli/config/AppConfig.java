@@ -2,8 +2,11 @@ package com.amvera.cli.config;
 
 import com.amvera.cli.AmveraCLIApplication;
 import com.amvera.cli.dto.auth.*;
-import com.amvera.cli.dto.billing.BalanceGetResponse;
-import com.amvera.cli.dto.billing.TariffGetResponse;
+import com.amvera.cli.dto.billing.BalanceResponse;
+import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.dto.env.EnvPostRequest;
+import com.amvera.cli.dto.env.EnvPutRequest;
+import com.amvera.cli.dto.env.EnvResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
@@ -11,7 +14,7 @@ import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
 import com.amvera.cli.utils.table.ProjectTableModel;
 import com.amvera.cli.utils.table.TariffTableModel;
-import com.amvera.cli.model.TokenConfig;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.TokenUtils;
 import org.jline.terminal.Terminal;
@@ -35,10 +38,9 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
                 Meta.class,
                 Toolchain.class,
                 LogResponse.class,
-                BalanceGetResponse.class,
-                TariffGetResponse.class,
+                BalanceResponse.class,
+                TariffResponse.class,
                 EnvResponse.class,
-                EnvListGetResponse.class,
                 EnvPostRequest.class,
                 EnvPutRequest.class,
                 ScalePostRequest.class,
@@ -46,8 +48,8 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
                 TariffTableModel.class,
                 InfoResponse.class,
                 AmveraConfiguration.class,
-                ConfigGetResponse.class,
-                DefaultConfValuesGetResponse.class,
+                ConfigResponse.class,
+                DefaultConfValuesResponse.class,
                 LogoutRequest.class,
                 TokenConfig.class,
                 RefreshTokenPostRequest.class,

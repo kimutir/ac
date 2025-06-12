@@ -6,7 +6,7 @@ import com.amvera.cli.service.CnpgService;
 import com.amvera.cli.service.DomainService;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
-import com.amvera.cli.utils.ServiceType;
+import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;

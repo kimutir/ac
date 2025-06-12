@@ -1,7 +1,7 @@
 package com.amvera.cli.utils.select;
 
-import com.amvera.cli.utils.ServiceType;
-import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.dto.project.ServiceType;
+import com.amvera.cli.dto.billing.Tariff;
 import org.springframework.shell.component.SingleItemSelector;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;

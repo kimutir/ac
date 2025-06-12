@@ -1,8 +1,7 @@
 package com.amvera.cli.command.user;
 
-import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.service.UserService;
-import com.amvera.cli.utils.AmveraInput;
+import com.amvera.cli.utils.input.AmveraInput;
 import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;

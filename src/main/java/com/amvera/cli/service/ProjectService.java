@@ -1,13 +1,15 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.dto.project.config.ConfigGetResponse;
+import com.amvera.cli.dto.project.config.ConfigResponse;
 import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.exception.UnsupportedServiceTypeException;
+import com.amvera.cli.utils.input.AmveraInput;
 import com.amvera.cli.utils.table.*;
 import com.amvera.cli.utils.*;
 import com.amvera.cli.utils.select.AmveraSelector;
@@ -317,12 +319,12 @@ public class ProjectService {
         return projectList.getServices();
     }
 
-    public ResponseEntity<ConfigGetResponse> getConfigRequest() {
+    public ResponseEntity<ConfigResponse> getConfigRequest() {
         String token = tokenUtils.readToken().accessToken();
 
         return client.configurations(token).build().get()
                 .retrieve()
-                .toEntity(ConfigGetResponse.class);
+                .toEntity(ConfigResponse.class);
     }
 
     public ResponseEntity<Void> freezeRequest(String slug) {

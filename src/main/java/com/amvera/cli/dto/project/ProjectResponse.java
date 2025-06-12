@@ -1,7 +1,6 @@
 package com.amvera.cli.dto.project;
 
 import com.amvera.cli.utils.select.ProjectSelectItem;
-import com.amvera.cli.utils.ServiceType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.shell.component.support.*;

@@ -1,7 +1,7 @@
 package com.amvera.cli.utils.table;
 
-import com.amvera.cli.dto.project.DomainResponse;
-import com.amvera.cli.dto.project.EnvResponse;
+import com.amvera.cli.dto.domain.DomainResponse;
+import com.amvera.cli.dto.env.EnvResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.cnpg.CnpgBackupResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;

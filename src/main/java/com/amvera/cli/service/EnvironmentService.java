@@ -1,8 +1,10 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.dto.env.EnvPostRequest;
+import com.amvera.cli.dto.env.EnvPutRequest;
+import com.amvera.cli.dto.env.EnvResponse;
 import com.amvera.cli.dto.project.*;
-import com.amvera.cli.exception.ClientExceptions;
 import com.amvera.cli.utils.*;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.EnvSelectItem;
@@ -128,19 +130,6 @@ public class EnvironmentService {
         } else {
             helper.print(table.environments(envList));
         }
-    }
-
-    public List<EnvResponse> getEnv(ProjectResponse project) {
-        EnvListGetResponse envs = client.environment()
-                .get().uri("/{slug}", project.getSlug())
-                .retrieve()
-                .body(EnvListGetResponse.class);
-
-        if (envs == null) {
-            throw ClientExceptions.noContent("Environments variables were not found.");
-        }
-
-        return envs.environmentVariables();
     }
 
     public ResponseEntity<EnvResponse> createRequest(EnvPostRequest req, String slug) {

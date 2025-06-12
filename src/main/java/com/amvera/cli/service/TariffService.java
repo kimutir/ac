@@ -4,7 +4,7 @@ import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.dto.billing.TariffListResponse;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.utils.ShellHelper;
-import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.TariffSelectItem;
 import com.amvera.cli.utils.table.AmveraTable;

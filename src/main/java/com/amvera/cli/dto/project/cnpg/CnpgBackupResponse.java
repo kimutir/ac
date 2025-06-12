@@ -1,8 +1,5 @@
 package com.amvera.cli.dto.project.cnpg;
 
-import com.amvera.cli.utils.CnpgResourceStatus;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.springframework.shell.component.support.SelectorItem;
 
 public class CnpgBackupResponse{

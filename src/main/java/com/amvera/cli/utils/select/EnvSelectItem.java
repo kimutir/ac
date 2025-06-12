@@ -1,6 +1,6 @@
 package com.amvera.cli.utils.select;
 
-import com.amvera.cli.dto.project.EnvResponse;
+import com.amvera.cli.dto.env.EnvResponse;
 
 public class EnvSelectItem {
 

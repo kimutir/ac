@@ -1,7 +1,7 @@
 package com.amvera.cli.utils.select;
 
 import com.amvera.cli.dto.billing.TariffResponse;
-import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.dto.billing.Tariff;
 
 public class TariffSelectItem {
 

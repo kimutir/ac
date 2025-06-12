@@ -1,10 +1,8 @@
 package com.amvera.cli.utils;
 
-import com.amvera.cli.dto.auth.AuthResponse;
 import com.amvera.cli.exception.InformException;
 import com.amvera.cli.exception.TokenNotFoundException;
-import com.amvera.cli.model.TokenConfig;
-import com.amvera.cli.service.UserService;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 

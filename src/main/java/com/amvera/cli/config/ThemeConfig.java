@@ -1,6 +1,6 @@
 package com.amvera.cli.config;
 
-import com.amvera.cli.style.CustomThemeSettings;
+import com.amvera.cli.style.AmveraThemeSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.shell.style.*;
@@ -17,7 +17,7 @@ public class ThemeConfig {
 
             @Override
             public ThemeSettings getSettings() {
-                return new CustomThemeSettings();
+                return new AmveraThemeSettings();
             }
         };
     }

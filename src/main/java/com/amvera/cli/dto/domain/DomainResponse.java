@@ -1,6 +1,5 @@
-package com.amvera.cli.dto.project;
+package com.amvera.cli.dto.domain;
 
-import com.amvera.cli.utils.DomainType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;

@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.dto.billing;
 
 public enum Tariff {
     TRIAL("Пробный", 4),

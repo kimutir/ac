@@ -1,5 +1,6 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.utils.input;
 
+import com.amvera.cli.utils.ShellHelper;
 import org.jline.reader.MaskingCallback;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;

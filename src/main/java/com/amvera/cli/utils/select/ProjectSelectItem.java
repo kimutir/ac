@@ -1,7 +1,7 @@
 package com.amvera.cli.utils.select;
 
 import com.amvera.cli.dto.project.ProjectResponse;
-import com.amvera.cli.utils.ServiceType;
+import com.amvera.cli.dto.project.ServiceType;
 
 public class ProjectSelectItem {
 

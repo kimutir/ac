@@ -1,6 +1,6 @@
 package com.amvera.cli.dto.project.config;
 
-import com.amvera.cli.dto.project.EnvPostRequest;
+import com.amvera.cli.dto.env.EnvPostRequest;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 

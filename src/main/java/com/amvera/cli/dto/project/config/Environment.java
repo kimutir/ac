@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.dto.project.config;
 
 public enum Environment {
     JVM,
@@ -6,5 +6,4 @@ public enum Environment {
     NODE,
     DOCKER,
     DB
-
 }

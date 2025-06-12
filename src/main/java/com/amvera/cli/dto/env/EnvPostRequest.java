@@ -1,4 +1,4 @@
-package com.amvera.cli.dto.project;
+package com.amvera.cli.dto.env;
 
 public record EnvPostRequest(
         String name,

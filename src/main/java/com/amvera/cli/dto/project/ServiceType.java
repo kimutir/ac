@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.dto.project;
 
 public enum ServiceType {
     PROJECT(1, "compute"),

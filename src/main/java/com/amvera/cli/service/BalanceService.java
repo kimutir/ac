@@ -1,7 +1,7 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
-import com.amvera.cli.dto.billing.BalanceGetResponse;
+import com.amvera.cli.dto.billing.BalanceResponse;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +17,13 @@ public class BalanceService {
         this.tokenUtils = tokenUtils;
     }
 
-    public BalanceGetResponse getBalance() {
+    public BalanceResponse getBalance() {
         String token = tokenUtils.readToken().accessToken();
 
-        BalanceGetResponse balance = client.balance(token).build()
+        BalanceResponse balance = client.balance(token).build()
                 .get()
                 .retrieve()
-                .body(BalanceGetResponse.class);
+                .body(BalanceResponse.class);
 
         if (balance == null) {
             throw new RuntimeException("Unable to get balance information.");

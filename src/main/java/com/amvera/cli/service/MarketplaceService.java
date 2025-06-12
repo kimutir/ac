@@ -1,7 +1,7 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
-import com.amvera.cli.dto.project.config.MarketplaceConfigGetResponse;
+import com.amvera.cli.dto.project.config.MarketplaceConfigResponse;
 import com.amvera.cli.dto.project.config.MarketplaceConfigPostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -19,12 +19,12 @@ public class MarketplaceService {
     }
 
 
-    public ResponseEntity<MarketplaceConfigGetResponse> getMarketplaceConfig() {
+    public ResponseEntity<MarketplaceConfigResponse> getMarketplaceConfig() {
         return client.marketplace()
                 .get()
                 .uri("/configuration")
                 .retrieve()
-                .toEntity(MarketplaceConfigGetResponse.class);
+                .toEntity(MarketplaceConfigResponse.class);
     }
 
     public HttpStatusCode saveMarketplaceConfig(MarketplaceConfigPostRequest marketplaceConfig) {

@@ -1,7 +1,7 @@
 package com.amvera.cli.utils.table;
 
 import com.amvera.cli.dto.project.ProjectResponse;
-import com.amvera.cli.utils.Tariff;
+import com.amvera.cli.dto.billing.Tariff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

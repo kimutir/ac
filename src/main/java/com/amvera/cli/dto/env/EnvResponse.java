@@ -1,4 +1,4 @@
-package com.amvera.cli.dto.project;
+package com.amvera.cli.dto.env;
 
 import com.amvera.cli.utils.select.EnvSelectItem;
 import org.springframework.shell.component.support.SelectorItem;

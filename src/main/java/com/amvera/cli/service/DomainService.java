@@ -1,10 +1,10 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
-import com.amvera.cli.dto.project.DomainResponse;
+import com.amvera.cli.dto.domain.DomainResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.utils.table.AmveraTable;
-import com.amvera.cli.utils.ServiceType;
+import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.amvera.cli.utils;
+package com.amvera.cli.dto.domain;
 
 public enum DomainType {
     INTERNAL,

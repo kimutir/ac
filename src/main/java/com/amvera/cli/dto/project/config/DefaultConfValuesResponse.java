@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record DefaultConfValuesGetResponse(
+public record DefaultConfValuesResponse(
         @JsonProperty("default")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         String defaultValue,
