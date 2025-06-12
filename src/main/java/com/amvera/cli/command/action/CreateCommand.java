@@ -1,5 +1,8 @@
 package com.amvera.cli.command.action;
 
+import com.amvera.cli.client.CnpgClient;
+import com.amvera.cli.client.ConfigClient;
+import com.amvera.cli.client.ProjectClient;
 import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.project.ProjectResponse;
@@ -36,28 +39,36 @@ import java.util.*;
 public class CreateCommand extends AbstractShellComponent {
     private final ProjectService projectService;
     private final MarketplaceService marketplaceService;
-    private final CnpgService cnpgService;
     private final ShellHelper helper;
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
     private final AmveraInput input;
+    private final ProjectClient projectClient;
+    private final CnpgClient cnpgClient;
+    private final ConfigClient configClient;
 
     private static final String MARKETPLACE_VERSION = "1";
 
     public CreateCommand(
             ProjectService projectService,
             MarketplaceService marketplaceService,
-            CnpgService cnpgService,
             ShellHelper helper,
             AmveraTable amveraTable,
-            AmveraSelector selector, AmveraInput input) {
+            AmveraSelector selector,
+            AmveraInput input,
+            ProjectClient projectClient,
+            CnpgClient cnpgClient,
+            ConfigClient configClient
+    ) {
         this.projectService = projectService;
         this.marketplaceService = marketplaceService;
         this.helper = helper;
         this.amveraTable = amveraTable;
         this.selector = selector;
         this.input = input;
-        this.cnpgService = cnpgService;
+        this.projectClient = projectClient;
+        this.cnpgClient = cnpgClient;
+        this.configClient = configClient;
     }
 
     @Command(command = "", description = "Add new project")
@@ -130,7 +141,7 @@ public class CreateCommand extends AbstractShellComponent {
             superUserPassword = input.notBlankOrNullInput("Enter super user password: ");
         }
 
-        ResponseEntity<CnpgResponse> cnpgResponse = cnpgService.createRequest(
+        ResponseEntity<CnpgResponse> cnpgResponse = cnpgClient.create(
                 new CnpgPostRequest(
                         serviceName,
                         tariffId,
@@ -161,22 +172,22 @@ public class CreateCommand extends AbstractShellComponent {
         boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
 
         if (addConfig) {
-            ResponseEntity<ConfigResponse> configTemplateResponse = projectService.getConfigRequest();
+            ResponseEntity<ConfigResponse> configTemplateResponse = configClient.get();
 
             if (configTemplateResponse.getStatusCode().is2xxSuccessful()) {
                 AmveraConfiguration config = yamlConfig(Objects.requireNonNull(configTemplateResponse.getBody()));
 
-                project = projectService.createProjectRequest(serviceName, tariffId);
-                projectService.addConfigRequest(config, project.slug());
+                project = projectClient.create(serviceName, tariffId);
+                projectClient.addConfig(config, project.slug());
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
             } else {
-                project = projectService.createProjectRequest(serviceName, tariffId);
+                project = projectClient.create(serviceName, tariffId);
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
                 helper.printWarning("Project has been created. But you have to add configuration manually.");
             }
 
         } else {
-            project = projectService.createProjectRequest(serviceName, tariffId);
+            project = projectClient.create(serviceName, tariffId);
         }
 
         helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));

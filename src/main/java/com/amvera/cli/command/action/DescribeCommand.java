@@ -1,12 +1,13 @@
 package com.amvera.cli.command.action;
 
+import com.amvera.cli.client.CnpgClient;
+import com.amvera.cli.client.ProjectClient;
 import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
-import com.amvera.cli.service.CnpgService;
 import com.amvera.cli.service.DomainService;
 import com.amvera.cli.service.EnvironmentService;
 import com.amvera.cli.service.ProjectService;
-import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;
@@ -17,23 +18,26 @@ import org.springframework.shell.command.annotation.Option;
 public class DescribeCommand {
 
     private final ProjectService projectService;
-    private final CnpgService cnpgService;
     private final ShellHelper helper;
     private final EnvironmentService environmentService;
     private final DomainService domainService;
+    private final CnpgClient cnpgClient;
+    private final ProjectClient projectClient;
 
     public DescribeCommand(
             ProjectService projectService,
-            CnpgService cnpgService,
             ShellHelper helper,
             EnvironmentService environmentService,
-            DomainService domainService
+            DomainService domainService,
+            CnpgClient cnpgClient,
+            ProjectClient projectClient
     ) {
         this.projectService = projectService;
-        this.cnpgService = cnpgService;
         this.helper = helper;
         this.environmentService = environmentService;
         this.domainService = domainService;
+        this.cnpgClient = cnpgClient;
+        this.projectClient = projectClient;
     }
 
     @Command(command = "project", alias = "describe projects", description = "Get info of projects")
@@ -47,7 +51,7 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        ProjectResponse project = projectService.findBySlug(slug);
+        ProjectResponse project = projectClient.get(slug);
 
         helper.printlnTitle("Project info");
         projectService.renderTable(project);
@@ -70,7 +74,7 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        CnpgResponse cnpg = cnpgService.findBySlugDetailedRequest(slug);
+        CnpgResponse cnpg = cnpgClient.getDetails(slug);
 
         helper.printlnTitle("Project info");
         projectService.renderCnpgTable(slug, cnpg);
@@ -90,7 +94,7 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        ProjectResponse project = projectService.findBySlug(slug);
+        ProjectResponse project = projectClient.get(slug);
 
         helper.printlnTitle("Project info");
         projectService.renderPreconfiguredTable(project);

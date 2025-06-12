@@ -1,4 +1,4 @@
-package com.amvera.cli.command.info;
+package com.amvera.cli.command;
 
 import com.amvera.cli.config.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;

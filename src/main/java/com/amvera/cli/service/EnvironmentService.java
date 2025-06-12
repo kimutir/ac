@@ -1,16 +1,15 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.client.EnvClient;
+import com.amvera.cli.client.ProjectClient;
 import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.env.EnvPutRequest;
 import com.amvera.cli.dto.env.EnvResponse;
-import com.amvera.cli.dto.project.*;
-import com.amvera.cli.utils.*;
+import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.EnvSelectItem;
 import com.amvera.cli.utils.table.AmveraTable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.component.support.SelectorItem;
@@ -20,24 +19,30 @@ import java.util.List;
 
 @Service
 public class EnvironmentService {
-    private final AmveraHttpClient client;
     private final ShellHelper helper;
     private final AmveraTable table;
     private final AmveraSelector selector;
     private final ProjectService projectService;
     private final ComponentFlow.Builder componentFlowBuilder;
+    private final EnvClient envClient;
+    private final ProjectClient projectClient;
 
     public EnvironmentService(
-            AmveraHttpClient client,
             ShellHelper helper,
-            AmveraTable table, AmveraSelector selector, ProjectService projectService, ComponentFlow.Builder componentFlowBuilder
+            AmveraTable table,
+            AmveraSelector selector,
+            ProjectService projectService,
+            ComponentFlow.Builder componentFlowBuilder,
+            EnvClient envClient,
+            ProjectClient projectClient
     ) {
-        this.client = client;
         this.helper = helper;
         this.table = table;
         this.selector = selector;
         this.projectService = projectService;
         this.componentFlowBuilder = componentFlowBuilder;
+        this.envClient = envClient;
+        this.projectClient = projectClient;
     }
 
     public void create(String slug) {
@@ -65,7 +70,7 @@ public class EnvironmentService {
             // todo throw exception
         }
 
-        createRequest(new EnvPostRequest(name, value, secret), project.getSlug());
+        envClient.create(new EnvPostRequest(name, value, secret), project.getSlug());
         helper.printInfo("Environment has been created. Do not forget to restart project to apply it.");
 
         renderTable(project);
@@ -76,7 +81,7 @@ public class EnvironmentService {
 
         EnvResponse env = select(project.getSlug());
 
-        deleteRequest(env.id(), project.getSlug());
+        envClient.delete(env.id(), project.getSlug());
         helper.printInfo("Environment has been deleted.");
 
         renderTable(project);
@@ -104,7 +109,7 @@ public class EnvironmentService {
             // todo throw exception
         }
 
-        updateRequest(new EnvPutRequest(env.id(), name, value, env.isSecret()), project.getSlug());
+        envClient.update(new EnvPutRequest(env.id(), name, value, env.isSecret()), project.getSlug());
         helper.printInfo("Environment has been updated. Do not forget to restart project to apply it.");
 
         renderTable(project);
@@ -116,14 +121,14 @@ public class EnvironmentService {
         if (slug == null) {
             project = projectService.select();
         } else {
-            project = projectService.findBySlug(slug);
+            project = projectClient.get(slug);
         }
 
         renderTable(project);
     }
 
     public void renderTable(ProjectResponse project) {
-        List<EnvResponse> envList = getRequest(project.getSlug());
+        List<EnvResponse> envList = envClient.get(project.getSlug());
 
         if (envList.isEmpty()) {
             helper.printWarning("No environment found. You can add environment by 'amvera create env'");
@@ -132,60 +137,8 @@ public class EnvironmentService {
         }
     }
 
-    public ResponseEntity<EnvResponse> createRequest(EnvPostRequest req, String slug) {
-        ResponseEntity<EnvResponse> response = client.environment()
-                .post().uri("/{slug}", slug)
-                .body(req)
-                .retrieve()
-                .toEntity(EnvResponse.class);
-
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Unable to add environment variables.");
-        }
-
-        return response;
-    }
-
-    public void updateRequest(EnvPutRequest env, String slug) {
-        ResponseEntity<EnvResponse> response = client.environment()
-                .put().uri("/{slug}/{id}", slug, env.id())
-                .body(env)
-                .retrieve()
-                .toEntity(EnvResponse.class);
-
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Unable to update environment variables.");
-        }
-    }
-
-    public void deleteRequest(Long id, String slug) {
-        ResponseEntity<String> response = client.environment()
-                .delete().uri("/{slug}/{id}", slug, id)
-                .retrieve()
-                .toEntity(String.class);
-
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Unable to delete environment variables.");
-        }
-    }
-
-    public List<EnvResponse> getRequest(String slug) {
-        ResponseEntity<List<EnvResponse>> envResponse = client.environment()
-                .get().uri("/{slug}", slug)
-                .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
-
-
-        if (envResponse.getStatusCode().isError()) {
-            // todo: throw exception
-        }
-
-        return envResponse.getBody();
-    }
-
     public EnvResponse select(String slug) {
-        List<SelectorItem<EnvSelectItem>> projectList = getRequest(slug)
+        List<SelectorItem<EnvSelectItem>> projectList = envClient.get(slug)
                 .stream()
                 .map(EnvResponse::toSelectorItem).toList();
 

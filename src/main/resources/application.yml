@@ -26,9 +26,9 @@ shell:
     success: "GREEN"
     warning: "YELLOW"
     error: "RED"
-logging:
-  level:
-    root: off
+#logging:
+#  level:
+#    root: off
 
 amvera:
   keycloak-client: "amvera-cli"
@@ -43,6 +43,4 @@ endpoints:
   domain: https://api.amvera.ru/domain
   env: https://api.amvera.ru/env
   tariff: https://api.amvera.ru/tariff
-  token: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/token
-  user: https://id.amvera.ru/auth/realms/amvera/account/
-  logout: https://id.amvera.ru/auth/realms/amvera/protocol/openid-connect/revoke
+  keycloak: https://id.amvera.ru/auth/realms/amvera

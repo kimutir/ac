@@ -1,5 +1,6 @@
 package com.amvera.cli.command.action;
 
+import com.amvera.cli.client.ProjectClient;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.service.*;
@@ -23,6 +24,7 @@ public class GetCommand {
     private final AmveraTable table;
     private final ShellHelper helper;
     private final AmveraSelector selector;
+    private final ProjectClient projectClient;
 
     public GetCommand(
             ProjectService projectService, CnpgService cnpgService,
@@ -31,7 +33,7 @@ public class GetCommand {
             DomainService domainService,
             AmveraTable table,
             ShellHelper helper,
-            AmveraSelector selector
+            AmveraSelector selector, ProjectClient projectClient
     ) {
         this.projectService = projectService;
         this.cnpgService = cnpgService;
@@ -41,12 +43,18 @@ public class GetCommand {
         this.table = table;
         this.helper = helper;
         this.selector = selector;
+        this.projectClient = projectClient;
+    }
+
+    @Command(command = "test")
+    public void test() {
+        projectClient.getAll().forEach(project -> helper.println(project.getSlug()));
     }
 
     @Command(command = "", description = "Get list of all projects including postgres and configured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void get() {
-        List<ProjectResponse> projectList = projectService.getProjectListRequest();
+        List<ProjectResponse> projectList = projectClient.getAll();
 
         if (projectList.isEmpty()) {
             helper.printWarning("No projects found. You can start with 'amvera create'");
@@ -59,7 +67,7 @@ public class GetCommand {
     @CommandAvailability(provider = "userLoggedOutProvider")
     // todo: org.springframework.core.convert.ConversionFailedException
     public void project() {
-        List<ProjectResponse> projectList = projectService.getProjectListRequest()
+        List<ProjectResponse> projectList = projectClient.getAll()
                 .stream().filter(p -> p.getServiceType().equals(ServiceType.PROJECT))
                 .toList();
 
@@ -73,7 +81,7 @@ public class GetCommand {
     @Command(command = "psql", alias = {"get postgresql", "get postgre", "get cnpg"}, description = "Get list of postgresql (cnpg) clusters")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql() {
-        List<ProjectResponse> cnpgList = projectService.getProjectListRequest()
+        List<ProjectResponse> cnpgList = projectClient.getAll()
                 .stream()
                 .filter(p -> p.getServiceType().equals(ServiceType.POSTGRESQL))
                 .toList();
@@ -88,7 +96,7 @@ public class GetCommand {
     @Command(command = "preconfigured", alias = {"get conf", "get preconf"}, description = "Get list of preconfigured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured() {
-        List<ProjectResponse> cnpgList = projectService.getProjectListRequest()
+        List<ProjectResponse> cnpgList = projectClient.getAll()
                 .stream()
                 .filter(p -> p.getServiceType().equals(ServiceType.PRECONFIGURED))
                 .toList();

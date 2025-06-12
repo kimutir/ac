@@ -1,14 +1,12 @@
 package com.amvera.cli.utils;
 
-import com.amvera.cli.client.AmveraHttpClient;
-import com.amvera.cli.config.AppProperties;
+import com.amvera.cli.client.KeycloakClient;
 import com.amvera.cli.dto.auth.AuthResponse;
-import com.amvera.cli.dto.auth.RefreshTokenPostRequest;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.exception.InformException;
 import com.amvera.cli.exception.TokenNotFoundException;
-import com.amvera.cli.dto.user.TokenConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -18,8 +16,7 @@ import java.io.IOException;
 @Component
 public class TokenUtils {
     private final ObjectMapper mapper;
-    private final AmveraHttpClient client;
-    private final AppProperties properties;
+    private final KeycloakClient keycloakClient;
 
     // HOME - Mac OS
     // USERPROFILE - Windows
@@ -28,12 +25,10 @@ public class TokenUtils {
 
     public TokenUtils(
             ObjectMapper mapper,
-            AmveraHttpClient client,
-            AppProperties properties
+            KeycloakClient keycloakClient
     ) {
         this.mapper = mapper;
-        this.client = client;
-        this.properties = properties;
+        this.keycloakClient = keycloakClient;
     }
 
     public void saveToken(String accessToken, String refreshToken) {
@@ -75,10 +70,8 @@ public class TokenUtils {
 
     private int health(String token) {
         try {
-            ResponseEntity<String> response = client.info(token).build()
-                    .get().retrieve()
-                    .toEntity(String.class);
-            return response.getStatusCode().value();
+            keycloakClient.info();
+            return HttpStatus.OK.value();
         } catch (HttpClientErrorException e) {
             return e.getStatusCode().value();
         } catch (Exception e) {
@@ -87,12 +80,8 @@ public class TokenUtils {
     }
 
     private TokenConfig refreshToken(String refreshToken) {
-        RefreshTokenPostRequest body = new RefreshTokenPostRequest(properties.keycloakClient(), refreshToken);
         try {
-            AuthResponse response = client.auth().build()
-                    .post()
-                    .body(body.toMultiValueMap())
-                    .retrieve().body(AuthResponse.class);
+            AuthResponse response = keycloakClient.refresh();
 
             if (response == null) {
                 throw new InformException("Unable to refresh tokens. Contact us to solve the problem.");
@@ -106,7 +95,6 @@ public class TokenUtils {
         } catch (IOException e) {
             throw new InformException("Unable to save token. Contact us to solve the problem.");
         }
-
 
     }
 

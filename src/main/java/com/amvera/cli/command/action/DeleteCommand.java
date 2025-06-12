@@ -47,7 +47,7 @@ public class DeleteCommand {
         boolean confirmed = input.checkedConfirmInput("Enter to delete: ", confirmPhrase);
 
         if (confirmed) {
-            projectService.deleteRequest(project);
+            projectService.delete(project);
             helper.println(String.format("Project %s has been deleted", project.getSlug()));
         }
     }

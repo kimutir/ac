@@ -1,13 +1,11 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.client.DomainClient;
 import com.amvera.cli.dto.domain.DomainResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
-import com.amvera.cli.utils.table.AmveraTable;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.ResponseEntity;
+import com.amvera.cli.utils.table.AmveraTable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,20 +13,25 @@ import java.util.List;
 @Service
 public class DomainService {
 
-    private final AmveraHttpClient client;
     private final AmveraTable table;
     private final ShellHelper helper;
     private final ProjectService projectService;
+    private final DomainClient domainClient;
 
-    public DomainService(AmveraHttpClient client, AmveraTable table, ShellHelper helper, ProjectService projectService) {
-        this.client = client;
+    public DomainService(
+            AmveraTable table,
+            ShellHelper helper,
+            ProjectService projectService,
+            DomainClient domainClient
+    ) {
         this.table = table;
         this.helper = helper;
         this.projectService = projectService;
+        this.domainClient = domainClient;
     }
 
     public void renderTable(ProjectResponse project) {
-        List<DomainResponse> domainList = getDomains(project.getSlug());
+        List<DomainResponse> domainList = domainClient.get(project.getSlug());
 
         switch (project.getServiceType()) {
             case PROJECT -> domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", project.getOwnerName(), project.getSlug()), null));
@@ -54,7 +57,7 @@ public class DomainService {
     }
 
     public void renderTable(String slug, String ownerName, ServiceType serviceType) {
-        List<DomainResponse> domainList = getDomains(slug);
+        List<DomainResponse> domainList = domainClient.get(slug);
 
         switch (serviceType) {
             case PROJECT -> domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", ownerName, slug), null));
@@ -71,15 +74,6 @@ public class DomainService {
         } else {
             helper.println(table.domains(domainList));
         }
-    }
-
-    public List<DomainResponse> getDomains(String slug) {
-        ResponseEntity<List<DomainResponse>> domainResponse = client.domain()
-                .get().uri("/{slug}", slug).retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
-
-        return domainResponse.getBody();
     }
 
 }

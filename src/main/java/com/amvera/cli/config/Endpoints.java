@@ -5,15 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "endpoints")
 public record Endpoints(
         String projects,
-        String token,
         String env,
         String tariff,
         String logs,
         String balance,
         String domain,
-        String user,
+        String keycloak,
         String configurations,
-        String logout,
         String marketplace,
         String postgresql
 ) {
