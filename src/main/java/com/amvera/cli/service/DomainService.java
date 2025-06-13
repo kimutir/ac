@@ -1,12 +1,15 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.DomainClient;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.domain.DomainResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.table.AmveraTable;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -16,26 +19,36 @@ public class DomainService {
     private final AmveraTable table;
     private final ShellHelper helper;
     private final ProjectService projectService;
-    private final DomainClient domainClient;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
     public DomainService(
             AmveraTable table,
             ShellHelper helper,
             ProjectService projectService,
-            DomainClient domainClient
+            Endpoints endpoints,
+            AmveraHttpClient client
     ) {
         this.table = table;
         this.helper = helper;
         this.projectService = projectService;
-        this.domainClient = domainClient;
+        this.endpoints = endpoints;
+        this.client = client;
     }
 
     public void renderTable(ProjectResponse project) {
-        List<DomainResponse> domainList = domainClient.get(project.getSlug());
+        List<DomainResponse> domainList = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}").build(project.getSlug()),
+                new ParameterizedTypeReference<List<DomainResponse>>() {
+                },
+                "Error when getting project domain list"
+        );
 
         switch (project.getServiceType()) {
-            case PROJECT -> domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", project.getOwnerName(), project.getSlug()), null));
-            case PRECONFIGURED -> {}
+            case PROJECT ->
+                    domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", project.getOwnerName(), project.getSlug()), null));
+            case PRECONFIGURED -> {
+            }
             case POSTGRESQL -> {
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-rw", project.getOwnerName(), project.getSlug()), null));
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-ro", project.getOwnerName(), project.getSlug()), null));
@@ -57,11 +70,18 @@ public class DomainService {
     }
 
     public void renderTable(String slug, String ownerName, ServiceType serviceType) {
-        List<DomainResponse> domainList = domainClient.get(slug);
+        List<DomainResponse> domainList = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}").build(slug),
+                new ParameterizedTypeReference<List<DomainResponse>>() {
+                },
+                "Error when getting project domain list"
+        );
 
         switch (serviceType) {
-            case PROJECT -> domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", ownerName, slug), null));
-            case PRECONFIGURED -> {}
+            case PROJECT ->
+                    domainList.add(new DomainResponse(String.format("amvera-%s-run-%s", ownerName, slug), null));
+            case PRECONFIGURED -> {
+            }
             case POSTGRESQL -> {
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-rw", ownerName, slug), null));
                 domainList.add(new DomainResponse(String.format("amvera-%s-cnpg-%s-ro", ownerName, slug), null));

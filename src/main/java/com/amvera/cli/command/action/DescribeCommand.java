@@ -1,7 +1,7 @@
 package com.amvera.cli.command.action;
 
-import com.amvera.cli.client.CnpgClient;
-import com.amvera.cli.client.ProjectClient;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
@@ -13,6 +13,7 @@ import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Command(command = "describe", group = "Project commands")
 public class DescribeCommand {
@@ -21,23 +22,23 @@ public class DescribeCommand {
     private final ShellHelper helper;
     private final EnvironmentService environmentService;
     private final DomainService domainService;
-    private final CnpgClient cnpgClient;
-    private final ProjectClient projectClient;
+    private final AmveraHttpClient client;
+    private final Endpoints endpoints;
 
     public DescribeCommand(
             ProjectService projectService,
             ShellHelper helper,
             EnvironmentService environmentService,
             DomainService domainService,
-            CnpgClient cnpgClient,
-            ProjectClient projectClient
+            AmveraHttpClient client,
+            Endpoints endpoints
     ) {
         this.projectService = projectService;
         this.helper = helper;
         this.environmentService = environmentService;
         this.domainService = domainService;
-        this.cnpgClient = cnpgClient;
-        this.projectClient = projectClient;
+        this.client = client;
+        this.endpoints = endpoints;
     }
 
     @Command(command = "project", alias = "describe projects", description = "Get info of projects")
@@ -51,7 +52,11 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        ProjectResponse project = projectClient.get(slug);
+        ProjectResponse project = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                ProjectResponse.class,
+                String.format("Could not find %s", slug)
+        );
 
         helper.printlnTitle("Project info");
         projectService.renderTable(project);
@@ -74,7 +79,13 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        CnpgResponse cnpg = cnpgClient.getDetails(slug);
+        CnpgResponse cnpg =client.get(
+                UriComponentsBuilder
+                        .fromUriString(endpoints.postgresql() + "/{slug}/details")
+                        .build(slug),
+                CnpgResponse.class,
+                String.format("Unable to find '%s' postgres detailed info", slug)
+        );
 
         helper.printlnTitle("Project info");
         projectService.renderCnpgTable(slug, cnpg);
@@ -94,7 +105,11 @@ public class DescribeCommand {
                     required = true
             ) String slug
     ) {
-        ProjectResponse project = projectClient.get(slug);
+        ProjectResponse project = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                ProjectResponse.class,
+                String.format("Could not find %s", slug)
+        );
 
         helper.printlnTitle("Project info");
         projectService.renderPreconfiguredTable(project);

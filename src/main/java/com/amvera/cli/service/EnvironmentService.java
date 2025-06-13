@@ -1,7 +1,7 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.EnvClient;
-import com.amvera.cli.client.ProjectClient;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.env.EnvPutRequest;
 import com.amvera.cli.dto.env.EnvResponse;
@@ -12,10 +12,12 @@ import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.EnvSelectItem;
 import com.amvera.cli.utils.table.AmveraTable;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -26,8 +28,8 @@ public class EnvironmentService {
     private final AmveraSelector selector;
     private final ProjectService projectService;
     private final ComponentFlow.Builder componentFlowBuilder;
-    private final EnvClient envClient;
-    private final ProjectClient projectClient;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
     public EnvironmentService(
             ShellHelper helper,
@@ -35,16 +37,15 @@ public class EnvironmentService {
             AmveraSelector selector,
             ProjectService projectService,
             ComponentFlow.Builder componentFlowBuilder,
-            EnvClient envClient,
-            ProjectClient projectClient
+            Endpoints endpoints, AmveraHttpClient client
     ) {
         this.helper = helper;
         this.table = table;
         this.selector = selector;
         this.projectService = projectService;
         this.componentFlowBuilder = componentFlowBuilder;
-        this.envClient = envClient;
-        this.projectClient = projectClient;
+        this.endpoints = endpoints;
+        this.client = client;
     }
 
     public void create(String slug) {
@@ -72,7 +73,13 @@ public class EnvironmentService {
             // todo throw exception
         }
 
-        envClient.create(new EnvPostRequest(name, value, secret), project.getSlug());
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}").build(project.getSlug()),
+                EnvResponse.class,
+                String.format("Error when adding env to %s", project.getSlug()),
+                new EnvPostRequest(name, value, secret)
+        );
+
         helper.printInfo("Environment has been created. Do not forget to restart project to apply it.");
 
         renderTable(project);
@@ -83,7 +90,12 @@ public class EnvironmentService {
 
         EnvResponse env = select(project.getSlug());
 
-        envClient.delete(env.id(), project.getSlug());
+
+        client.delete(
+                UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}/{id}").build(project.getSlug(), env.id()),
+                "Error when deleting env"
+        );
+
         helper.printInfo("Environment has been deleted.");
 
         renderTable(project);
@@ -111,7 +123,13 @@ public class EnvironmentService {
             // todo throw exception
         }
 
-        envClient.update(new EnvPutRequest(env.id(), name, value, env.isSecret()), project.getSlug());
+
+        client.put(
+                UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}/{id}").build(project.getSlug(), env.id()),
+                String.format("Error when updating %s env", env.name()),
+                new EnvPutRequest(env.id(), name, value, env.isSecret())
+        );
+
         helper.printInfo("Environment has been updated. Do not forget to restart project to apply it.");
 
         renderTable(project);
@@ -123,14 +141,23 @@ public class EnvironmentService {
         if (slug == null) {
             project = projectService.select(p -> !p.getServiceType().equals(ServiceType.POSTGRESQL));
         } else {
-            project = projectClient.get(slug);
+            project = client.get(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                    ProjectResponse.class,
+                    String.format("Could not find %s", slug)
+            );
         }
 
         renderTable(project);
     }
 
     public void renderTable(ProjectResponse project) {
-        List<EnvResponse> envList = envClient.getAll(project.getSlug());
+        List<EnvResponse> envList = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}").build(project.getSlug()),
+                new ParameterizedTypeReference<>() {
+                },
+                "Error when getting env list"
+        );
 
         if (envList.isEmpty()) {
             helper.printWarning("No environment found. You can add environment by 'amvera create env'");
@@ -140,7 +167,12 @@ public class EnvironmentService {
     }
 
     public EnvResponse select(String slug) {
-        List<SelectorItem<EnvSelectItem>> envList = envClient.getAll(slug)
+        List<SelectorItem<EnvSelectItem>> envList = client.get(
+                        UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}").build(slug),
+                        new ParameterizedTypeReference<List<EnvResponse>>() {
+                        },
+                        "Error when getting env list"
+                )
                 .stream()
                 .map(EnvResponse::toSelectorItem).toList();
 

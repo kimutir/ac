@@ -14,19 +14,13 @@ public abstract class BaseHttpClient {
 
     private final String token;
 
-    public BaseHttpClient(String url, String token) {
-        this.token = "Bearer " + token;
-    }
-
     public BaseHttpClient(String token) {
         this.token = "Bearer " + token;
     }
 
-    public RestClient client(String url, Consumer<HttpHeaders> headers, String err) {
+    public RestClient client(Consumer<HttpHeaders> headers, String err) {
         return RestClient.builder()
-                .baseUrl(url)
                 .defaultHeaders(headers)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, this.token)
                 .defaultStatusHandler(HttpStatusCode::isError, (req, res) -> {
                     int status = res.getStatusCode().value();
 
@@ -37,9 +31,8 @@ public abstract class BaseHttpClient {
                 .build();
     }
 
-    public RestClient client(String url, String err) {
+    public RestClient client(String err) {
         return RestClient.builder()
-                .baseUrl(url)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, this.token)
                 .defaultStatusHandler(HttpStatusCode::isError, (req, res) -> {
@@ -51,4 +44,5 @@ public abstract class BaseHttpClient {
                 })
                 .build();
     }
+
 }

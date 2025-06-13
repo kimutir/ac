@@ -1,38 +1,38 @@
 package com.amvera.cli.command.action;
 
-import com.amvera.cli.client.CnpgClient;
-import com.amvera.cli.client.ConfigClient;
-import com.amvera.cli.client.ProjectClient;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.dto.env.EnvPostRequest;
-import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ProjectPostResponse;
+import com.amvera.cli.dto.project.ProjectRequest;
+import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgPostRequest;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.dto.project.config.*;
+import com.amvera.cli.service.MarketplaceService;
+import com.amvera.cli.service.ProjectService;
+import com.amvera.cli.utils.Pair;
+import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.input.AmveraInput;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.table.AmveraTable;
 import com.amvera.cli.utils.table.CnpgTableModel;
 import com.amvera.cli.utils.table.MarketplaceTableModel;
 import com.amvera.cli.utils.table.ProjectTableModel;
-import com.amvera.cli.service.CnpgService;
-import com.amvera.cli.service.MarketplaceService;
-import com.amvera.cli.service.ProjectService;
-import com.amvera.cli.utils.*;
-import com.amvera.cli.utils.select.AmveraSelector;
-import com.amvera.cli.utils.table.AmveraTable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.*;
 
 @Command(command = "create", alias = "create", group = "Create commands")
@@ -43,9 +43,8 @@ public class CreateCommand extends AbstractShellComponent {
     private final AmveraTable amveraTable;
     private final AmveraSelector selector;
     private final AmveraInput input;
-    private final ProjectClient projectClient;
-    private final CnpgClient cnpgClient;
-    private final ConfigClient configClient;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
     private static final String MARKETPLACE_VERSION = "1";
 
@@ -56,9 +55,7 @@ public class CreateCommand extends AbstractShellComponent {
             AmveraTable amveraTable,
             AmveraSelector selector,
             AmveraInput input,
-            ProjectClient projectClient,
-            CnpgClient cnpgClient,
-            ConfigClient configClient
+            Endpoints endpoints, AmveraHttpClient client
     ) {
         this.projectService = projectService;
         this.marketplaceService = marketplaceService;
@@ -66,9 +63,8 @@ public class CreateCommand extends AbstractShellComponent {
         this.amveraTable = amveraTable;
         this.selector = selector;
         this.input = input;
-        this.projectClient = projectClient;
-        this.cnpgClient = cnpgClient;
-        this.configClient = configClient;
+        this.endpoints = endpoints;
+        this.client = client;
     }
 
     @Command(command = "", description = "Add new project")
@@ -112,17 +108,14 @@ public class CreateCommand extends AbstractShellComponent {
         String serviceName = serviceNameAndTariff.first();
         int tariffId = serviceNameAndTariff.second();
 
-        ResponseEntity<MarketplaceConfigResponse> configResponse = marketplaceService.getMarketplaceConfig();
+        MarketplaceConfigResponse configTemplate = marketplaceService.getMarketplaceConfig();
 
-        if (configResponse.getStatusCode().is2xxSuccessful()) {
-            MarketplaceConfigPostRequest config = marketConfig(Objects.requireNonNull(configResponse.getBody()), serviceName, tariffId);
-            HttpStatusCode marketplaceStatus = marketplaceService.saveMarketplaceConfig(config);
+        MarketplaceConfigPostRequest config = marketConfig(configTemplate, serviceName, tariffId);
+        marketplaceService.saveMarketplaceConfig(config);
 
-            if (marketplaceStatus.is2xxSuccessful()) {
-                ProjectResponse project = projectService.findBy(serviceName);
-                helper.print(amveraTable.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariffId))));
-            }
-        }
+        ProjectResponse project = projectService.findBy(serviceName);
+        helper.print(amveraTable.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariffId))));
+
     }
 
     private void createCnpg() {
@@ -141,7 +134,10 @@ public class CreateCommand extends AbstractShellComponent {
             superUserPassword = input.notBlankOrNullInput("Enter super user password: ");
         }
 
-        CnpgResponse cnpg = cnpgClient.create(
+        CnpgResponse cnpg = client.post(
+                URI.create(endpoints.postgresql()),
+                CnpgResponse.class,
+                "Error during creation postgresql",
                 new CnpgPostRequest(
                         serviceName,
                         tariffId,
@@ -167,22 +163,47 @@ public class CreateCommand extends AbstractShellComponent {
         boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
 
         if (addConfig) {
-            ConfigResponse configTemplate = configClient.get();
+            ConfigResponse configTemplate = client.get(
+                    URI.create(endpoints.configurations()),
+                    ConfigResponse.class,
+                    "Error when getting config"
+            );
 
             if (configTemplate != null) {
                 AmveraConfiguration config = yamlConfig(configTemplate);
 
-                project = projectClient.create(serviceName, tariffId);
-                projectClient.addConfig(config, project.slug());
+                project = client.post(
+                        URI.create(endpoints.projects()),
+                        ProjectPostResponse.class,
+                        String.format("Error when creating %s", serviceName),
+                        new ProjectRequest(serviceName, tariffId)
+                );
+                client.post(
+                        UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/config")
+                                .queryParam("slug", project.slug())
+                                .build(project.slug()),
+                        String.format("Error when saving %s configuration", project.slug()),
+                        config
+                );
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
             } else {
-                project = projectClient.create(serviceName, tariffId);
+                project = client.post(
+                        URI.create(endpoints.projects()),
+                        ProjectPostResponse.class,
+                        String.format("Error when creating %s", serviceName),
+                        new ProjectRequest(serviceName, tariffId)
+                );
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
                 helper.printWarning("Project has been created. But you have to add configuration manually.");
             }
 
         } else {
-            project = projectClient.create(serviceName, tariffId);
+            project = client.post(
+                    URI.create(endpoints.projects()),
+                    ProjectPostResponse.class,
+                    String.format("Error when creating %s", serviceName),
+                    new ProjectRequest(serviceName, tariffId)
+            );
         }
 
         helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));

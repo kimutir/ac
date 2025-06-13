@@ -1,12 +1,12 @@
 package com.amvera.cli.service;
 
 import com.amvera.cli.client.AmveraHttpClient;
-import com.amvera.cli.client.CnpgClient;
-import com.amvera.cli.client.ProjectClient;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.dto.project.ProjectListResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ScalePostRequest;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.exception.ClientExceptions;
@@ -18,12 +18,8 @@ import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.ProjectSelectItem;
 import com.amvera.cli.utils.table.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.DefaultUriBuilderFactory;
-import org.springframework.web.util.UriBuilder;
-import org.springframework.web.util.UriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -37,9 +33,8 @@ public class ProjectService {
     private final ShellHelper helper;
     private final AmveraSelector selector;
     private final AmveraInput input;
-    private final ProjectClient projectClient;
-    private final CnpgClient cnpgClient;
     private final AmveraHttpClient client;
+    private final Endpoints endpoints;
 
     @Autowired
     public ProjectService(
@@ -48,25 +43,33 @@ public class ProjectService {
             ShellHelper helper,
             AmveraSelector selector,
             AmveraInput input,
-            ProjectClient projectClient, CnpgClient cnpgClient, AmveraHttpClient client
+            AmveraHttpClient client,
+            Endpoints endpoints
     ) {
         this.table = table;
         this.tariffService = tariffService;
         this.helper = helper;
         this.selector = selector;
         this.input = input;
-        this.projectClient = projectClient;
-        this.cnpgClient = cnpgClient;
         this.client = client;
+        this.endpoints = endpoints;
     }
 
     public void renderPreconfiguredTable(ProjectResponse project) {
-        TariffResponse tariff = projectClient.getTariff(project.getSlug());
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
         helper.print(table.singleEntityTable(new MarketplaceTableModel(project, Tariff.value(tariff.id()))));
     }
 
     public void renderCnpgTable(String slug, CnpgResponse cnpg) {
-        TariffResponse tariff = projectClient.getTariff(slug);
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(slug),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", slug)
+        );
         helper.print(table.singleEntityTable(new CnpgTableModel(cnpg, Tariff.value(tariff.id()))));
     }
 
@@ -89,13 +92,21 @@ public class ProjectService {
     }
 
     public void renderTable(ProjectResponse project) {
-        TariffResponse tariff = projectClient.getTariff(project.getSlug());
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
         helper.print(table.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff.id()))));
     }
 
     public void renderTariffTable(String slug) {
         ProjectResponse project = findOrSelect(slug);
-        TariffResponse tariff = projectClient.getTariff(project.getSlug());
+        TariffResponse tariff = client.get(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                TariffResponse.class,
+                String.format("Error when getting %s tariff", project.getSlug())
+        );
         helper.print(table.singleEntityTable(new TariffTableModel(tariff)));
     }
 
@@ -103,32 +114,50 @@ public class ProjectService {
         ProjectResponse project = findOrSelect(slug);
         Tariff tariff = tariffService.select();
 
-        projectClient.updateTariff(project.getSlug(), tariff.id());
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
+                String.format("Error when getting %s tariff", project.getSlug()),
+                tariff.id()
+        );
 
         helper.println("Tariff has been updated. Your project will we restarted automatically");
     }
 
     public void rebuild(String slug) {
         ProjectResponse project = findOrSelect(slug);
-        projectClient.rebuild(project.getSlug());
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/rebuild").build(slug),
+                String.format("Error when rebuilding %s", slug)
+        );
         helper.println("Project rebuilding started...");
     }
 
     public void restart(String slug) {
         slug = findOrSelect(slug, p -> p.getServiceType().equals(ServiceType.PROJECT) || p.getServiceType().equals(ServiceType.PRECONFIGURED)).getSlug();
-        projectClient.restart(slug);
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/restart").build(slug),
+                String.format("Error when restarting %s", slug)
+        );
         helper.println("Project restarting started...");
     }
 
     public void start(String slug) {
         slug = findOrSelect(slug, p -> p.getInstances() == 0 && p.getRequiredInstances() > 0).getSlug();
-        projectClient.start(slug);
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/rebuild").build(slug),
+                String.format("Error when starting %s", slug),
+                new ScalePostRequest(1)
+        );
         helper.println("Starting project...");
     }
 
     public void stop(String slug) {
-        ProjectResponse project = findOrSelect(slug, p -> p.getInstances() > 0 && p.getRequiredInstances() > 0);
-        projectClient.stop(project.getSlug());
+        slug = findOrSelect(slug, p -> p.getInstances() > 0 && p.getRequiredInstances() > 0).getSlug();
+        client.post(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
+                String.format("Error when stopping %s", slug),
+                new ScalePostRequest(0)
+        );
         helper.println("Project stopped...");
     }
 
@@ -145,9 +174,17 @@ public class ProjectService {
         }
 
         if (project.getServiceType().equals(ServiceType.POSTGRESQL)) {
-            cnpgClient.scale(project.getSlug(), instances);
+            client.post(
+                    UriComponentsBuilder.fromUriString(endpoints.postgresql() + "/{slug}/scale").build(project.getSlug()),
+                    String.format("Error when scaling '%s' postgres", project.getSlug()),
+                    new ScalePostRequest(instances)
+            );
         } else {
-            projectClient.scale(project.getSlug(), instances);
+            client.post(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
+                    String.format("Error when scaling %s", slug),
+                    new ScalePostRequest(instances)
+            );
         }
 
         helper.println("Project scaled...");
@@ -155,7 +192,11 @@ public class ProjectService {
 
     public void freeze(String slug) {
         if (slug != null) {
-            ProjectResponse project = projectClient.get(slug);
+            ProjectResponse project = client.get(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
+                    ProjectResponse.class,
+                    String.format("Could not find %s", slug)
+            );
 
             if (!project.getServiceType().equals(ServiceType.PROJECT)) {
                 throw new UnsupportedServiceTypeException("Unable to freeze not PROJECT type");
@@ -166,29 +207,36 @@ public class ProjectService {
             slug = select(p -> p.getServiceType().equals(ServiceType.PROJECT)).getSlug();
         }
 
-        projectClient.freeze(slug);
+        client.put(
+                UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/freeze").build(slug),
+                String.format("Error when freezing %s", slug)
+        );
+
         helper.print(String.format("Project %s has been frozen", slug));
     }
 
 
     public void delete(ProjectResponse project) {
         switch (project.getServiceType()) {
-            case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> projectClient.delete(project.getSlug());
-            case ServiceType.POSTGRESQL -> cnpgClient.delete(project.getSlug());
+            case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> client.delete(
+                    UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(project.getSlug()),
+                    String.format("Error when deleting %s", project.getSlug())
+            );
+            case ServiceType.POSTGRESQL -> client.delete(
+                    UriComponentsBuilder.fromUriString(endpoints.postgresql() + "/{slug}").build(project.getSlug()),
+                    "Error when deleting postgres"
+            );
         }
         ;
         helper.println(String.format("Project %s has been deleted", project.getSlug()));
     }
 
     public List<ProjectResponse> findAll() {
-        return client
-                .project(
-                        HttpMethod.GET,
-                        URI.create(""),
-                        ProjectListResponse.class,
-                        "Error when getting project list"
-                )
-                .getServices();
+        return client.get(
+                URI.create(endpoints.projects()),
+                ProjectListResponse.class,
+                "Error when getting project list"
+        ).getServices();
     }
 
     public List<ProjectResponse> findAll(Predicate<ProjectResponse> predicate) {
@@ -212,31 +260,25 @@ public class ProjectService {
     }
 
     public ProjectResponse findOrSelect(String slug) {
+        return findOrSelect(slug, p -> true);
+    }
+
+    public ProjectResponse findOrSelect(String slug, Predicate<ProjectResponse> predicate) {
         return slug == null ?
-                select() :
-                client.project(
-                        HttpMethod.GET,
-                        UriComponentsBuilder
-                                .fromUriString("/{slug}")
-                                .build(slug),
+                select(predicate) :
+                client.get(
+                        UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}").build(slug),
                         ProjectResponse.class,
                         String.format("Could not find %s", slug)
                 );
     }
 
-    public ProjectResponse findOrSelect(String slug, Predicate<ProjectResponse> predicate) {
-        return slug == null ? select(predicate) : projectClient.get(slug);
-    }
-
     public ProjectResponse select() {
-        List<SelectorItem<ProjectSelectItem>> projectList = projectClient.getAll()
-                .stream()
-                .map(ProjectResponse::toSelectorItem).toList();
-        return selector.singleSelector(projectList, "Select project: ", true).getProject();
+        return select(p -> true);
     }
 
     public ProjectResponse select(Predicate<ProjectResponse> predicate) {
-        List<SelectorItem<ProjectSelectItem>> projectList = projectClient.getAll()
+        List<SelectorItem<ProjectSelectItem>> projectList = findAll()
                 .stream()
                 .filter(predicate)
                 .map(ProjectResponse::toSelectorItem).toList();
