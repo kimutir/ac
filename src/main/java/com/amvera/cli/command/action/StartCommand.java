@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(group = "Project commands")
+@Command(group = "Project actions commands")
 public class StartCommand {
     private final ProjectService projectService;
 
@@ -17,7 +17,12 @@ public class StartCommand {
     @Command(command = "start", description = "Start project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void start(
-            @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project id, name or slug") String slug
+            @Option(
+                    longNames = "slug",
+                    shortNames = 's',
+                    arity = OptionArity.EXACTLY_ONE,
+                    description = "Project slug"
+            ) String slug
     ) {
         projectService.start(slug);
     }

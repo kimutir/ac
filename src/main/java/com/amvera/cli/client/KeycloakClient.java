@@ -39,7 +39,8 @@ public class KeycloakClient extends BaseHttpClient {
                 .uri("/protocol/openid-connect/token")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(body.toMultiValueMap())
-                .retrieve().body(AuthResponse.class);
+                .retrieve()
+                .body(AuthResponse.class);
 
         if (response != null) {
             tokenUtils.saveToken(response.getAccessToken(), response.getRefreshToken());

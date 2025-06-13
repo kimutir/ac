@@ -6,6 +6,8 @@ import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.env.EnvPutRequest;
 import com.amvera.cli.dto.env.EnvResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
+import com.amvera.cli.dto.project.ServiceType;
+import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.EnvSelectItem;
@@ -119,7 +121,7 @@ public class EnvironmentService {
         ProjectResponse project;
 
         if (slug == null) {
-            project = projectService.select();
+            project = projectService.select(p -> !p.getServiceType().equals(ServiceType.POSTGRESQL));
         } else {
             project = projectClient.get(slug);
         }
@@ -128,7 +130,7 @@ public class EnvironmentService {
     }
 
     public void renderTable(ProjectResponse project) {
-        List<EnvResponse> envList = envClient.get(project.getSlug());
+        List<EnvResponse> envList = envClient.getAll(project.getSlug());
 
         if (envList.isEmpty()) {
             helper.printWarning("No environment found. You can add environment by 'amvera create env'");
@@ -138,11 +140,14 @@ public class EnvironmentService {
     }
 
     public EnvResponse select(String slug) {
-        List<SelectorItem<EnvSelectItem>> projectList = envClient.get(slug)
+        List<SelectorItem<EnvSelectItem>> envList = envClient.getAll(slug)
                 .stream()
                 .map(EnvResponse::toSelectorItem).toList();
 
-        return selector.singleSelector(projectList, "Select environment: ", true).getEnv();
+        if (envList.isEmpty())
+            throw new EmptyValueException("No environments found. You can add environment by 'amvera create env'");
+
+        return selector.singleSelector(envList, "Select environment: ", true).getEnv();
     }
 
 }

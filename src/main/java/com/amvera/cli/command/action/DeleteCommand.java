@@ -48,7 +48,6 @@ public class DeleteCommand {
 
         if (confirmed) {
             projectService.delete(project);
-            helper.println(String.format("Project %s has been deleted", project.getSlug()));
         }
     }
 

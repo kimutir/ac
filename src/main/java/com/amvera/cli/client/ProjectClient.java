@@ -4,10 +4,10 @@ import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.billing.TariffResponse;
 import com.amvera.cli.dto.project.*;
 import com.amvera.cli.dto.project.config.AmveraConfiguration;
-import com.amvera.cli.exception.ClientExceptions;
+import com.amvera.cli.exception.ClientResponseException;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,72 +20,64 @@ public class ProjectClient extends BaseHttpClient {
     }
 
     public List<ProjectResponse> getAll() {
-        ProjectListResponse projectList = client().get()
+        return client().get()
                 .retrieve()
-                .body(ProjectListResponse.class);
-
-        if (projectList == null || projectList.getServices().isEmpty()) {
-            throw ClientExceptions.noContent("Projects were not found.");
-        }
-
-        return projectList.getServices();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when getting project list";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(ProjectListResponse.class)
+                .getServices();
     }
 
-    public ResponseEntity<Void> freeze(String slug) {
-        ResponseEntity<Void> response = client().put()
+    public void freeze(String slug) {
+        client().put()
                 .uri("/{slug}/freeze", slug)
                 .retrieve()
-                .toBodilessEntity();
-
-        if (response.getStatusCode().isError()) {
-            // todo: throw exception and handle it
-            System.out.println("Freezing failed.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when freezing %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
-    public ResponseEntity<Void> rebuild(String slug) {
-        ResponseEntity<Void> response = client().post()
+    public void rebuild(String slug) {
+        client().post()
                 .uri("/{slug}/rebuild", slug)
                 .retrieve()
-                .toBodilessEntity();
-
-        if (response.getStatusCode().isError()) {
-            throw new RuntimeException("Rebuilding failed.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when rebuilding %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
-    public ResponseEntity<Void> restart(String slug) {
-        ResponseEntity<Void> response = client().post()
+    public void restart(String slug) {
+        client().post()
                 .uri("/{slug}/restart", slug)
                 .retrieve()
-                .toBodilessEntity();
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Restarting failed.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when restarting %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
     public ProjectPostResponse create(String name, Integer tariff) {
-        ProjectPostResponse project = client().post()
+        return client().post()
                 .body(new ProjectRequest(name, tariff))
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when creating %s", name);
+                    throw new ClientResponseException(msg, status);
+                })
                 .body(ProjectPostResponse.class);
-
-        if (project == null) {
-            throw new RuntimeException("Project creation failed.");
-        }
-
-        return project;
     }
 
     public void addConfig(AmveraConfiguration body, String slug) {
-        ResponseEntity<String> response = client().post()
+        client().post()
                 .uri(builder -> builder
                         .path("/{slug}/config")
                         .queryParam("slug", slug)
@@ -93,100 +85,95 @@ public class ProjectClient extends BaseHttpClient {
                 )
                 .body(body)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when saving %s configuration", slug);
+                    throw new ClientResponseException(msg, status);
+                })
                 .toEntity(String.class);
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Creating configuration failed.");
-        }
-
-        System.out.println("Config amvera.yml added");
     }
 
-    public ResponseEntity<Void> scale(String slug, Integer num) {
-        ResponseEntity<Void> response = client().post()
+    public void scale(String slug, Integer num) {
+        client().post()
                 .uri("/{slug}/scale", slug)
                 .body(new ScalePostRequest(num))
                 .retrieve()
-                .toBodilessEntity();
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to change scale project.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when scaling %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
-    public ResponseEntity<Void> stop(String slug) {
-        ResponseEntity<Void> response = client().post()
+    public void stop(String slug) {
+        client().post()
                 .uri("/{slug}/scale", slug)
                 .body(new ScalePostRequest(0))
                 .retrieve()
-                .toBodilessEntity();
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to stop project.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when stopping %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
-    public ResponseEntity<Void> start(String slug) {
-        ResponseEntity<Void> response = client().post()
+    public void start(String slug) {
+        client().post()
                 .uri("/{slug}/scale", slug)
                 .body(new ScalePostRequest(1))
                 .retrieve()
-                .toBodilessEntity();
-
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Unable to start project.");
-        }
-
-        return response;
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when starting %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
-    public ResponseEntity<Void> delete(String slug) {
-        return client().delete()
+    public void delete(String slug) {
+        client().delete()
                 .uri("/{slug}", slug)
-                .retrieve().toBodilessEntity();
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when deleting %s", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
     public TariffResponse getTariff(String slug) {
-        ResponseEntity<TariffResponse> response = client().get()
+        return client().get()
                 .uri("/{slug}/tariff", slug)
                 .retrieve()
-                .toEntity(TariffResponse.class);
-
-        // todo: check and throw exception
-//        if (tariff == null) {
-//            throw ClientExceptions.noContent("Tariff loading failed.");
-//        }
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when getting %s tariff", slug);
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(TariffResponse.class);
     }
 
     public void updateTariff(String slug, int tariffId) {
-        ResponseEntity<String> response = client()
+        client()
                 .post().uri("/{slug}/tariff", slug)
                 .body(tariffId)
                 .retrieve()
-                .toEntity(String.class);
-
-        if (response.getStatusCode().value() != 200) {
-            throw new RuntimeException("Changing tariff failed.");
-        }
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when updating %s tariff", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
     public ProjectResponse get(String slug) {
-        ResponseEntity<ProjectResponse> response = client()
+        return client()
                 .get()
                 .uri("/{slug}", slug)
                 .retrieve()
-                .toEntity(ProjectResponse.class);
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            // todo throw not found
-        }
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Could not find %s", slug);
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(ProjectResponse.class);
     }
 }

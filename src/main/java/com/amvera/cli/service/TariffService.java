@@ -35,6 +35,9 @@ public class TariffService {
 
     public Tariff select() {
         List<SelectorItem<TariffSelectItem>> tariffs = tariffClient.getAll().tariffs().stream().map(TariffResponse::toSelectItem).toList();
+
+        if (tariffs.isEmpty()) throw new RuntimeException("No tariffs found");
+
         return selector.singleSelector(tariffs, "Select tariff: ", true).getTariff();
     }
 
@@ -42,7 +45,5 @@ public class TariffService {
         List<TariffTableModel> tariffs = tariffClient.getAll().tariffs().stream().map(TariffTableModel::new).toList();
         helper.println(table.tariffs(tariffs));
     }
-
-
 
 }

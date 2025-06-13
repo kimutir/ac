@@ -141,7 +141,7 @@ public class CreateCommand extends AbstractShellComponent {
             superUserPassword = input.notBlankOrNullInput("Enter super user password: ");
         }
 
-        ResponseEntity<CnpgResponse> cnpgResponse = cnpgClient.create(
+        CnpgResponse cnpg = cnpgClient.create(
                 new CnpgPostRequest(
                         serviceName,
                         tariffId,
@@ -155,12 +155,7 @@ public class CreateCommand extends AbstractShellComponent {
                 )
         );
 
-        if (cnpgResponse.getStatusCode().is2xxSuccessful()) {
-            helper.print(amveraTable.singleEntityTable(new CnpgTableModel(Objects.requireNonNull(cnpgResponse.getBody()), Tariff.value(tariffId))));
-        } else {
-            helper.print("Unable to create postgresql. Please contact us.");
-        }
-
+        helper.print(amveraTable.singleEntityTable(new CnpgTableModel(Objects.requireNonNull(cnpg), Tariff.value(tariffId))));
     }
 
     private void createProject() {
@@ -172,10 +167,10 @@ public class CreateCommand extends AbstractShellComponent {
         boolean addConfig = selector.yesOrNoSingleSelector("Would you like to add configuration?");
 
         if (addConfig) {
-            ResponseEntity<ConfigResponse> configTemplateResponse = configClient.get();
+            ConfigResponse configTemplate = configClient.get();
 
-            if (configTemplateResponse.getStatusCode().is2xxSuccessful()) {
-                AmveraConfiguration config = yamlConfig(Objects.requireNonNull(configTemplateResponse.getBody()));
+            if (configTemplate != null) {
+                AmveraConfiguration config = yamlConfig(configTemplate);
 
                 project = projectClient.create(serviceName, tariffId);
                 projectClient.addConfig(config, project.slug());

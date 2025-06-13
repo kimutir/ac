@@ -6,8 +6,11 @@ import com.amvera.cli.dto.project.ProjectListResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ScalePostRequest;
 import com.amvera.cli.dto.project.cnpg.*;
+import com.amvera.cli.exception.ClientResponseException;
 import com.amvera.cli.utils.TokenUtils;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -21,90 +24,125 @@ public class CnpgClient extends BaseHttpClient {
     }
 
     public CnpgResponse getDetails(String slug) {
-        ResponseEntity<CnpgResponse> response = client().get()
+        return client().get()
                 .uri("/{slug}/details", slug)
                 .retrieve()
-                .toEntity(CnpgResponse.class);
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Unable to find '%s' postgres detailed info", slug);
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(CnpgResponse.class);
     }
 
     public ProjectResponse get(String slug) {
-        ResponseEntity<ProjectResponse> response = client().get()
+        return client().get()
                 .uri("/{slug}", slug)
                 .retrieve()
-                .toEntity(ProjectResponse.class);
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Unable to find '%s' postgres", slug);
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(ProjectResponse.class);
     }
 
     public CnpgRestoreResponse restore(String newSlug, String oldSlug, String backupName) {
-        ResponseEntity<CnpgRestoreResponse> response = client()
+        return client()
                 .post().uri("/restore")
                 .body(new CnpgRestorePostRequest(newSlug, oldSlug, backupName))
                 .retrieve()
-                .toEntity(CnpgRestoreResponse.class);
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Unable to restore postgres from %s backup", backupName);
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(CnpgRestoreResponse.class);
     }
 
-    public ResponseEntity<Void> deleteBackup(String slug, String backupName) {
-        return client()
-                .delete().uri("/backup/{serviceSlug}/{backupName}", slug, backupName)
+    public void deleteBackup(String slug, String backupName) {
+        client().delete()
+                .uri("/backup/{serviceSlug}/{backupName}", slug, backupName)
                 .retrieve()
-                .toBodilessEntity();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("%s backup deletion failed", backupName);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
     public CnpgBackupResponse createBackup(String slug, String description) {
-        ResponseEntity<CnpgBackupResponse> response = client()
+        return client()
                 .post().uri("/backup")
                 .body(new CnpgBackupPostRequest(slug, description))
                 .retrieve()
-                .toEntity(CnpgBackupResponse.class);
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Backup process stared";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(CnpgBackupResponse.class);
     }
 
     public List<ProjectResponse> getAll() {
-        ResponseEntity<ProjectListResponse> response = client()
+        return client()
                 .get().retrieve()
-                .toEntity(ProjectListResponse.class);
-
-        if (response.getStatusCode().isError()) {
-            // todo: throw exception
-        }
-
-        return response.getBody().getServices();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when retrieving postgres list";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(ProjectListResponse.class)
+                .getServices();
     }
 
-    public ResponseEntity<Void> delete(String slug) {
-        return client()
+    public void delete(String slug) {
+        client()
                 .delete()
                 .uri("/{slug}", slug)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when deleting postgres";
+                    throw new ClientResponseException(msg, status);
+                })
                 .toBodilessEntity();
     }
 
-    public ResponseEntity<CnpgResponse> create(CnpgPostRequest request) {
+    public CnpgResponse create(CnpgPostRequest request) {
         return client()
                 .post()
                 .body(request)
                 .retrieve()
-                .toEntity(CnpgResponse.class);
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error during creation postgresql";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(CnpgResponse.class);
     }
 
-    public ResponseEntity<Void> scale(String slug, int instances) {
-        return client()
+    public void scale(String slug, int instances) {
+        client()
                 .post().uri("/{slug}/scale", slug)
                 .body(new ScalePostRequest(instances))
                 .retrieve()
-                .toBodilessEntity();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = String.format("Error when scaling '%s' postgres", slug);
+                    throw new ClientResponseException(msg, status);
+                });
     }
 
     public List<CnpgBackupResponse> getBackupList(String slug) {
         ResponseEntity<List<CnpgBackupResponse>> response = client()
                 .get().uri("/backup/{slug}", slug)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when retrieving postgres backup list";
+                    throw new ClientResponseException(msg, status);
+                })
                 .toEntity(new ParameterizedTypeReference<>() {
                 });
 
@@ -112,25 +150,26 @@ public class CnpgClient extends BaseHttpClient {
     }
 
     public CnpgResponse update(String slug, boolean isEnabled) {
-        ResponseEntity<CnpgResponse> response = client().put()
+        return client().put()
                 .body(new CnpgPutRequest(slug, isEnabled))
                 .retrieve()
-                .toEntity(CnpgResponse.class);
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when updating postgres";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(CnpgResponse.class);
     }
 
     public TariffResponse getTariff(String slug) {
-        ResponseEntity<TariffResponse> response = client().get()
+        return client().get()
                 .uri("/{slug}/tariff", slug)
                 .retrieve()
-                .toEntity(TariffResponse.class);
-
-        // todo: check and throw exception
-//        if (tariff == null) {
-//            throw ClientExceptions.noContent("Tariff loading failed.");
-//        }
-
-        return response.getBody();
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
+                    String msg = "Error when getting postgres tariff";
+                    throw new ClientResponseException(msg, status);
+                })
+                .body(TariffResponse.class);
     }
 }

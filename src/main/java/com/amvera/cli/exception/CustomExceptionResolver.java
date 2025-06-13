@@ -3,7 +3,6 @@ package com.amvera.cli.exception;
 import com.amvera.cli.utils.ShellHelper;
 import org.jline.reader.UserInterruptException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.shell.command.CommandExceptionResolver;
 import org.springframework.shell.command.CommandHandlingResult;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,6 +18,10 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
 
     @Override
     public CommandHandlingResult resolve(Exception e) {
+        if (e instanceof ClientResponseException) {
+            helper.printError(e.getMessage());
+            System.exit(2);
+        }
         if (e instanceof ResourceAccessException) {
             if (e.getCause() instanceof ConnectException) {
                 helper.printError("Check your internet connection.");
@@ -30,10 +33,6 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             System.exit(2);
         }
         if (e instanceof EmptyValueException) {
-            helper.printError(e.getMessage());
-            System.exit(2);
-        }
-        if (e instanceof ConfirmationException) {
             helper.printError(e.getMessage());
             System.exit(2);
         }

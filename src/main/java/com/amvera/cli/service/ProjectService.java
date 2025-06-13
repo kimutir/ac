@@ -8,6 +8,7 @@ import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
 import com.amvera.cli.exception.ClientExceptions;
+import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.exception.UnsupportedServiceTypeException;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.input.AmveraInput;
@@ -15,7 +16,6 @@ import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.ProjectSelectItem;
 import com.amvera.cli.utils.table.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +60,24 @@ public class ProjectService {
         helper.print(table.singleEntityTable(new CnpgTableModel(cnpg, Tariff.value(tariff.id()))));
     }
 
+    public void renderTable(Predicate<ProjectResponse> predicate) {
+        List<ProjectResponse> projectList = findAll(predicate);
+
+        if (projectList.isEmpty())
+            throw new EmptyValueException("No services found. You can start with 'amvera create'");
+
+        helper.print(table.projects(projectList));
+    }
+
+    public void renderTable() {
+        List<ProjectResponse> projectList = findAll();
+
+        if (projectList.isEmpty())
+            throw new EmptyValueException("No services found. You can start with 'amvera create'");
+
+        helper.print(table.projects(projectList));
+    }
+
     public void renderTable(ProjectResponse project) {
         TariffResponse tariff = projectClient.getTariff(project.getSlug());
         helper.print(table.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariff.id()))));
@@ -82,68 +100,47 @@ public class ProjectService {
 
     public void rebuild(String slug) {
         ProjectResponse project = findOrSelect(slug);
-
-        ResponseEntity<Void> response = projectClient.rebuild(project.getSlug());
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.println("Project rebuilding started...");
-        }
+        projectClient.rebuild(project.getSlug());
+        helper.println("Project rebuilding started...");
     }
 
     public void restart(String slug) {
-        if (slug == null) {
-            slug = select(p -> p.getServiceType().equals(ServiceType.PROJECT) || p.getServiceType().equals(ServiceType.PRECONFIGURED)).getSlug();
-        }
-
-        ResponseEntity<Void> response = projectClient.restart(slug);
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.println("Project restarting started...");
-        }
+        slug = findOrSelect(slug, p -> p.getServiceType().equals(ServiceType.PROJECT) || p.getServiceType().equals(ServiceType.PRECONFIGURED)).getSlug();
+        projectClient.restart(slug);
+        helper.println("Project restarting started...");
     }
 
     public void start(String slug) {
-        if (slug == null) {
-            slug = select(p -> p.getInstances() == 0 && p.getRequiredInstances() > 0).getSlug();
-        }
-
-        ResponseEntity<Void> response = projectClient.start(slug);
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.println("Starting project...");
-        }
+        slug = findOrSelect(slug, p -> p.getInstances() == 0 && p.getRequiredInstances() > 0).getSlug();
+        projectClient.start(slug);
+        helper.println("Starting project...");
     }
 
     public void stop(String slug) {
         ProjectResponse project = findOrSelect(slug, p -> p.getInstances() > 0 && p.getRequiredInstances() > 0);
-
-        ResponseEntity<Void> response = projectClient.stop(project.getSlug());
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.println("Project stopped...");
-        }
+        projectClient.stop(project.getSlug());
+        helper.println("Project stopped...");
     }
 
     public void scale(String slug, Integer instances) {
         ProjectResponse project = findOrSelect(slug, p -> !p.getStatus().equals("EMPTY"));
 
-        if (instances == null) {
-            instances = Integer.parseInt(input.notBlankOrNullInput("Enter desired replicas amount: "));
-            // todo: add try catch
+        while (instances == null) {
+            try {
+                instances = Integer.parseInt(input.notBlankOrNullInput("Enter desired replicas amount: "));
+            } catch (NumberFormatException e) {
+                helper.printError("Enter integer");
+                instances = null;
+            }
         }
-
-        ResponseEntity<Void> response;
 
         if (project.getServiceType().equals(ServiceType.POSTGRESQL)) {
-           response = cnpgClient.scale(project.getSlug(), instances);
+            cnpgClient.scale(project.getSlug(), instances);
         } else {
-           response = projectClient.scale(project.getSlug(), instances);
+            projectClient.scale(project.getSlug(), instances);
         }
 
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.println("Project scaled...");
-        }
+        helper.println("Project scaled...");
     }
 
     public void freeze(String slug) {
@@ -159,25 +156,29 @@ public class ProjectService {
             slug = select(p -> p.getServiceType().equals(ServiceType.PROJECT)).getSlug();
         }
 
-        ResponseEntity<Void> response = projectClient.freeze(slug);
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            helper.print(String.format("Project %s has been frozen", slug));
-        }
+        projectClient.freeze(slug);
+        helper.print(String.format("Project %s has been frozen", slug));
     }
 
 
-    public ResponseEntity<Void> delete(ProjectResponse project) {
-        ResponseEntity<Void> response = switch (project.getServiceType()) {
+    public void delete(ProjectResponse project) {
+        switch (project.getServiceType()) {
             case ServiceType.PROJECT, ServiceType.PRECONFIGURED -> projectClient.delete(project.getSlug());
             case ServiceType.POSTGRESQL -> cnpgClient.delete(project.getSlug());
-        };
-
-        if (response.getStatusCode().isError()) {
-            throw new RuntimeException("Deletion failed.");
         }
+        ;
+        helper.println(String.format("Project %s has been deleted", project.getSlug()));
+    }
 
-        return response;
+    public List<ProjectResponse> findAll() {
+        return projectClient.getAll();
+    }
+
+    public List<ProjectResponse> findAll(Predicate<ProjectResponse> predicate) {
+        return projectClient.getAll()
+                .stream()
+                .filter(predicate)
+                .toList();
     }
 
     public ProjectResponse findBy(String name) {

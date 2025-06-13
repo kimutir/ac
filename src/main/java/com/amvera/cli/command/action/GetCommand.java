@@ -1,111 +1,52 @@
 package com.amvera.cli.command.action;
 
-import com.amvera.cli.client.ProjectClient;
-import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
-import com.amvera.cli.service.*;
-import com.amvera.cli.utils.*;
-import com.amvera.cli.utils.select.AmveraSelector;
-import com.amvera.cli.utils.table.AmveraTable;
+import com.amvera.cli.service.DomainService;
+import com.amvera.cli.service.EnvironmentService;
+import com.amvera.cli.service.ProjectService;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-import java.util.List;
-
 @Command(command = "get", group = "Project commands")
 public class GetCommand {
     private final ProjectService projectService;
-    private final CnpgService cnpgService;
-    private final TariffService tariffService;
     private final EnvironmentService envService;
     private final DomainService domainService;
-    private final AmveraTable table;
-    private final ShellHelper helper;
-    private final AmveraSelector selector;
-    private final ProjectClient projectClient;
 
     public GetCommand(
-            ProjectService projectService, CnpgService cnpgService,
-            TariffService tariffService,
+            ProjectService projectService,
             EnvironmentService envService,
-            DomainService domainService,
-            AmveraTable table,
-            ShellHelper helper,
-            AmveraSelector selector, ProjectClient projectClient
+            DomainService domainService
     ) {
         this.projectService = projectService;
-        this.cnpgService = cnpgService;
-        this.tariffService = tariffService;
         this.envService = envService;
         this.domainService = domainService;
-        this.table = table;
-        this.helper = helper;
-        this.selector = selector;
-        this.projectClient = projectClient;
-    }
-
-    @Command(command = "test")
-    public void test() {
-        projectClient.getAll().forEach(project -> helper.println(project.getSlug()));
     }
 
     @Command(command = "", description = "Get list of all projects including postgres and configured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void get() {
-        List<ProjectResponse> projectList = projectClient.getAll();
-
-        if (projectList.isEmpty()) {
-            helper.printWarning("No projects found. You can start with 'amvera create'");
-        } else {
-            helper.print(table.projects(projectList));
-        }
+        projectService.renderTable();
     }
 
     @Command(command = "project", alias = "projects", description = "Get list of projects")
     @CommandAvailability(provider = "userLoggedOutProvider")
-    // todo: org.springframework.core.convert.ConversionFailedException
     public void project() {
-        List<ProjectResponse> projectList = projectClient.getAll()
-                .stream().filter(p -> p.getServiceType().equals(ServiceType.PROJECT))
-                .toList();
-
-        if (projectList.isEmpty()) {
-            helper.printWarning("No projects found. You can start with 'amvera create project'");
-        } else {
-            helper.print(table.projects(projectList));
-        }
+        projectService.renderTable(p -> p.getServiceType().equals(ServiceType.PROJECT));
     }
 
     @Command(command = "psql", alias = {"get postgresql", "get postgre", "get cnpg"}, description = "Get list of postgresql (cnpg) clusters")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql() {
-        List<ProjectResponse> cnpgList = projectClient.getAll()
-                .stream()
-                .filter(p -> p.getServiceType().equals(ServiceType.POSTGRESQL))
-                .toList();
-
-        if (cnpgList.isEmpty()) {
-            helper.printWarning("No postgres clusters found. You can start with 'amvera create psql'");
-        } else {
-            helper.print(table.projects(cnpgList));
-        }
+        projectService.renderTable(p -> p.getServiceType().equals(ServiceType.POSTGRESQL));
     }
 
     @Command(command = "preconfigured", alias = {"get conf", "get preconf"}, description = "Get list of preconfigured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured() {
-        List<ProjectResponse> cnpgList = projectClient.getAll()
-                .stream()
-                .filter(p -> p.getServiceType().equals(ServiceType.PRECONFIGURED))
-                .toList();
-
-        if (cnpgList.isEmpty()) {
-            helper.printWarning("No preconfigured projects found. You can start with 'amvera create conf'");
-        } else {
-            helper.print(table.projects(cnpgList));
-        }
+        projectService.renderTable(p -> p.getServiceType().equals(ServiceType.PRECONFIGURED));
     }
 
     @Command(command = "domain", alias = "get domains", description = "Get list of domains")

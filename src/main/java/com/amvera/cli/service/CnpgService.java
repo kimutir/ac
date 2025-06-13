@@ -6,6 +6,7 @@ import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.cnpg.CnpgBackupResponse;
 import com.amvera.cli.dto.project.cnpg.CnpgResourceStatus;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
+import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.utils.ShellHelper;
 import com.amvera.cli.utils.input.AmveraInput;
 import com.amvera.cli.utils.select.AmveraSelector;
@@ -45,22 +46,20 @@ public class CnpgService {
 
     public void renderTable() {
         List<ProjectResponse> cnpgList = cnpgClient.getAll();
-        if (cnpgList.isEmpty()) {
-            helper.printWarning("No postgres clusters found. You can start with 'amvera create psql'");
-        } else {
-            helper.println(table.projects(cnpgList));
-        }
+
+        if (cnpgList.isEmpty())
+            throw new EmptyValueException("No postgres clusters found. You can start with 'amvera create psql'");
+
+        helper.println(table.projects(cnpgList));
     }
 
     public void renderBackupsTable(String slug) {
         ProjectResponse cnpg = findOrSelect(slug);
         List<CnpgBackupResponse> backupList = cnpgClient.getBackupList(cnpg.getSlug());
 
-        if (backupList.isEmpty()) {
-            helper.printWarning("No backups found for slug " + slug);
-        } else {
-            helper.println(table.cnpgBackups(backupList));
-        }
+        if (backupList.isEmpty()) throw new EmptyValueException("No backups found for " + slug);
+
+        helper.println(table.cnpgBackups(backupList));
     }
 
     public void createBackup(String slug, String description) {
@@ -133,22 +132,33 @@ public class CnpgService {
         List<SelectorItem<ProjectSelectItem>> projectList = cnpgClient.getAll()
                 .stream()
                 .map(ProjectResponse::toSelectorItem).toList();
+
+        if (projectList.isEmpty()) {
+            throw new EmptyValueException("No postgres clusters found. You can start with 'amvera create psql'");
+        }
+
         return selector.singleSelector(projectList, "Select postgresql cluster: ", true).getProject();
     }
 
     public CnpgBackupResponse selectBackup(String slug) {
-        List<SelectorItem<CnpgBackupResponse>> projectList = cnpgClient.getBackupList(slug)
+        List<SelectorItem<CnpgBackupResponse>> backupList = cnpgClient.getBackupList(slug)
                 .stream()
                 .map(CnpgBackupResponse::toSelectorItem).toList();
-        return selector.singleSelector(projectList, "Select postgresql backup: ", true);
+
+        if (backupList.isEmpty()) throw new EmptyValueException("No backups found for " + slug);
+
+        return selector.singleSelector(backupList, "Select postgresql backup: ", true);
     }
 
     public CnpgBackupResponse selectBackup(String slug, Predicate<CnpgBackupResponse> predicate) {
-        List<SelectorItem<CnpgBackupResponse>> projectList = cnpgClient.getBackupList(slug)
+        List<SelectorItem<CnpgBackupResponse>> backupList = cnpgClient.getBackupList(slug)
                 .stream()
                 .filter(predicate)
                 .map(CnpgBackupResponse::toSelectorItem).toList();
-        return selector.singleSelector(projectList, "Select postgresql backup: ", true);
+
+        if (backupList.isEmpty()) throw new EmptyValueException("No backups found for " + slug);
+
+        return selector.singleSelector(backupList, "Select postgresql backup: ", true);
     }
 
 }
