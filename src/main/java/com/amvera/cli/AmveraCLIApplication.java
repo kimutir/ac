@@ -17,7 +17,7 @@ import org.springframework.shell.CommandNotFound;
 import org.springframework.shell.command.annotation.CommandScan;
 import org.springframework.shell.jline.PromptProvider;
 
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 @CommandScan
 @EnableAspectJAutoProxy
 @EnableConfigurationProperties({AppProperties.class, Endpoints.class})
