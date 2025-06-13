@@ -5,7 +5,7 @@ import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "freeze", group = "Freeze commands")
+@Command(command = "freeze", group = "Project actions commands")
 public class FreezeCommand {
 
     private final ProjectService projectService;

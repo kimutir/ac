@@ -12,8 +12,10 @@ import com.amvera.cli.utils.table.AmveraTable;
 import com.amvera.cli.utils.table.TariffTableModel;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Currency;
 import java.util.List;
 
 @Service
@@ -41,7 +43,9 @@ public class TariffService {
 
     public Tariff select() {
         List<SelectorItem<TariffSelectItem>> tariffs = client.get(
-                URI.create(endpoints.tariff()),
+                UriComponentsBuilder.fromUriString(endpoints.tariff())
+                        .queryParam("currency", Currency.getInstance("RUB"))
+                        .build().toUri(),
                 TariffListResponse.class,
                 "Error when getting tariff list"
         ).tariffs().stream().map(TariffResponse::toSelectItem).toList();
@@ -53,7 +57,9 @@ public class TariffService {
 
     public void renderTable() {
         List<TariffTableModel> tariffs = client.get(
-                URI.create(endpoints.tariff()),
+                UriComponentsBuilder.fromUriString(endpoints.tariff())
+                        .queryParam("currency", Currency.getInstance("RUB"))
+                        .build().toUri(),
                 TariffListResponse.class,
                 "Error when getting tariff list"
         ).tariffs().stream().map(TariffTableModel::new).toList();

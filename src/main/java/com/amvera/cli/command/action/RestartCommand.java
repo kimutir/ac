@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "restart", group = "Project commands")
+@Command(command = "restart", group = "Project actions commands")
 public class RestartCommand {
     private final ProjectService projectService;
 

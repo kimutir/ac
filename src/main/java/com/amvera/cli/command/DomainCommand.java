@@ -1,5 +1,6 @@
 package com.amvera.cli.command;
 
+import com.amvera.cli.service.DomainService;
 import org.springframework.shell.command.CommandRegistration;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
@@ -7,6 +8,12 @@ import org.springframework.shell.command.annotation.Option;
 
 @Command(command = "domain")
 public class DomainCommand {
+
+    private final DomainService domainService;
+
+    public DomainCommand(DomainService domainService) {
+        this.domainService = domainService;
+    }
 
     @Command(command = "add", description = "Environment variables for specified project")
     @CommandAvailability(provider = "userLoggedOutProvider")

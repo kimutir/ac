@@ -63,7 +63,6 @@ public class DomainService {
         }
     }
 
-
     public void renderTable(String slug) {
         ProjectResponse project = projectService.findOrSelect(slug);
         renderTable(project);

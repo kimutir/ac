@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "rebuild", group = "Project commands")
+@Command(command = "rebuild", group = "Project actions commands")
 public class RebuildCommand {
     private final ProjectService projectService;
 

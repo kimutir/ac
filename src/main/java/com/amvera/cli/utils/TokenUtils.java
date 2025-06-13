@@ -71,7 +71,7 @@ public class TokenUtils {
             File fileToDelete = new File(PATH);
             fileToDelete.delete();
         } catch (Exception e) {
-//            System.out.println("Try to delete .amvera.json manually.");
+            throw new InformException("Unable to delete token. Try to delete .amvera.json manually.");
         }
 
         return "Logged out successfully!";

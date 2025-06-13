@@ -39,6 +39,7 @@ public class TariffCommand {
     @Command(command = "list", alias = "tariff ls", description = "Project tariff information")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void list() {
+        System.out.println("test 1");
         tariffService.renderTable();
     }
 

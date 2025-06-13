@@ -49,7 +49,7 @@ public class EnvironmentService {
     }
 
     public void create(String slug) {
-        ProjectResponse project = projectService.findOrSelect(slug);
+        ProjectResponse project = projectService.findOrSelect(slug, p -> !p.getServiceType().equals(ServiceType.POSTGRESQL));
 
         ComponentContext<?> context = componentFlowBuilder.clone().reset()
                 .withConfirmationInput("secret")
@@ -85,11 +85,14 @@ public class EnvironmentService {
         renderTable(project);
     }
 
+    public void delete(String slug, Long id) {
+
+    }
+
     public void delete(String slug) {
         ProjectResponse project = projectService.findOrSelect(slug);
 
         EnvResponse env = select(project.getSlug());
-
 
         client.delete(
                 UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}/{id}").build(project.getSlug(), env.id()),
@@ -160,7 +163,7 @@ public class EnvironmentService {
         );
 
         if (envList.isEmpty()) {
-            helper.printWarning("No environment found. You can add environment by 'amvera create env'");
+            helper.printWarning("No environment found. You can add environment by 'amvera env add'");
         } else {
             helper.print(table.environments(envList));
         }
@@ -177,7 +180,7 @@ public class EnvironmentService {
                 .map(EnvResponse::toSelectorItem).toList();
 
         if (envList.isEmpty())
-            throw new EmptyValueException("No environments found. You can add environment by 'amvera create env'");
+            throw new EmptyValueException("No environments found. You can add environment by 'amvera env add'");
 
         return selector.singleSelector(envList, "Select environment: ", true).getEnv();
     }

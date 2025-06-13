@@ -3,33 +3,25 @@ package com.amvera.cli.command.action;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.service.ProjectService;
 import com.amvera.cli.utils.input.AmveraInput;
-import com.amvera.cli.utils.select.AmveraSelector;
-import com.amvera.cli.utils.ShellHelper;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "delete", group = "Delete commands")
+@Command(command = "delete", group = "Project actions commands")
 public class DeleteCommand {
     private final ProjectService projectService;
     private final AmveraInput input;
-    private final AmveraSelector selector;
-    private final ShellHelper helper;
 
     public DeleteCommand(
             ProjectService projectService,
-            AmveraInput input,
-            AmveraSelector selector,
-            ShellHelper helper
+            AmveraInput input
     ) {
         this.projectService = projectService;
         this.input = input;
-        this.selector = selector;
-        this.helper = helper;
     }
 
-    @Command(command = "", description = "Delete project by id, name or slug")
+    @Command(command = "", description = "Deletes project by slug")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void delete(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug

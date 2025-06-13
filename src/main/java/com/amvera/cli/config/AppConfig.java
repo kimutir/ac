@@ -3,15 +3,21 @@ package com.amvera.cli.config;
 import com.amvera.cli.AmveraCLIApplication;
 import com.amvera.cli.dto.auth.*;
 import com.amvera.cli.dto.billing.BalanceResponse;
+import com.amvera.cli.dto.billing.TariffListResponse;
 import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.dto.domain.DomainResponse;
+import com.amvera.cli.dto.domain.IngressPort;
 import com.amvera.cli.dto.env.EnvPostRequest;
 import com.amvera.cli.dto.env.EnvPutRequest;
 import com.amvera.cli.dto.env.EnvResponse;
 import com.amvera.cli.dto.project.*;
+import com.amvera.cli.dto.project.cnpg.*;
 import com.amvera.cli.dto.project.config.*;
 import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
+import com.amvera.cli.utils.table.CnpgTableModel;
+import com.amvera.cli.utils.table.MarketplaceTableModel;
 import com.amvera.cli.utils.table.ProjectTableModel;
 import com.amvera.cli.utils.table.TariffTableModel;
 import com.amvera.cli.dto.user.TokenConfig;
@@ -30,30 +36,45 @@ import org.springframework.shell.result.CommandNotFoundMessageProvider;
         {
                 AuthResponse.class,
                 AuthRequest.class,
+                AmveraConfiguration.class,
+                AmveraCLIApplication.class,
+                BalanceResponse.class,
+                CnpgTableModel.class,
+                CnpgBackupPostRequest.class,
+                CnpgBackupResponse.class,
+                CnpgPostRequest.class,
+                CnpgPutRequest.class,
+                CnpgResponse.class,
+                CnpgRestorePostRequest.class,
+                CnpgRestoreResponse.class,
+                ConfigResponse.class,
+                DefaultConfValuesResponse.class,
+                DomainResponse.class,
+                EnvResponse.class,
+                EnvPostRequest.class,
+                EnvPutRequest.class,
+                InfoResponse.class,
+                IngressPort.class,
+                LogoutRequest.class,
+                LogResponse.class,
+                MarketplaceTableModel.class,
+                MarketplaceConfig.class,
+                MarketplaceConfigPostRequest.class,
+                MarketplaceConfigResponse.class,
+                Meta.class,
                 ProjectResponse.class,
                 ProjectListResponse.class,
                 ProjectRequest.class,
                 ProjectPostResponse.class,
-                AmveraCLIApplication.class,
-                Meta.class,
-                Toolchain.class,
-                LogResponse.class,
-                BalanceResponse.class,
-                TariffResponse.class,
-                EnvResponse.class,
-                EnvPostRequest.class,
-                EnvPutRequest.class,
-                ScalePostRequest.class,
                 ProjectTableModel.class,
-                TariffTableModel.class,
-                InfoResponse.class,
-                AmveraConfiguration.class,
-                ConfigResponse.class,
-                DefaultConfValuesResponse.class,
-                LogoutRequest.class,
-                TokenConfig.class,
                 RefreshTokenPostRequest.class,
-                RevokeTokenPostRequest.class
+                RevokeTokenPostRequest.class,
+                ScalePostRequest.class,
+                Toolchain.class,
+                TariffResponse.class,
+                TariffListResponse.class,
+                TariffTableModel.class,
+                TokenConfig.class,
         }
 )
 public class AppConfig {
