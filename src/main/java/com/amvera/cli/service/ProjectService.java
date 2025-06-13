@@ -1,9 +1,11 @@
 package com.amvera.cli.service;
 
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.client.CnpgClient;
 import com.amvera.cli.client.ProjectClient;
 import com.amvera.cli.dto.billing.Tariff;
 import com.amvera.cli.dto.billing.TariffResponse;
+import com.amvera.cli.dto.project.ProjectListResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
 import com.amvera.cli.dto.project.cnpg.CnpgResponse;
@@ -16,9 +18,15 @@ import com.amvera.cli.utils.select.AmveraSelector;
 import com.amvera.cli.utils.select.ProjectSelectItem;
 import com.amvera.cli.utils.table.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -31,6 +39,7 @@ public class ProjectService {
     private final AmveraInput input;
     private final ProjectClient projectClient;
     private final CnpgClient cnpgClient;
+    private final AmveraHttpClient client;
 
     @Autowired
     public ProjectService(
@@ -39,7 +48,7 @@ public class ProjectService {
             ShellHelper helper,
             AmveraSelector selector,
             AmveraInput input,
-            ProjectClient projectClient, CnpgClient cnpgClient
+            ProjectClient projectClient, CnpgClient cnpgClient, AmveraHttpClient client
     ) {
         this.table = table;
         this.tariffService = tariffService;
@@ -48,6 +57,7 @@ public class ProjectService {
         this.input = input;
         this.projectClient = projectClient;
         this.cnpgClient = cnpgClient;
+        this.client = client;
     }
 
     public void renderPreconfiguredTable(ProjectResponse project) {
@@ -171,18 +181,25 @@ public class ProjectService {
     }
 
     public List<ProjectResponse> findAll() {
-        return projectClient.getAll();
+        return client
+                .project(
+                        HttpMethod.GET,
+                        URI.create(""),
+                        ProjectListResponse.class,
+                        "Error when getting project list"
+                )
+                .getServices();
     }
 
     public List<ProjectResponse> findAll(Predicate<ProjectResponse> predicate) {
-        return projectClient.getAll()
+        return findAll()
                 .stream()
                 .filter(predicate)
                 .toList();
     }
 
     public ProjectResponse findBy(String name) {
-        List<ProjectResponse> projects = projectClient.getAll();
+        List<ProjectResponse> projects = findAll();
         projects = projects.stream()
                 .filter(p -> String.valueOf(p.getId()).equals(name) || p.getName().equals(name) || p.getSlug().equals(name))
                 .toList();
@@ -195,7 +212,16 @@ public class ProjectService {
     }
 
     public ProjectResponse findOrSelect(String slug) {
-        return slug == null ? select() : projectClient.get(slug);
+        return slug == null ?
+                select() :
+                client.project(
+                        HttpMethod.GET,
+                        UriComponentsBuilder
+                                .fromUriString("/{slug}")
+                                .build(slug),
+                        ProjectResponse.class,
+                        String.format("Could not find %s", slug)
+                );
     }
 
     public ProjectResponse findOrSelect(String slug, Predicate<ProjectResponse> predicate) {

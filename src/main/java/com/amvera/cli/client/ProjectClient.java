@@ -167,7 +167,8 @@ public class ProjectClient extends BaseHttpClient {
     public ProjectResponse get(String slug) {
         return client()
                 .get()
-                .uri("/{slug}", slug)
+                .uri(b -> b)
+//                .uri("/{slug}", slug)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     HttpStatus status = HttpStatus.valueOf(res.getStatusCode().value());
