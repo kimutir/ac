@@ -9,6 +9,7 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.command.CommandRegistration.OptionArity;
 import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
 import java.io.IOException;
@@ -26,7 +27,8 @@ public class LogsCommand {
         this.terminal = terminal;
     }
 
-    @Command(command = "run")
+    @Command(command = "run", description = "Returns run stage logs")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public void run(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug,
             @Option(longNames = "limit", shortNames = 'l', arity = OptionArity.EXACTLY_ONE, description = "Project slug", defaultValue = "100") Integer limit,
@@ -36,7 +38,8 @@ public class LogsCommand {
         logsService.run(slug, limit, query, last);
     }
 
-    @Command(command = "build")
+    @Command(command = "build", description = "Returns build stage logs")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public void build(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug,
             @Option(longNames = "limit", shortNames = 'l', arity = OptionArity.EXACTLY_ONE, description = "Project slug", defaultValue = "100") Integer limit,

@@ -5,9 +5,13 @@ import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.domain.DomainResponse;
 import com.amvera.cli.dto.project.ProjectResponse;
 import com.amvera.cli.dto.project.ServiceType;
+import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.utils.ShellHelper;
+import com.amvera.cli.utils.select.AmveraSelector;
+import com.amvera.cli.utils.select.DomainSelectItem;
 import com.amvera.cli.utils.table.AmveraTable;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,25 +25,28 @@ public class DomainService {
     private final ProjectService projectService;
     private final Endpoints endpoints;
     private final AmveraHttpClient client;
+    private final AmveraSelector selector;
 
     public DomainService(
             AmveraTable table,
             ShellHelper helper,
             ProjectService projectService,
             Endpoints endpoints,
-            AmveraHttpClient client
+            AmveraHttpClient client,
+            AmveraSelector selector
     ) {
         this.table = table;
         this.helper = helper;
         this.projectService = projectService;
         this.endpoints = endpoints;
         this.client = client;
+        this.selector = selector;
     }
 
     public void renderTable(ProjectResponse project) {
         List<DomainResponse> domainList = client.get(
                 UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}").build(project.getSlug()),
-                new ParameterizedTypeReference<List<DomainResponse>>() {
+                new ParameterizedTypeReference<>() {
                 },
                 "Error when getting project domain list"
         );
@@ -57,7 +64,8 @@ public class DomainService {
         }
 
         if (domainList.isEmpty()) {
-            helper.printWarning("No domains found. You can start with 'amvera create domain'\n");
+            helper.printWarning("No domains found.");
+//            helper.printWarning("No domains found. You can start with 'amvera create domain'");
         } else {
             helper.println(table.domains(domainList));
         }
@@ -88,11 +96,54 @@ public class DomainService {
             }
         }
 
+        if (domainList.isEmpty())
+            throw new EmptyValueException("No domains found. You can start with 'amvera domain add''");
+
+        helper.println(table.domains(domainList));
+    }
+
+    public void delete(String slug, Long id) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+        DomainResponse domain = select(project);
+
+        client.delete(
+                UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}/{id}").build(project.getSlug(), domain.getId()),
+                "Error when deleting domain " + id
+        );
+
+        helper.println("Domain has been deleted");
+    }
+
+    public DomainResponse getOrSelect(String slug, Long id) {
+        ProjectResponse project = projectService.findOrSelect(slug);
+
+        return id == null ? select(project) : get(project, id);
+    }
+
+    public DomainResponse select(ProjectResponse project) {
+        List<SelectorItem<DomainSelectItem>> domainList = client
+                .get(
+                        UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}").build(project.getSlug()),
+                        new ParameterizedTypeReference<List<DomainResponse>>() {
+                        },
+                        "Error when getting domain list"
+                )
+                .stream()
+                .map(DomainResponse::toSelectorItem).toList();
+
         if (domainList.isEmpty()) {
-            helper.printWarning("No domains found. You can start with 'amvera create domain'\n");
-        } else {
-            helper.println(table.domains(domainList));
+            throw new EmptyValueException("No user domains found. You can start with 'amvera domain add'");
         }
+
+        return selector.singleSelector(domainList, "Select domain: ", true).getDomain();
+    }
+
+    public DomainResponse get(ProjectResponse project, Long id) {
+        return client.get(
+                UriComponentsBuilder.fromUriString(endpoints.domain() + "/{slug}/{id}").build(project.getSlug(), id),
+                DomainResponse.class,
+                "Error when getting project domain"
+        );
     }
 
 }

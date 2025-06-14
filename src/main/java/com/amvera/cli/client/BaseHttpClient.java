@@ -38,6 +38,8 @@ public abstract class BaseHttpClient {
                 .defaultStatusHandler(HttpStatusCode::isError, (req, res) -> {
                     int status = res.getStatusCode().value();
 
+                    System.out.println(status);
+
                     if (status == 401 || status == 403) throw new UnauthorizedException("Try to login again");
 
                     throw new ClientResponseException(err, HttpStatus.valueOf(status));

@@ -1,8 +1,11 @@
 package com.amvera.cli.dto.domain;
 
+import com.amvera.cli.utils.select.DomainSelectItem;
+import com.amvera.cli.utils.select.ProjectSelectItem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import org.springframework.shell.component.support.SelectorItem;
 
 import java.util.List;
 
@@ -85,6 +88,11 @@ public class DomainResponse{
 
     public void setDomainType(DomainType domainType) {
         this.domainType = domainType;
+    }
+
+    public SelectorItem<DomainSelectItem> toSelectorItem() {
+        DomainSelectItem selectItem = new DomainSelectItem(this);
+        return SelectorItem.of(selectItem.getName(), selectItem);
     }
 
     @Override

@@ -36,6 +36,10 @@ public class CustomExceptionResolver implements CommandExceptionResolver {
             helper.printError(e.getMessage());
             System.exit(2);
         }
+        if (e instanceof UnauthorizedException) {
+            helper.printError(e.getMessage());
+            System.exit(2);
+        }
         if (e instanceof HttpClientErrorException) {
             int code = ((HttpClientErrorException) e).getStatusCode().value();
             if (code == 204) {

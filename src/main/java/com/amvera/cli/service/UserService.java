@@ -37,9 +37,9 @@ public class UserService {
         AuthResponse response = client.post(
                 URI.create(endpoints.keycloak() + "/protocol/openid-connect/token"),
                 AuthResponse.class,
-                "Error on login",
                 new AuthRequest(properties.keycloakClient(), user, password).toMultiValueMap(),
-                h -> h.setContentType(MediaType.APPLICATION_FORM_URLENCODED)
+                h -> h.setContentType(MediaType.APPLICATION_FORM_URLENCODED),
+                "Error on login"
         );
 
         if (response != null) {

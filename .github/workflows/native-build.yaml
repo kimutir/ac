@@ -1,0 +1,48 @@
+name: Build Native CLI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-native:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x64, aarch64]
+        exclude:
+          - os: windows-latest
+            arch: aarch64 # Windows ARM не поддерживается GitHub Actions
+          - os: macos-latest
+            arch: x64    # macOS ARM можно оставить только aarch64, или подогнать вручную
+
+    name: Build on ${{ matrix.os }} (${{ matrix.arch }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          architecture: ${{ matrix.arch }}
+          native-image: true
+
+      - name: Set up Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Build native image
+        run: ./mvnw clean package -Pnative -DskipTests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amvera-${{ matrix.os }}-${{ matrix.arch }}
+          path: target/amvera # имя зависит от того, что создается

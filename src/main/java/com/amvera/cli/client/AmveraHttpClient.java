@@ -32,7 +32,7 @@ public class AmveraHttpClient extends BaseHttpClient {
                 .body(clazz);
     }
 
-    public <T, K> T post(URI uri, Class<T> clazz, String err, K body) {
+    public <T, K> T post(URI uri, Class<T> clazz, K body, String err) {
         return super.client(err)
                 .post()
                 .uri(uri)
@@ -41,7 +41,7 @@ public class AmveraHttpClient extends BaseHttpClient {
                 .body(clazz);
     }
 
-    public <T, K> T post(URI uri, Class<T> clazz, String err, K body, Consumer<HttpHeaders> headers) {
+    public <T, K> T post(URI uri, Class<T> clazz, K body, Consumer<HttpHeaders> headers, String err) {
         return super.client(headers, err)
                 .post()
                 .uri(uri)
@@ -60,7 +60,7 @@ public class AmveraHttpClient extends BaseHttpClient {
     }
 
 
-    public <K> void post(URI uri, String err, K body) {
+    public <K> void post(URI uri, K body, String err) {
         super.client(err)
                 .post()
                 .uri(uri)
@@ -77,7 +77,7 @@ public class AmveraHttpClient extends BaseHttpClient {
                 .toBodilessEntity();
     }
 
-    public <T, K> T put(URI uri, Class<T> clazz, String err, K body) {
+    public <T, K> T put(URI uri, Class<T> clazz, K body, String err) {
         return super.client(err)
                 .put()
                 .uri(uri)
@@ -86,7 +86,7 @@ public class AmveraHttpClient extends BaseHttpClient {
                 .body(clazz);
     }
 
-    public <K> void put(URI uri, String err, K body) {
+    public <K> void put(URI uri, K body, String err) {
         super.client(err)
                 .put()
                 .uri(uri)

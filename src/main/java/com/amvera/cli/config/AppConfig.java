@@ -86,7 +86,7 @@ public class AppConfig {
     @Bean
     public Boolean isValid(TokenUtils tokenUtils) {
         try {
-            return tokenUtils.readToken() != null;
+            return !tokenUtils.readToken().accessToken().isEmpty();
         } catch (Exception e) {
             return false;
         }

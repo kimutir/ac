@@ -44,13 +44,6 @@ public class LoginCommand extends AbstractShellComponent {
 //            throw new EmptyValueException("Password can not be empty.");
         }
 
-
-        // todo: WebFlux doesn't work on Windows after compilation to binary (MacOS - ok)
-//        AuthResponse response = authService.login(user, password).block();
-//        if (response != null) {
-//            return response.getAccessToken();
-//        }
-
         return authService.login(user, password);
     }
 

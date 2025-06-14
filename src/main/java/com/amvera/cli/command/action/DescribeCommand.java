@@ -15,7 +15,7 @@ import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@Command(command = "describe", group = "Project commands")
+@Command(command = "describe", alias = "describe", group = "Project commands")
 public class DescribeCommand {
 
     private final ProjectService projectService;
@@ -41,7 +41,7 @@ public class DescribeCommand {
         this.endpoints = endpoints;
     }
 
-    @Command(command = "project", alias = "describe projects", description = "Get info of projects")
+    @Command(command = "project", description = "Returns project info")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void project(
             @Option(
@@ -68,7 +68,7 @@ public class DescribeCommand {
         domainService.renderTable(project);
     }
 
-    @Command(command = "postgresql", alias = {"describe postgre", "describe psql", "describe cnpg"}, description = "Get info of cnpg clusters")
+    @Command(command = "postgresql", alias = {"postgre", "psql"}, description = "Returns postgres info")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql(
             @Option(
@@ -94,7 +94,7 @@ public class DescribeCommand {
         domainService.renderTable(slug, cnpg.username(), ServiceType.POSTGRESQL);
     }
 
-    @Command(command = "preconfigured", alias = "describe preconf", description = "Get info of preconfigured services")
+    @Command(command = "preconfigured", alias = "preconf", description = "Returns preconfigured service info")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured(
             @Option(

@@ -116,8 +116,8 @@ public class ProjectService {
 
         client.post(
                 UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/tariff").build(project.getSlug()),
-                String.format("Error when getting %s tariff", project.getSlug()),
-                tariff.id()
+                tariff.id(),
+                String.format("Error when getting %s tariff", project.getSlug())
         );
 
         helper.println("Tariff has been updated. Your project will we restarted automatically");
@@ -145,8 +145,8 @@ public class ProjectService {
         slug = findOrSelect(slug, p -> p.getInstances() == 0 && p.getRequiredInstances() > 0).getSlug();
         client.post(
                 UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/rebuild").build(slug),
-                String.format("Error when starting %s", slug),
-                new ScalePostRequest(1)
+                new ScalePostRequest(1),
+                String.format("Error when starting %s", slug)
         );
         helper.println("Starting project...");
     }
@@ -155,8 +155,8 @@ public class ProjectService {
         slug = findOrSelect(slug, p -> p.getInstances() > 0 && p.getRequiredInstances() > 0).getSlug();
         client.post(
                 UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
-                String.format("Error when stopping %s", slug),
-                new ScalePostRequest(0)
+                new ScalePostRequest(0),
+                String.format("Error when stopping %s", slug)
         );
         helper.println("Project stopped...");
     }
@@ -176,14 +176,14 @@ public class ProjectService {
         if (project.getServiceType().equals(ServiceType.POSTGRESQL)) {
             client.post(
                     UriComponentsBuilder.fromUriString(endpoints.postgresql() + "/{slug}/scale").build(project.getSlug()),
-                    String.format("Error when scaling '%s' postgres", project.getSlug()),
-                    new ScalePostRequest(instances)
+                    new ScalePostRequest(instances),
+                    String.format("Error when scaling '%s' postgres", project.getSlug())
             );
         } else {
             client.post(
                     UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/scale").build(slug),
-                    String.format("Error when scaling %s", slug),
-                    new ScalePostRequest(instances)
+                    new ScalePostRequest(instances),
+                    String.format("Error when scaling %s", slug)
             );
         }
 

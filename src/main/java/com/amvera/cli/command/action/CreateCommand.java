@@ -67,7 +67,7 @@ public class CreateCommand extends AbstractShellComponent {
         this.client = client;
     }
 
-    @Command(command = "", description = "Add new project")
+    @Command(command = "", description = "Adds new project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void create() {
         int serviceTypeId = selector.selectServiceType();
@@ -83,7 +83,7 @@ public class CreateCommand extends AbstractShellComponent {
         }
     }
 
-    @Command(command = "project", description = "Create new project")
+    @Command(command = "project", description = "Creates new project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void project(
             @Option(longNames = "config", shortNames = 'c', description = "Add configuration amvera.yml") Boolean config
@@ -91,13 +91,13 @@ public class CreateCommand extends AbstractShellComponent {
         createProject();
     }
 
-    @Command(command = "postgresql", alias = {"create psql", "create postgre"}, description = "Create postgres (cnpg) cluster")
+    @Command(command = "postgresql", alias = {"psql", "postgre"}, description = "Creates postgres (cnpg) cluster")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql() {
         createCnpg();
     }
 
-    @Command(command = "preconfigured", alias = "create preconf", description = "Create preconfigured service from marketplace")
+    @Command(command = "preconfigured", alias = "preconf", description = "Creates preconfigured service from marketplace")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured() {
         createPreconfigured();
@@ -137,7 +137,6 @@ public class CreateCommand extends AbstractShellComponent {
         CnpgResponse cnpg = client.post(
                 URI.create(endpoints.postgresql()),
                 CnpgResponse.class,
-                "Error during creation postgresql",
                 new CnpgPostRequest(
                         serviceName,
                         tariffId,
@@ -148,7 +147,8 @@ public class CreateCommand extends AbstractShellComponent {
                         1,
                         superUserEnabled,
                         superUserPassword
-                )
+                ),
+                "Error during creation postgresql"
         );
 
         helper.print(amveraTable.singleEntityTable(new CnpgTableModel(Objects.requireNonNull(cnpg), Tariff.value(tariffId))));
@@ -175,23 +175,23 @@ public class CreateCommand extends AbstractShellComponent {
                 project = client.post(
                         URI.create(endpoints.projects()),
                         ProjectPostResponse.class,
-                        String.format("Error when creating %s", serviceName),
-                        new ProjectRequest(serviceName, tariffId)
+                        new ProjectRequest(serviceName, tariffId),
+                        String.format("Error when creating %s", serviceName)
                 );
                 client.post(
                         UriComponentsBuilder.fromUriString(endpoints.projects() + "/{slug}/config")
                                 .queryParam("slug", project.slug())
                                 .build(project.slug()),
-                        String.format("Error when saving %s configuration", project.slug()),
-                        config
+                        config,
+                        String.format("Error when saving %s configuration", project.slug())
                 );
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
             } else {
                 project = client.post(
                         URI.create(endpoints.projects()),
                         ProjectPostResponse.class,
-                        String.format("Error when creating %s", serviceName),
-                        new ProjectRequest(serviceName, tariffId)
+                        new ProjectRequest(serviceName, tariffId),
+                        String.format("Error when creating %s", serviceName)
                 );
                 helper.print(amveraTable.singleEntityTable(new ProjectTableModel(project, Tariff.value(tariffId))));
                 helper.printWarning("Project has been created. But you have to add configuration manually.");
@@ -201,8 +201,8 @@ public class CreateCommand extends AbstractShellComponent {
             project = client.post(
                     URI.create(endpoints.projects()),
                     ProjectPostResponse.class,
-                    String.format("Error when creating %s", serviceName),
-                    new ProjectRequest(serviceName, tariffId)
+                    new ProjectRequest(serviceName, tariffId),
+                    String.format("Error when creating %s", serviceName)
             );
         }
 

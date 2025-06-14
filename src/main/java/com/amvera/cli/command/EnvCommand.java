@@ -6,7 +6,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "env", group = "Environment variables commands")
+@Command(command = "env", alias = "env", group = "Environment variables commands")
 public class EnvCommand {
     private final EnvironmentService envService;
 
@@ -22,7 +22,7 @@ public class EnvCommand {
         envService.renderTable(slug);
     }
 
-    @Command(command = "delete", alias = "env remove", description = "Deletes selected environment variable")
+    @Command(command = "delete", alias = "remove", description = "Deletes selected environment variable")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void deleteEnvironment(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug,
@@ -31,7 +31,7 @@ public class EnvCommand {
         envService.delete(slug);
     }
 
-    @Command(command = "add", alias = "env create", description = "Adds environment variable to specified project")
+    @Command(command = "add", alias = "create", description = "Adds environment variable to specified project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void addEnvironment(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
@@ -39,7 +39,7 @@ public class EnvCommand {
         envService.create(slug);
     }
 
-    @Command(command = "update", alias = "env change", description = "Updates environment variable of specified project")
+    @Command(command = "update", alias = "change", description = "Updates environment variable of specified project")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void updateEnvironment(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug

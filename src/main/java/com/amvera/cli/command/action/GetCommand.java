@@ -9,7 +9,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
 import org.springframework.shell.command.annotation.Option;
 
-@Command(command = "get", group = "Project commands")
+@Command(command = "get", alias = "get", group = "Project commands")
 public class GetCommand {
     private final ProjectService projectService;
     private final EnvironmentService envService;
@@ -25,31 +25,31 @@ public class GetCommand {
         this.domainService = domainService;
     }
 
-    @Command(command = "", description = "Get list of all projects including postgres and configured services")
+    @Command(command = "", description = "Returns list of all projects including postgres and configured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void get() {
         projectService.renderTable();
     }
 
-    @Command(command = "project", alias = "projects", description = "Get list of projects")
+    @Command(command = "project", alias = "projects", description = "Returns list of projects")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void project() {
         projectService.renderTable(p -> p.getServiceType().equals(ServiceType.PROJECT));
     }
 
-    @Command(command = "psql", alias = {"get postgresql", "get postgre", "get cnpg"}, description = "Get list of postgresql (cnpg) clusters")
+    @Command(command = "psql", alias = {"postgresql", "postgre"}, description = "Returns list of postgresql (cnpg) clusters")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void postgresql() {
         projectService.renderTable(p -> p.getServiceType().equals(ServiceType.POSTGRESQL));
     }
 
-    @Command(command = "preconfigured", alias = {"get conf", "get preconf"}, description = "Get list of preconfigured services")
+    @Command(command = "preconfigured", alias = {"conf", "preconf"}, description = "Returns list of preconfigured services")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void preconfigured() {
         projectService.renderTable(p -> p.getServiceType().equals(ServiceType.PRECONFIGURED));
     }
 
-    @Command(command = "domain", alias = "get domains", description = "Get list of domains")
+    @Command(command = "domain", alias = "domains", description = "Returns list of domains")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void domain(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
@@ -57,7 +57,7 @@ public class GetCommand {
         domainService.renderTable(slug);
     }
 
-    @Command(command = "env", alias = {"get environment", "get envs"}, description = "Get list of environment")
+    @Command(command = "env", alias = {"environment", "envs"}, description = "Returns list of environment")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void env(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug

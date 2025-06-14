@@ -76,8 +76,8 @@ public class EnvironmentService {
         client.post(
                 UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}").build(project.getSlug()),
                 EnvResponse.class,
-                String.format("Error when adding env to %s", project.getSlug()),
-                new EnvPostRequest(name, value, secret)
+                new EnvPostRequest(name, value, secret),
+                String.format("Error when adding env to %s", project.getSlug())
         );
 
         helper.printInfo("Environment has been created. Do not forget to restart project to apply it.");
@@ -129,8 +129,8 @@ public class EnvironmentService {
 
         client.put(
                 UriComponentsBuilder.fromUriString(endpoints.env() + "/{slug}/{id}").build(project.getSlug(), env.id()),
-                String.format("Error when updating %s env", env.name()),
-                new EnvPutRequest(env.id(), name, value, env.isSecret())
+                new EnvPutRequest(env.id(), name, value, env.isSecret()),
+                String.format("Error when updating %s env", env.name())
         );
 
         helper.printInfo("Environment has been updated. Do not forget to restart project to apply it.");

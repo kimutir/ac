@@ -89,8 +89,8 @@ public class CnpgService {
         CnpgBackupResponse backup = client.post(
                 URI.create(endpoints.postgresql() + "/backup"),
                 CnpgBackupResponse.class,
-                "Backup process failed",
-                new CnpgBackupPostRequest(cnpg.getSlug(), description)
+                new CnpgBackupPostRequest(cnpg.getSlug(), description),
+                "Backup process failed"
         );
 
         helper.println(String.format("Started backup process. New backup name: %s", backup.getName()));
@@ -131,8 +131,8 @@ public class CnpgService {
         String restoredSlug = client.post(
                 URI.create(endpoints.postgresql() + "/restore"),
                 CnpgRestoreResponse.class,
-                String.format("Unable to restore postgres from %s backup", backupName),
-                new CnpgRestorePostRequest(newSlug, oldSlug, backupName)
+                new CnpgRestorePostRequest(newSlug, oldSlug, backupName),
+                String.format("Unable to restore postgres from %s backup", backupName)
         ).serviceSlug();
 
         CnpgResponse restored = client.get(
@@ -168,8 +168,8 @@ public class CnpgService {
         cnpg = client.put(
                 URI.create(endpoints.postgresql()),
                 CnpgResponse.class,
-                "Error when updating postgres",
-                new CnpgPutRequest(slug, isEnabled)
+                new CnpgPutRequest(slug, isEnabled),
+                "Error when updating postgres"
         );
 
         Tariff tariff = Tariff.value(

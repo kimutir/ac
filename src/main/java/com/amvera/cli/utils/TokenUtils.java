@@ -62,7 +62,8 @@ public class TokenUtils {
             return tokenConfig;
 
         } catch (IOException e) {
-            throw new TokenNotFoundException("Token was not found.");
+//            throw new TokenNotFoundException("Token was not found.");
+            return new TokenConfig("", "");
         }
     }
 

@@ -35,8 +35,8 @@ public class MarketplaceService {
     public void saveMarketplaceConfig(MarketplaceConfigPostRequest marketplaceConfig) {
         client.post(
                 URI.create(endpoints.marketplace() + "/config"),
-                "Error when saving preconfigured config",
-                marketplaceConfig
+                marketplaceConfig,
+                "Error when saving preconfigured config"
         );
     }
 }

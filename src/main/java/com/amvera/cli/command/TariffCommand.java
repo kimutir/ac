@@ -20,7 +20,7 @@ public class TariffCommand {
         this.tariffService = tariffService;
     }
 
-    @Command(command = "", description = "Project tariff information")
+    @Command(command = "", description = "Returns project tariff information")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void get(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
@@ -28,7 +28,7 @@ public class TariffCommand {
         projectService.renderTariffTable(slug);
     }
 
-    @Command(command = "update", description = "Change tariff option")
+    @Command(command = "update", description = "Changes tariff option")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void update(
             @Option(longNames = "slug", shortNames = 's', arity = OptionArity.EXACTLY_ONE, description = "Project slug") String slug
@@ -36,7 +36,7 @@ public class TariffCommand {
         projectService.updateTariff(slug);
     }
 
-    @Command(command = "list", alias = "tariff ls", description = "Project tariff information")
+    @Command(command = "list", alias = "tariff ls", description = "Returns list of all tariffs")
     @CommandAvailability(provider = "userLoggedOutProvider")
     public void list() {
         System.out.println("test 1");
