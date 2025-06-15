@@ -1,42 +1,27 @@
-name: Build Native Images
+name: Build Native CLI
 
 on:
   push:
     tags:
-      - 'v*' # например: v1.0.0
+      - 'v*'
 
 jobs:
   build-native:
-    name: Build Native Image (${{ matrix.os }} - ${{ matrix.arch }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            arch: amd64
-            image_name: amvera-linux
-          - os: ubuntu-latest
-            arch: aarch64
-            image_name: amvera-linux-arm64
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x64, aarch64]
+        exclude:
           - os: windows-latest
-            arch: amd64
-            image_name: amvera-windows
+            arch: aarch64 # Windows ARM не поддерживается GitHub Actions
           - os: macos-latest
-            arch: amd64
-            image_name: amvera-macos
-          - os: macos-latest
-            arch: aarch64
-            image_name: amvera-macos-arm64
+            arch: x64    # macOS ARM можно оставить только aarch64, или подогнать вручную
+
+    name: Build on ${{ matrix.os }} (${{ matrix.arch }})
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+      - uses: actions/checkout@v4
 
       - name: Set up GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -44,10 +29,18 @@ jobs:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          architecture: ${{ matrix.arch }}
           native-image: true
 
+      - name: Set up Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
       - name: Build native image
-        run: ./mvnw clean package -Pnative -DskipTests -Dnative.imageName=${{ matrix.image_name }}
+        run: ./mvnw clean package -Pnative -DskipTests
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
