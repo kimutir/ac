@@ -1,26 +1,32 @@
-name: Build Native CLI
+name: Build Native CLI and Create Release
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    tags:
+      - 'v*'  # Триггер по тегу, например: v0.9.6
 
 jobs:
-  build-native:
-    runs-on: ubuntu-latest
+  build:
+    name: Build native binaries
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [x64, aarch64]
-        exclude:
+        include:
+          - os: ubuntu-latest
+            artifact_name: amvera-linux
+            image_name: amvera-linux
           - os: windows-latest
-            arch: aarch64 # Windows ARM не поддерживается GitHub Actions
+            artifact_name: amvera-windows.exe
+            image_name: amvera-windows
           - os: macos-latest
-            arch: x64    # macOS ARM можно оставить только aarch64, или подогнать вручную
-
-    name: Build on ${{ matrix.os }} (${{ matrix.arch }})
+            artifact_name: amvera-macos-x64
+            image_name: amvera-macos-x64
+          - os: macos-14
+            artifact_name: amvera-macos-arm64
+            image_name: amvera-macos-arm64
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -28,21 +34,38 @@ jobs:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          architecture: ${{ matrix.arch }}
           native-image: true
 
-      - name: Set up Maven
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: maven
-
       - name: Build native image
-        run: ./mvnw clean package -Pnative -DskipTests
+        run: ./mvnw clean package -Pnative -DskipTests -Dnative.imageName=${{ matrix.image_name }}
+
+      - name: Rename artifact
+        run: |
+          mv target/${{ matrix.image_name }} ${{ matrix.artifact_name }}
+        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: amvera-${{ matrix.os }}-${{ matrix.arch }}
-          path: target/amvera # имя зависит от того, что создается
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: artifacts/**/*  # Загружаем всё
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
