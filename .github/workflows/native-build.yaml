@@ -28,7 +28,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_RELEASE_TOKEN }}
           architecture: ${{ matrix.arch }}
           native-image: true
 
@@ -74,4 +74,4 @@ jobs:
         with:
           files: artifacts/*.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
