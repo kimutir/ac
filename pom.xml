@@ -162,9 +162,6 @@
                                 <phase>package</phase>
                             </execution>
                         </executions>
-                        <configuration>
-                            <imageName>${native.imageName}</imageName>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
