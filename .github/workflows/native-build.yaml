@@ -14,9 +14,9 @@ jobs:
         arch: [x64, aarch64]
         exclude:
           - os: windows-latest
-            arch: aarch64 # Windows ARM не поддерживается GitHub Actions
+            arch: aarch64
           - os: macos-latest
-            arch: x64    # macOS ARM можно оставить только aarch64, или подогнать вручную
+            arch: x64
 
     name: Build on ${{ matrix.os }} (${{ matrix.arch }})
 
@@ -42,36 +42,19 @@ jobs:
       - name: Build native image
         run: ./mvnw clean package -Pnative -DskipTests
 
+      - name: Set short OS name
+        id: osname
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            echo "os=ubuntu" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            echo "os=windows" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            echo "os=macos" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: amvera-${{ matrix.os }}-${{ matrix.arch }}
+          name: amvera-${{ steps.osname.outputs.os }}-${{ matrix.arch }}
           path: target/amvera
-
-#  create-release:
-#    name: Create GitHub Release
-#    needs: build-native
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Download all artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          path: artifacts
-#
-#      - name: List files
-#        run: ls -R artifacts
-#
-#      - name: Zip all artifacts
-#        run: |
-#          cd artifacts
-#          for dir in *; do
-#            zip -r "$dir.zip" "$dir"
-#          done
-#          cd ..
-#
-#      - name: Create GitHub Release
-#        uses: softprops/action-gh-release@v2
-#        with:
-#          files: artifacts/*.zip
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}

@@ -23,6 +23,7 @@ import org.springframework.shell.jline.PromptProvider;
 @EnableConfigurationProperties({AppProperties.class, Endpoints.class})
 public class AmveraCLIApplication {
     public static void main(String[] args) {
+        System.out.println("Build new version 0.9.7 - " + java.time.LocalDateTime.now());
         try {
             new SpringApplicationBuilder()
                     .web(WebApplicationType.NONE)
@@ -31,7 +32,7 @@ public class AmveraCLIApplication {
         } catch (IllegalStateException e) {
             if (e.getCause() instanceof CommandNotCurrentlyAvailable) {
                 // color removed because of incorrect output in PowerShell (windows)
-//                String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
+                // String message = new AttributedString(e.getCause().getMessage(), AttributedStyle.DEFAULT.foreground(AttributedStyle.RED)).toAnsi();
                 String message = e.getCause().getMessage();
                 System.out.println(message);
             }

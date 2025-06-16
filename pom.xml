@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.amvera</groupId>
     <artifactId>amvera</artifactId>
-    <version>0.9.6</version>
+    <version>0.9.7</version>
     <name>amvera-cli</name>
     <description>amvera-cli-application</description>
 
