@@ -45,7 +45,7 @@ public class TokenUtils {
                 Files.createDirectories(FileUtils.AMVERA_DIR);
 
                 if (Files.notExists(FileUtils.CONFIG_PATH)) {
-                     configUtils.createUserConfig();
+                    configUtils.createUserConfig();
                 }
             }
 
@@ -57,10 +57,6 @@ public class TokenUtils {
 
     public TokenConfig readToken() {
         try {
-            if (configUtils.shouldUpdate()) {
-                configUtils.update();
-            }
-
             return mapper.readValue(FileUtils.TOKEN_PATH.toFile(), TokenConfig.class);
         } catch (IOException e) {
             return new TokenConfig("", "");

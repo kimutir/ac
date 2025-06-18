@@ -18,6 +18,7 @@ import com.amvera.cli.dto.user.InfoResponse;
 import com.amvera.cli.dto.user.UserConfig;
 import com.amvera.cli.exception.CustomExceptionResolver;
 import com.amvera.cli.exception.CommandNotFoundMessageProviderCustom;
+import com.amvera.cli.utils.ConfigUtils;
 import com.amvera.cli.utils.table.CnpgTableModel;
 import com.amvera.cli.utils.table.MarketplaceTableModel;
 import com.amvera.cli.utils.table.ProjectTableModel;

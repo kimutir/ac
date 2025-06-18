@@ -33,7 +33,7 @@ public class UpdateCommand {
         if (Objects.equals(latestVersion, currentVersion)) {
             helper.println("Current version is up to date.");
         } else {
-            configUtils.update();
+            configUtils.update(true);
         }
     }
 

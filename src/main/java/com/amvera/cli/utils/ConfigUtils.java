@@ -5,6 +5,7 @@ import com.amvera.cli.dto.github.GithubRelease;
 import com.amvera.cli.dto.user.UserConfig;
 import com.amvera.cli.exception.InformException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.springframework.shell.component.context.ComponentContext;
 import org.springframework.shell.component.flow.ComponentFlow;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,9 @@ public class ConfigUtils {
 
     public ConfigUtils(
             AppProperties properties,
-            ObjectMapper mapper, ShellHelper helper, ComponentFlow.Builder componentFlowBuilder
+            ObjectMapper mapper,
+            ShellHelper helper,
+            ComponentFlow.Builder componentFlowBuilder
     ) {
         this.properties = properties;
         this.mapper = mapper;
@@ -56,7 +59,9 @@ public class ConfigUtils {
         return false;
     }
 
-    public void update() {
+    public void update(boolean shouldUpdate) {
+        if (!shouldUpdate) {return;}
+
         String lastVersion = getLatestVersion();
         String currentVersion = properties.version();
 
@@ -66,23 +71,29 @@ public class ConfigUtils {
                 .name(String.format("New version detected. \n Current version: %s \n New version: %s \n Would you like to update amvera-cli?", currentVersion, lastVersion))
                 .and()
                 .build()
-                .run().getContext();
+                .run()
+                .getContext();
 
         boolean agree = context.get("agree");
 
         if (!agree) return;
-
-        String installCommand = "curl -sSL https://raw.githubusercontent.com/amvera-cloud/cli/master/amvera-install.sh | bash -s " + lastVersion;
 
         try {
             String os = System.getProperty("os.name").toLowerCase();
 
             ProcessBuilder builder;
 
+            String command = "curl -sSL https://raw.githubusercontent.com/amvera-cloud/cli/master/amvera-install.sh | bash -s " + lastVersion;
+
             if (os.contains("win")) {
-                builder = new ProcessBuilder("powershell.exe", "-Command", installCommand);
+                builder = new ProcessBuilder(
+                        "cmd.exe", "/c",
+                        "curl.exe -sSL https://raw.githubusercontent.com/amvera-cloud/cli/master/amvera-install.sh | bash -s " + lastVersion
+                );
             } else {
-                builder = new ProcessBuilder("bash", "-c", installCommand);
+                builder = new ProcessBuilder(
+                        "bash", "-c", command
+                );
             }
 
             builder.redirectErrorStream(true);
