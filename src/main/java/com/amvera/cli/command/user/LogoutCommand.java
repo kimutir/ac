@@ -15,7 +15,7 @@ public class LogoutCommand {
     }
 
     @Command(command = "logout", description = "Logout amvera cloud")
-    @CommandAvailability(provider = "userLoggedOutProvider")
+    @CommandAvailability(provider = "userLoggedInProvider")
     public String logout() {
         return userService.logout();
     }

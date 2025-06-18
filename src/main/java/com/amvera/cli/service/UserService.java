@@ -1,39 +1,46 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
+import com.amvera.cli.client.AmveraHttpClient;
 import com.amvera.cli.config.AppProperties;
+import com.amvera.cli.config.Endpoints;
 import com.amvera.cli.dto.auth.AuthRequest;
 import com.amvera.cli.dto.auth.AuthResponse;
 import com.amvera.cli.dto.auth.RevokeTokenPostRequest;
 import com.amvera.cli.dto.user.InfoResponse;
-import com.amvera.cli.model.TokenConfig;
+import com.amvera.cli.dto.user.TokenConfig;
 import com.amvera.cli.utils.TokenUtils;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+
+import java.net.URI;
 
 @Service
 public class UserService {
-    private final AppProperties properties;
-    private final HttpCustomClient client;
     private final TokenUtils tokenUtils;
+    private final AppProperties properties;
+    private final Endpoints endpoints;
+    private final AmveraHttpClient client;
 
     public UserService(
+            TokenUtils tokenUtils,
             AppProperties properties,
-            HttpCustomClient client,
-            TokenUtils tokenUtils
+            Endpoints endpoints,
+            AmveraHttpClient client
     ) {
-        this.properties = properties;
-        this.client = client;
         this.tokenUtils = tokenUtils;
+        this.properties = properties;
+        this.endpoints = endpoints;
+        this.client = client;
     }
 
     public String login(String user, String password) {
-        AuthRequest body = new AuthRequest(properties.keycloakClient(), user, password);
-
-        AuthResponse response = client.auth().build()
-                .post()
-                .body(body.toMultiValueMap())
-                .retrieve().body(AuthResponse.class);
+        AuthResponse response = client.post(
+                URI.create(endpoints.keycloak() + "/protocol/openid-connect/token"),
+                AuthResponse.class,
+                new AuthRequest(properties.keycloakClient(), user, password).toMultiValueMap(),
+                h -> h.setContentType(MediaType.APPLICATION_FORM_URLENCODED),
+                "Error on login"
+        );
 
         if (response != null) {
             tokenUtils.saveToken(response.getAccessToken(), response.getRefreshToken());
@@ -45,30 +52,25 @@ public class UserService {
     public String logout() {
         TokenConfig tokenConfig = tokenUtils.readToken();
         String refreshToken = tokenConfig.refreshToken();
-        String accessToken = tokenConfig.accessToken();
 
-        RevokeTokenPostRequest body = new RevokeTokenPostRequest(properties.keycloakClient(), refreshToken);
-
-        ResponseEntity<String> response = client.logout(accessToken).build()
-                .post()
-                .body(body.toMultiValueMap())
-                .retrieve().toEntity(String.class);
+        client.post(
+                URI.create(endpoints.keycloak() + "/protocol/openid-connect/revoke"),
+                "Error on logout",
+                new RevokeTokenPostRequest(properties.keycloakClient(), refreshToken).toMultiValueMap(),
+                h -> {
+                    h.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                    h.setBearerAuth(tokenConfig.accessToken());
+                });
 
         return tokenUtils.deleteToken();
     }
 
     public InfoResponse info() {
-        String token = tokenUtils.readToken().accessToken();
-
-        InfoResponse info = client.info(token).build()
-                .get().retrieve()
-                .body(InfoResponse.class);
-
-        if (info == null) {
-            throw new RuntimeException("Unable to get user information.");
-        }
-
-        return info;
+        return client.get(
+                URI.create(endpoints.keycloak() + "/account"),
+                InfoResponse.class,
+                "Error on getting user info"
+        );
     }
 
 }

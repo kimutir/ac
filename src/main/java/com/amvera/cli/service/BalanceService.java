@@ -1,34 +1,30 @@
 package com.amvera.cli.service;
 
-import com.amvera.cli.client.HttpCustomClient;
-import com.amvera.cli.dto.billing.BalanceGetResponse;
-import com.amvera.cli.utils.TokenUtils;
+import com.amvera.cli.client.AmveraHttpClient;
+import com.amvera.cli.config.Endpoints;
+import com.amvera.cli.dto.billing.BalanceResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+
+import java.net.URI;
 
 @Service
 public class BalanceService {
-    private final HttpCustomClient client;
-    private final TokenUtils tokenUtils;
+    private final AmveraHttpClient client;
+    private final Endpoints endpoints;
 
     public BalanceService(
-            HttpCustomClient client,
-            TokenUtils tokenUtils) {
+            AmveraHttpClient client, Endpoints endpoints
+    ) {
         this.client = client;
-        this.tokenUtils = tokenUtils;
+        this.endpoints = endpoints;
     }
 
-    public BalanceGetResponse getBalance() {
-        String token = tokenUtils.readToken().accessToken();
-
-        BalanceGetResponse balance = client.balance(token).build()
-                .get()
-                .retrieve()
-                .body(BalanceGetResponse.class);
-
-        if (balance == null) {
-            throw new RuntimeException("Unable to get balance information.");
-        }
-
-        return balance;
+    public BalanceResponse getBalance() {
+        return client.get(
+                URI.create(endpoints.balance()),
+                BalanceResponse.class,
+                "Error when getting balance"
+        );
     }
 }

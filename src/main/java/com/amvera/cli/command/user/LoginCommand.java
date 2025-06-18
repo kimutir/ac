@@ -1,8 +1,7 @@
 package com.amvera.cli.command.user;
 
-import com.amvera.cli.exception.EmptyValueException;
 import com.amvera.cli.service.UserService;
-import com.amvera.cli.utils.AmveraInput;
+import com.amvera.cli.utils.input.AmveraInput;
 import org.springframework.shell.command.CommandRegistration.*;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.CommandAvailability;
@@ -23,7 +22,7 @@ public class LoginCommand extends AbstractShellComponent {
     }
 
     @Command(command = "login", description = "Login amvera cloud")
-    @CommandAvailability(provider = "userLoggedProvider")
+    @CommandAvailability(provider = "userLoggedOutProvider")
     public String login(
             @Option(longNames = "user", shortNames = 'u', arity = OptionArity.EXACTLY_ONE, description = "Username/email for authorization") String user,
             @Option(longNames = "password", shortNames = 'p', arity = OptionArity.EXACTLY_ONE, description = "User password for authorization") String password
@@ -34,7 +33,7 @@ public class LoginCommand extends AbstractShellComponent {
         }
 
         if (user == null || user.isBlank()) {
-            throw new EmptyValueException("Username can not be empty.");
+//            throw new EmptyValueException("Username can not be empty.");
         }
 
         if (password == null || password.isBlank()) {
@@ -42,15 +41,8 @@ public class LoginCommand extends AbstractShellComponent {
         }
 
         if (password == null || password.isBlank()) {
-            throw new EmptyValueException("Password can not be empty.");
+//            throw new EmptyValueException("Password can not be empty.");
         }
-
-
-        // todo: WebFlux doesn't work on Windows after compilation to binary (MacOS - ok)
-//        AuthResponse response = authService.login(user, password).block();
-//        if (response != null) {
-//            return response.getAccessToken();
-//        }
 
         return authService.login(user, password);
     }
