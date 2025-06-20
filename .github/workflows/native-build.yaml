@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            echo "os=ubuntu" >> $GITHUB_OUTPUT
+            echo "os=linux" >> $GITHUB_OUTPUT
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             echo "os=windows" >> $GITHUB_OUTPUT
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then

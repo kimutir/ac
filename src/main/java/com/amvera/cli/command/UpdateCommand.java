@@ -41,7 +41,7 @@ public class UpdateCommand {
     public void enable() {
         UserConfig userConfig = configUtils.readUserConfig();
 
-        configUtils.updateUserConfig(false, userConfig.lastUpdateCheckedAt());
+        configUtils.updateUserConfig(true, userConfig.lastUpdateCheckedAt());
         helper.println("Autoupdates enabled.");
     }
 
