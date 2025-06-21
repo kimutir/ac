@@ -111,7 +111,7 @@
       ]
     },
     {
-      "type": "com.amvera.cli.aspect.BalanceCommandAspect",
+      "type": "com.amvera.cli.aspect.CheckUpdatesAspect",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -648,8 +648,7 @@
         {
           "name": "isValid",
           "parameterTypes": [
-            "com.amvera.cli.utils.TokenUtils",
-            "com.amvera.cli.utils.ConfigUtils"
+            "com.amvera.cli.utils.TokenUtils"
           ]
         },
         {
@@ -952,17 +951,7 @@
       ]
     },
     {
-      "type": "com.amvera.cli.dto.user.UserConfig",
-      "allDeclaredFields": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "boolean",
-            "java.time.OffsetDateTime"
-          ]
-        }
-      ]
+      "type": "com.amvera.cli.dto.user.UserConfig"
     },
     {
       "type": "com.amvera.cli.exception.CommandNotFoundMessageProviderCustom",
@@ -1904,6 +1893,9 @@
       "type": "java.lang.Comparable"
     },
     {
+      "type": "java.lang.Error"
+    },
+    {
       "type": "java.lang.Exception"
     },
     {
@@ -1955,6 +1947,9 @@
     },
     {
       "type": "java.lang.Runnable"
+    },
+    {
+      "type": "java.lang.RuntimeException"
     },
     {
       "type": "java.lang.RuntimePermission"
@@ -2070,6 +2065,9 @@
           "parameterTypes": []
         }
       ]
+    },
+    {
+      "type": "java.lang.reflect.UndeclaredThrowableException"
     },
     {
       "type": "java.lang.reflect.WildcardType",
@@ -2782,6 +2780,9 @@
       "type": "org.springframework.aop.framework.Advised"
     },
     {
+      "type": "org.springframework.aop.framework.AopConfigException"
+    },
+    {
       "type": "org.springframework.aop.framework.AopInfrastructureBean"
     },
     {
@@ -2819,9 +2820,6 @@
     {
       "type": "org.springframework.aop.framework.autoproxy.AbstractBeanFactoryAwareAdvisingPostProcessor",
       "allDeclaredFields": true
-    },
-    {
-      "type": "org.springframework.aot.generate.Generated"
     },
     {
       "type": "org.springframework.aot.hint.annotation.Reflective"
@@ -4584,7 +4582,16 @@
       "type": "org.springframework.cache.interceptor.CacheAspectSupport"
     },
     {
+      "type": "org.springframework.cglib.proxy.Dispatcher"
+    },
+    {
       "type": "org.springframework.cglib.proxy.Factory"
+    },
+    {
+      "type": "org.springframework.cglib.proxy.MethodInterceptor"
+    },
+    {
+      "type": "org.springframework.cglib.proxy.NoOp"
     },
     {
       "type": "org.springframework.context.ApplicationContext"
@@ -6874,7 +6881,7 @@
       "glob": "com/amvera/cli/"
     },
     {
-      "glob": "com/amvera/cli/aspect/BalanceCommandAspect.class"
+      "glob": "com/amvera/cli/aspect/CheckUpdatesAspect.class"
     },
     {
       "glob": "com/amvera/cli/client/AmveraHttpClient.class"
